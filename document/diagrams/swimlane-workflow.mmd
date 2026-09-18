@@ -1,0 +1,82 @@
+flowchart LR
+    subgraph LEC["👨‍🏫 Giảng viên"]
+        L1("Tải giáo trình / slide")
+        L2("Duyệt câu hỏi AI sinh & gán Rubric")
+        L3("Tạo ca thi & phân bổ sinh viên")
+        L4("Xem transcript + điểm AI gợi ý")
+        L5("Chỉnh sửa & Chốt điểm")
+    end
+
+    subgraph SYS["⚙️ Hệ thống AIVES"]
+        S1("RAG: sinh câu hỏi từ tài liệu")
+        S2("TTS: Đọc câu hỏi")
+        S3("STT: Chuyển giọng nói thành transcript")
+        S4{"AI quyết định:<br/>Hỏi xoáy hay chuyển câu?"}
+        S5("Đánh dấu Session = COMPLETED")
+        S6("Enqueue Job chấm điểm")
+        S7("Lưu điểm nháp<br/>Status = AI_DRAFT")
+        S8("Công bố điểm<br/>Status = PUBLISHED")
+    end
+
+    subgraph AIS["🤖 AI Provider (LLM/STT/TTS)"]
+        A1("Sinh câu hỏi theo thang Bloom")
+        A2("Phân tích transcript,<br/>gợi ý hỏi xoáy")
+        A3("Đối chiếu Rubric,<br/>xuất điểm + nhận xét")
+    end
+
+    subgraph STU["🎓 Sinh viên"]
+        T1("Nghe câu hỏi")
+        T2("Trả lời bằng giọng nói")
+        T3("Xem điểm & transcript")
+        T4("Khiếu nại nếu cần")
+    end
+
+    subgraph WORKER["🔄 Background Worker & DB"]
+        W1("Lấy job chấm điểm")
+        W2("Lưu điểm + audit log")
+    end
+
+    L1 --> S1
+    S1 --> A1
+    A1 --> L2
+    L2 --> L3
+    L3 --> S2
+
+    S2 --> T1
+    T1 --> T2
+    T2 --> S3
+    S3 --> A2
+    A2 --> S4
+    S4 -->|Hỏi xoáy| S2
+    S4 -->|Hết câu hỏi| S5
+
+    S5 --> S6
+    S6 --> W1
+    W1 --> A3
+    A3 --> W2
+    W2 --> S7
+    S7 --> L4
+    L4 --> L5
+    L5 --> S8
+    S8 --> T3
+    T3 --> T4
+    T4 -.->|Gửi khiếu nại| L4
+
+    %% ===== STYLING (theo màu từng lane, node bo tròn) =====
+    classDef lecNode fill:#FCEBD5,stroke:#E8A33D,stroke-width:1.5px,color:#7A4A00,rx:8,ry:8
+    classDef sysNode fill:#DCE8F7,stroke:#5B8DEF,stroke-width:1.5px,color:#1E3A5F,rx:8,ry:8
+    classDef aiNode fill:#EBE0F7,stroke:#9B6FD1,stroke-width:1.5px,color:#3F2760,rx:8,ry:8
+    classDef stuNode fill:#DCF3E3,stroke:#4FAE6D,stroke-width:1.5px,color:#164B2A,rx:8,ry:8
+    classDef workerNode fill:#E7E7EA,stroke:#8A8F98,stroke-width:1.5px,color:#3A3D42,rx:8,ry:8
+
+    class L1,L2,L3,L4,L5 lecNode
+    class S1,S2,S3,S4,S5,S6,S7,S8 sysNode
+    class A1,A2,A3 aiNode
+    class T1,T2,T3,T4 stuNode
+    class W1,W2 workerNode
+
+    style LEC fill:#FFF7EC,stroke:#E8A33D,stroke-width:2px
+    style SYS fill:#F1F6FD,stroke:#5B8DEF,stroke-width:2px
+    style AIS fill:#F6F2FC,stroke:#9B6FD1,stroke-width:2px
+    style STU fill:#F0FBF3,stroke:#4FAE6D,stroke-width:2px
+    style WORKER fill:#F4F4F5,stroke:#8A8F98,stroke-width:2px
