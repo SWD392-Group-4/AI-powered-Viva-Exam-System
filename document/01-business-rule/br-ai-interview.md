@@ -35,7 +35,7 @@ Mỗi câu hỏi chính trải qua chu trình:
 - **Silence Threshold**: Nếu phát hiện khoảng lặng (silence) liên tục $\ge 5$ giây sau khi sinh viên đã nói $\ge 10$ giây, hệ thống hiển thị gợi ý "Bạn đã hoàn thành câu trả lời chưa?". Nếu im lặng $\ge 10$ giây, hệ thống tự động khóa mic (`AUTO_SUBMIT`).
 - **Processing Latency**: Thời gian từ khi sinh viên kết thúc nói (`End-of-Speech`) đến khi AI phát audio câu hỏi tiếp theo phải $\le 3000\text{ ms}$ (3 giây) trong điều kiện mạng ổn định.
 
-### BR-VIVA-004: Speech-to-Text Fallback & Specialized Terms
+### BR-VIVA-004: Speech-to-Text Context & Specialized Terms
 - **Rule**:
-  - Hệ thống phải nạp danh mục thuật ngữ chuyên ngành (`DomainKeywords` của môn học) vào STT Context/Prompt để hạn chế lỗi nhận diện từ ngữ kỹ thuật.
-  - Transcript dạng text phải được lưu đồng thời với file audio gốc để phục vụ phúc khảo.
+  - Hệ thống nạp danh mục thuật ngữ chuyên ngành (`DomainKeywords` của môn học) vào STT Context/Prompt để hạn chế lỗi nhận diện từ ngữ kỹ thuật.
+  - Transcript dạng text phải được lưu lại đầy đủ làm căn cứ cho AI và Giảng viên đối chiếu chấm điểm.

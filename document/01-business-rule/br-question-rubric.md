@@ -25,9 +25,7 @@ Mỗi Rubric (`Rubric`) gồm:
   1. Câu hỏi sinh ra từ AI (thông qua RAG từ giáo trình/slide) mặc định có trạng thái `DRAFT` và `Source = AI_GENERATED`.
   2. Câu hỏi AI sinh ra **bắt buộc** phải qua bước review của `LECTURER`:
      - Giảng viên có thể: Sửa nội dung, chỉnh Bloom level, gán Rubric, rồi chọn `APPROVE` hoặc `REJECT`.
-  3. Chỉ câu hỏi ở trạng thái `APPROVED` mới được đưa vào pool bốc đề ngẫu nhiên cho kỳ thi.
+  3. Chỉ câu hỏi ở trạng thái `APPROVED` mới được đưa vào danh sách câu hỏi sử dụng cho phỏng vấn.
 
-### BR-BANK-003: Immutability of Questions in Active Exams
-- **Rule**: Khi một câu hỏi đã được gán vào phiên thi đang diễn ra (`IN_PROGRESS`) hoặc đã có lịch thi trong vòng 24h:
-  - Cấm chỉnh sửa nội dung câu hỏi và Rubric liên kết.
-  - Nếu cần cập nhật, hệ thống tạo bản ghi mới (`Version + 1`) và lưu bản cũ để phục vụ chấm điểm và tra cứu lịch sử.
+### BR-BANK-003: Rubric Completeness for AI Grading
+- **Rule**: Mọi tiêu chí trong Rubric bắt buộc phải có mô tả rõ ràng về yêu cầu đạt điểm để LLM làm cơ sở đối chiếu với transcript (tránh chấm điểm hallucination).
