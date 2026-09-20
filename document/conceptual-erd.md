@@ -10,132 +10,48 @@
 ```mermaid
 erDiagram
     %% ==========================================
-    %% CORE BUSINESS ENTITIES & CONCEPTUAL ATTRIBUTES
+    %% DOMAIN 1: AUTH & RBAC (BR-AUTH)
     %% ==========================================
-    USER {
-        string full_name
-        string email
-        string role
-        string status
-    }
-
-    COURSE {
-        string code
-        string name
-        string description
-        string status
-    }
-
-    TOPIC {
-        string name
-        string description
-    }
-
-    COURSE_DOCUMENT {
-        string title
-        string file_type
-        string status
-    }
-
-    RUBRIC {
-        string name
-        number max_score
-        string status
-    }
-
-    RUBRIC_CRITERIA {
-        string name
-        string description
-        number weight_percentage
-        number max_points
-    }
-
-    QUESTION {
-        string content
-        string bloom_level
-        string model_answer
-        string source
-        string status
-    }
-
-    EXAM_PLAN {
-        string title
-        datetime start_time
-        datetime end_time
-        number total_questions
-        number max_follow_ups
-        string status
-    }
-
-    VIVA_SESSION {
-        datetime started_at
-        datetime completed_at
-        string status
-        string recording_reference
-    }
-
-    INTERACTION_EXCHANGE {
-        number sequence_number
-        string exchange_type
-        string question_text
-        string answer_transcript
-        string trigger_reason
-    }
-
-    EVALUATION {
-        number suggested_score
-        number final_score
-        string rationale
-        string status
-    }
-
-    CRITERIA_EVALUATION {
-        number score
-        string evidence
-    }
-
-    EXAM_RESULT {
-        number total_score
-        string feedback
-        string publish_status
-        datetime published_at
-    }
+    USER ||--o{ COURSE_LECTURER : "phụ trách (BR-AUTH-001)"
+    COURSE ||--o{ COURSE_LECTURER : "có"
+    USER ||--o{ COURSE_STUDENT : "đăng ký"
+    COURSE ||--o{ COURSE_STUDENT : "tiếp nhận (BR-AUTH-002)"
 
     %% ==========================================
-    %% CONCEPTUAL RELATIONSHIPS (CROW'S FOOT NOTATION)
+    %% DOMAIN 2: QUESTION BANK & RUBRIC (BR-BANK)
     %% ==========================================
+    COURSE ||--o{ COURSE_DOCUMENT : "sở hữu"
+    COURSE_DOCUMENT ||--o{ DOCUMENT_CHUNK : "chia nhỏ thành (RAG)"
+    COURSE ||--o{ TOPIC : "phân chia theo"
+    COURSE ||--o{ RUBRIC : "định nghĩa"
+    RUBRIC ||--|{ RUBRIC_CRITERIA : "gồm các tiêu chí (Tổng = 100%)"
+    COURSE ||--o{ QUESTION_BANK_ITEM : "chứa"
+    TOPIC ||--o{ QUESTION_BANK_ITEM : "thuộc về"
+    RUBRIC ||--o{ QUESTION_BANK_ITEM : "gán chuẩn chấm (BR-BANK-001)"
 
-    %% Academic & Course Management (Native Many-to-Many)
-    USER }o--o{ COURSE : "teaches or enrolls in"
-    COURSE ||--o{ TOPIC : "structures into"
-    COURSE ||--o{ COURSE_DOCUMENT : "provides"
-    COURSE ||--o{ RUBRIC : "defines"
-    COURSE ||--o{ QUESTION : "maintains in bank"
-    COURSE ||--o{ EXAM_PLAN : "schedules"
+    %% ==========================================
+    %% DOMAIN 3: EXAM SCHEDULING & SESSION (BR-SESSION)
+    %% ==========================================
+    COURSE ||--o{ EXAM_PLAN : "tổ chức ca thi"
+    EXAM_PLAN ||--o{ VIVA_ATTEMPT : "chứa các lượt thi"
+    USER ||--o{ VIVA_ATTEMPT : "thực hiện lượt thi (Student)"
+    VIVA_ATTEMPT ||--|{ EXAM_QUESTION_ASSIGNMENT : "được bốc đề phân bổ"
+    QUESTION_BANK_ITEM ||--o{ EXAM_QUESTION_ASSIGNMENT : "được bốc vào"
 
-    %% Rubric Structure & Standards
-    RUBRIC ||--|{ RUBRIC_CRITERIA : "comprises"
-    TOPIC ||--o{ QUESTION : "categorizes"
-    RUBRIC ||--o{ QUESTION : "evaluates against"
+    %% ==========================================
+    %% DOMAIN 4: REAL-TIME VIVA INTERACTION (BR-VIVA)
+    %% ==========================================
+    EXAM_QUESTION_ASSIGNMENT ||--|{ INTERVIEW_EXCHANGE : "diễn ra các lượt hỏi - đáp"
 
-    %% Exam Planning & Sessions
-    EXAM_PLAN ||--o{ VIVA_SESSION : "conducts"
-    USER ||--o{ VIVA_SESSION : "undertakes as candidate"
-    VIVA_SESSION }o--|{ QUESTION : "selects dynamically for"
-
-    %% Real-time Interaction Flow
-    VIVA_SESSION ||--|{ INTERACTION_EXCHANGE : "records dialogues"
-    QUESTION ||--o{ INTERACTION_EXCHANGE : "prompts"
-
-    %% Deferred Assessment & Grading (0..1 Optional Cardinality)
-    VIVA_SESSION ||--o| EXAM_RESULT : "yields overall"
-    INTERACTION_EXCHANGE ||--o| EVALUATION : "assesses"
-    RUBRIC_CRITERIA ||--o{ CRITERIA_EVALUATION : "benchmarks"
-    EVALUATION ||--|{ CRITERIA_EVALUATION : "details by criteria"
-
-    %% Human-In-The-Loop (HITL) Review
-    USER ||--o{ EVALUATION : "reviews and overrides"
-    USER ||--o{ EXAM_RESULT : "approves and publishes"
+    %% ==========================================
+    %% DOMAIN 5: AI GRADING & HITL REVIEW (BR-GRADE)
+    %% ==========================================
+    EXAM_QUESTION_ASSIGNMENT ||--o| QUESTION_GRADE : "được chấm điểm (1:0..1)"
+    QUESTION_GRADE ||--|{ CRITERIA_GRADE_DETAIL : "chi tiết theo từng tiêu chí"
+    RUBRIC_CRITERIA ||--o{ CRITERIA_GRADE_DETAIL : "được đánh giá trong"
+    USER ||--o{ QUESTION_GRADE : "giảng viên thẩm định (HITL)"
+    VIVA_ATTEMPT ||--o| EXAM_RESULT : "kết quả tổng hợp (1:0..1)"
+    USER ||--o{ EXAM_RESULT : "giảng viên phê duyệt công bố"
 ```
 
 ---
@@ -145,51 +61,65 @@ erDiagram
 ### Miền 1: Quản Trị & Phân Quyền (Auth & RBAC)
 
 - **`USER`**: Người dùng trong hệ thống (Admin, Giảng viên, Sinh viên).
-- **`COURSE`**: Môn học trong chương trình đào tạo. Mối quan hệ nhiều - nhiều bản thể (`N:N`) trực tiếp với `USER` thể hiện việc Giảng viên phụ trách giảng dạy và Sinh viên theo học.
+- **`COURSE`**: Môn học trong chương trình đào tạo. Là đơn vị ranh giới bảo mật cấp dữ liệu.
+- **`COURSE_LECTURER`**: Phân công giảng viên vào môn học theo quy tắc **`BR-AUTH-001`** (chỉ được quản lý câu hỏi, rubric và chấm thi môn được giao).
+- **`COURSE_STUDENT`**: Danh sách sinh viên đủ điều kiện tham gia môn học (**`BR-AUTH-002`**).
 
 ### Miền 2: Ngân Hàng Câu Hỏi & Rubric (Question Bank & Rubric)
 
-- **`COURSE_DOCUMENT`**: Giáo trình, bài giảng và tài liệu học tập của môn học.
+- **`COURSE_DOCUMENT`**: Giáo trình, slide, tài liệu học tập của môn học.
+- **`DOCUMENT_CHUNK`**: Các phân đoạn tri thức tài liệu phục vụ AI RAG sinh câu hỏi và truy xuất kiến thức.
 - **`TOPIC`**: Chủ đề kiến thức trong môn học để phân loại câu hỏi.
-- **`RUBRIC` & `RUBRIC_CRITERIA`**: Bộ tiêu chí đánh giá chuẩn hóa được gắn với môn học và từng câu hỏi.
-- **`QUESTION`**: Câu hỏi trong ngân hàng đề, phân định độ khó, nguồn gốc (AI sinh hoặc Giảng viên tạo) và đáp án tham chiếu.
+- **`RUBRIC`**: Bộ tiêu chí chấm điểm của môn học.
+- **`RUBRIC_CRITERIA`**: Các tiêu chí chi tiết cấu thành Rubric (**`BR-BANK-001`**, **`BR-BANK-003`**).
+- **`QUESTION_BANK_ITEM`**: Câu hỏi trong ngân hàng đề (gồm câu AI sinh và Giảng viên tạo, liên kết chuẩn Rubric theo **`BR-BANK-002`**).
 
-### Miền 3: Đợt Thi & Phiên Thi (Exam Scheduling & Session)
+### Miền 3: Đợt Thi & Ca Thi (Exam Scheduling & Session)
 
-- **`EXAM_PLAN`**: Kế hoạch tổ chức đợt thi với cấu hình thời gian và số lượng câu hỏi.
-- **`VIVA_SESSION`**: Phiên thi vấn đáp trực tiếp của sinh viên. Bốc câu hỏi động từ ngân hàng (`QUESTION`) theo quan hệ nhiều - nhiều (`N:N`).
+- **`EXAM_PLAN`**: Kế hoạch tổ chức đợt thi môn học, quy định số câu chính và trần hỏi xoáy tối đa.
+- **`VIVA_ATTEMPT`**: Lượt thi vấn đáp cụ thể của một sinh viên, quản lý vòng đời phiên thi và bản ghi âm.
+- **`EXAM_QUESTION_ASSIGNMENT`**: Đề thi được bốc riêng cho sinh viên trong từng lượt thi.
 
 ### Miền 4: Tương Tác Vấn Đáp Trực Tiếp (Real-Time Viva Interaction)
 
-- **`INTERACTION_EXCHANGE`**: Các lượt trao đổi đối thoại trực tiếp (câu hỏi chính và các câu hỏi đào sâu/hỏi xoáy kèm transcript câu trả lời).
+- **`INTERVIEW_EXCHANGE`**: Từng lượt trao đổi hỏi - đáp trực tiếp giữa AI và thí sinh (phân định câu hỏi chính, câu hỏi xoáy, transcript và lý do kích hoạt hỏi xoáy theo **`BR-VIVA-001`**, **`BR-VIVA-002`**).
 
-### Miền 5: Đánh Giá & Thẩm Định Điểm (Evaluation & HITL Review)
+### Miền 5: Chấm Điểm AI & Giảng Viên Thẩm Định (AI Scoring & HITL Review)
 
-- **`EVALUATION` & `CRITERIA_EVALUATION`**: Kết quả đánh giá từng lượt hỏi đáp theo tiêu chí Rubric, được sinh sau khi sinh viên hoàn thành tương tác (quan hệ `1 : 0..1`).
-- **`EXAM_RESULT`**: Kết quả tổng hợp cuối cùng của phiên thi, trải qua thẩm định của Giảng viên (HITL) trước khi công bố (quan hệ `1 : 0..1`).
+- **`QUESTION_GRADE`**: Điểm số và lý giải chấm cho từng câu hỏi thi (sinh sau khi hoàn thành phản hồi, hỗ trợ Giảng viên thẩm định/ghi đè theo **`BR-GRADE-002`**).
+- **`CRITERIA_GRADE_DETAIL`**: Điểm chi tiết cho từng tiêu chí Rubric kèm trích dẫn bằng chứng từ transcript (**`BR-GRADE-001`**).
+- **`EXAM_RESULT`**: Bảng điểm tổng kết ca thi, trải qua quy trình Human-in-the-Loop trước khi công bố cho sinh viên (**`BR-GRADE-003`**).
 
 ---
 
 ## 3. Ma Trận Quan Hệ Giữa Các Thực Thể (Cardinality Matrix)
 
-| Thực thể nguồn         | Ký hiệu Crow's Foot | Thực thể đích          | Ý nghĩa nghiệp vụ                                                      |
-| :--------------------- | :-----------------: | :--------------------- | :--------------------------------------------------------------------- |
-| `USER`                 |      `}o--o{`       | `COURSE`               | Người dùng phụ trách giảng dạy hoặc đăng ký học môn học (N:N bản thể)  |
-| `COURSE`               |     `\|\|--o{`      | `TOPIC`                | Môn học chia thành các chủ đề kiến thức                                |
-| `COURSE`               |     `\|\|--o{`      | `COURSE_DOCUMENT`      | Môn học cung cấp các tài liệu học tập                                  |
-| `COURSE`               |     `\|\|--o{`      | `RUBRIC`               | Môn học định nghĩa các rubric chuẩn                                    |
-| `COURSE`               |     `\|\|--o{`      | `QUESTION`             | Môn học duy trì ngân hàng câu hỏi                                      |
-| `COURSE`               |     `\|\|--o{`      | `EXAM_PLAN`            | Môn học lên lịch các đợt thi                                           |
-| `RUBRIC`               |     `\|\|--\|{`     | `RUBRIC_CRITERIA`      | Một rubric bao gồm 1 hoặc nhiều tiêu chí đánh giá                      |
-| `TOPIC`                |     `\|\|--o{`      | `QUESTION`             | Chủ đề phân loại các câu hỏi                                           |
-| `RUBRIC`               |     `\|\|--o{`      | `QUESTION`             | Rubric được dùng làm căn cứ đánh giá cho câu hỏi                       |
-| `EXAM_PLAN`            |     `\|\|--o{`      | `VIVA_SESSION`         | Đợt thi tổ chức các phiên thi vấn đáp                                  |
-| `USER`                 |     `\|\|--o{`      | `VIVA_SESSION`         | Sinh viên thực hiện phiên thi vấn đáp                                  |
-| `VIVA_SESSION`         |      `}o--\|{`      | `QUESTION`             | Phiên thi bốc chọn động các câu hỏi từ ngân hàng (N:N bản thể)         |
-| `VIVA_SESSION`         |     `\|\|--\|{`     | `INTERACTION_EXCHANGE` | Phiên thi ghi nhận các lượt đối thoại hỏi - đáp                        |
-| `QUESTION`             |     `\|\|--o{`      | `INTERACTION_EXCHANGE` | Câu hỏi gợi mở/dẫn dắt các lượt tương tác                              |
-| `VIVA_SESSION`         |     `\|\|--o\|`     | `EXAM_RESULT`          | Phiên thi tạo ra 0 hoặc 1 kết quả tổng hợp sau khi hoàn tất (1 : 0..1) |
-| `INTERACTION_EXCHANGE` |     `\|\|--o\|`     | `EVALUATION`           | Lượt tương tác được đánh giá sau khi kết thúc phản hồi (1 : 0..1)      |
+| Thực thể nguồn | Ký hiệu Crow's Foot | Thực thể đích | Ràng buộc nghiệp vụ liên quan |
+| :--- | :---: | :--- | :--- |
+| `USER` | `\|\|--o{` | `COURSE_LECTURER` | Giảng viên được phân công phụ trách các môn học (`BR-AUTH-001`) |
+| `COURSE` | `\|\|--o{` | `COURSE_LECTURER` | Môn học có danh sách giảng viên phụ trách |
+| `USER` | `\|\|--o{` | `COURSE_STUDENT` | Sinh viên đăng ký tham gia môn học |
+| `COURSE` | `\|\|--o{` | `COURSE_STUDENT` | Môn học tiếp nhận sinh viên theo học (`BR-AUTH-002`) |
+| `COURSE` | `\|\|--o{` | `COURSE_DOCUMENT` | Môn học sở hữu tài liệu tham khảo |
+| `COURSE_DOCUMENT` | `\|\|--o{` | `DOCUMENT_CHUNK` | Tài liệu được chia thành các đoạn chunk phục vụ RAG |
+| `COURSE` | `\|\|--o{` | `TOPIC` | Môn học phân chia thành các chủ đề kiến thức |
+| `COURSE` | `\|\|--o{` | `RUBRIC` | Môn học định nghĩa các rubric chuẩn |
+| `RUBRIC` | `\|\|--\|{` | `RUBRIC_CRITERIA` | Một rubric có 1 hoặc nhiều tiêu chí ($\sum \text{weight} = 100\%$) |
+| `COURSE` | `\|\|--o{` | `QUESTION_BANK_ITEM` | Môn học chứa ngân hàng câu hỏi |
+| `TOPIC` | `\|\|--o{` | `QUESTION_BANK_ITEM` | Câu hỏi thuộc về chủ đề kiến thức |
+| `RUBRIC` | `\|\|--o{` | `QUESTION_BANK_ITEM` | Câu hỏi liên kết với rubric chuẩn chấm (`BR-BANK-001`) |
+| `COURSE` | `\|\|--o{` | `EXAM_PLAN` | Môn học tổ chức các đợt thi |
+| `EXAM_PLAN` | `\|\|--o{` | `VIVA_ATTEMPT` | Đợt thi chứa các lượt thi vấn đáp |
+| `USER` | `\|\|--o{` | `VIVA_ATTEMPT` | Sinh viên thực hiện lượt thi |
+| `VIVA_ATTEMPT` | `\|\|--\|{` | `EXAM_QUESTION_ASSIGNMENT` | Lượt thi được bốc và phân bổ các câu hỏi thi |
+| `QUESTION_BANK_ITEM` | `\|\|--o{` | `EXAM_QUESTION_ASSIGNMENT` | Câu hỏi ngân hàng được bốc vào đề thi sinh viên |
+| `EXAM_QUESTION_ASSIGNMENT` | `\|\|--\|{` | `INTERVIEW_EXCHANGE` | Câu hỏi gồm câu chính và các lượt hỏi xoáy (`BR-VIVA-001`) |
+| `EXAM_QUESTION_ASSIGNMENT` | `\|\|--o\|` | `QUESTION_GRADE` | Mỗi câu hỏi được sinh bản ghi điểm sau khi thi (`1 : 0..1`) |
+| `QUESTION_GRADE` | `\|\|--\|{` | `CRITERIA_GRADE_DETAIL` | Điểm mỗi câu được chi tiết hóa theo tiêu chí (`BR-GRADE-001`) |
+| `RUBRIC_CRITERIA` | `\|\|--o{` | `CRITERIA_GRADE_DETAIL` | Tiêu chí Rubric được đánh giá chi tiết trong điểm thi |
+| `USER` | `\|\|--o{` | `QUESTION_GRADE` | Giảng viên thẩm định và duyệt điểm (`HITL`) |
+| `VIVA_ATTEMPT` | `\|\|--o\|` | `EXAM_RESULT` | Lượt thi tổng hợp thành kết quả sau khi hoàn tất (`1 : 0..1`) |
+| `USER` | `\|\|--o{` | `EXAM_RESULT` | Giảng viên phê duyệt và công bố bảng điểm (`HITL`) |\|--o\|`     | `EVALUATION`           | Lượt tương tác được đánh giá sau khi kết thúc phản hồi (1 : 0..1)      |
 | `RUBRIC_CRITERIA`      |     `\|\|--o{`      | `CRITERIA_EVALUATION`  | Tiêu chí làm chuẩn đo lường các đánh giá                               |
 | `EVALUATION`           |     `\|\|--\|{`     | `CRITERIA_EVALUATION`  | Đánh giá được chi tiết hóa theo các tiêu chí                           |
 | `USER`                 |     `\|\|--o{`      | `EVALUATION`           | Giảng viên thẩm định, điều chỉnh đánh giá (HITL)                       |
