@@ -119,8 +119,5 @@ erDiagram
 | `RUBRIC_CRITERIA` | `\|\|--o{` | `CRITERIA_GRADE_DETAIL` | Tiêu chí Rubric được đánh giá chi tiết trong điểm thi |
 | `USER` | `\|\|--o{` | `QUESTION_GRADE` | Giảng viên thẩm định và duyệt điểm (`HITL`) |
 | `VIVA_ATTEMPT` | `\|\|--o\|` | `EXAM_RESULT` | Lượt thi tổng hợp thành kết quả sau khi hoàn tất (`1 : 0..1`) |
-| `USER` | `\|\|--o{` | `EXAM_RESULT` | Giảng viên phê duyệt và công bố bảng điểm (`HITL`) |\|--o\|`     | `EVALUATION`           | Lượt tương tác được đánh giá sau khi kết thúc phản hồi (1 : 0..1)      |
-| `RUBRIC_CRITERIA`      |     `\|\|--o{`      | `CRITERIA_EVALUATION`  | Tiêu chí làm chuẩn đo lường các đánh giá                               |
-| `EVALUATION`           |     `\|\|--\|{`     | `CRITERIA_EVALUATION`  | Đánh giá được chi tiết hóa theo các tiêu chí                           |
-| `USER`                 |     `\|\|--o{`      | `EVALUATION`           | Giảng viên thẩm định, điều chỉnh đánh giá (HITL)                       |
-| `USER`                 |     `\|\|--o{`      | `EXAM_RESULT`          | Giảng viên duyệt và công bố bảng điểm tổng kết (HITL)                  |
+| `USER` | `\|\|--o{` | `EXAM_RESULT` | Giảng viên phê duyệt và công bố bảng điểm (`HITL`) |
+
