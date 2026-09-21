@@ -1,0 +1,67 @@
+flowchart LR
+    %% Định nghĩa các Actor
+    STU(["🎓 Student\n(Sinh viên)"])
+    LEC(["👨‍🏫 Lecturer\n(Giảng viên)"])
+    ADM(["👨‍💻 Admin\n(Quản trị viên)"])
+    AI(["🤖 AI Engine\n(Hệ thống AI)"])
+
+    %% Nhóm chức năng của Sinh viên
+    subgraph Student_Actions ["Chức năng của Sinh viên"]
+        direction TB
+        UC_TestMic([Kiểm tra Audio/Mic])
+        UC_JoinRoom([Tham gia Phòng thi Ảo])
+        UC_Answer([Trả lời Phỏng vấn bằng Giọng nói])
+        UC_ViewResult([Xem Điểm & Báo cáo Chi tiết])
+    end
+
+    %% Nhóm chức năng của Giảng viên
+    subgraph Lecturer_Actions ["Chức năng của Giảng viên (HITL)"]
+        direction TB
+        UC_UploadDoc([Tải lên Tài liệu Môn học])
+        UC_ManageBank([Quản lý Ngân hàng Câu hỏi & Rubric])
+        UC_CreateExam([Tạo Đợt thi / Ca thi])
+        UC_ReviewExam([Thẩm định Bài thi Sinh viên])
+        UC_PublishScore([Công bố Điểm Chính thức])
+    end
+
+    %% Nhóm chức năng của Admin
+    subgraph Admin_Actions ["Chức năng của Admin"]
+        direction TB
+        UC_ManageUsers([Quản lý Người dùng & Môn học])
+        UC_ConfigSys([Cấu hình Hệ thống & AI Endpoints])
+    end
+
+    %% Nhóm chức năng tự động của AI
+    subgraph AI_Actions ["Tác vụ tự động của AI"]
+        direction TB
+        UC_GenQ([Sinh Câu hỏi tự động qua RAG])
+        UC_FollowUp([Hỏi xoáy thích ứng - Follow-up])
+        UC_Grade([Chấm điểm & Viết nhận xét ngầm])
+    end
+
+    %% Gắn Actor với Use Case (Sinh viên)
+    STU --> UC_TestMic
+    STU --> UC_JoinRoom
+    STU --> UC_Answer
+    STU --> UC_ViewResult
+
+    %% Gắn Actor với Use Case (Giảng viên)
+    LEC --> UC_UploadDoc
+    LEC --> UC_ManageBank
+    LEC --> UC_CreateExam
+    LEC --> UC_ReviewExam
+    LEC --> UC_PublishScore
+
+    %% Gắn Actor với Use Case (Admin)
+    ADM --> UC_ManageUsers
+    ADM --> UC_ConfigSys
+
+    %% Mối quan hệ Include / Extend (Mô phỏng)
+    UC_ManageBank -.->|<<includes>>| UC_GenQ
+    UC_Answer -.->|<<includes>>| UC_FollowUp
+    UC_ReviewExam -.->|<<includes>>| UC_Grade
+
+    %% Tác nhân AI thực thi ngầm
+    AI --- UC_GenQ
+    AI --- UC_FollowUp
+    AI --- UC_Grade
