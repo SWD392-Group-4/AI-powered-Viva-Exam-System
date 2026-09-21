@@ -1,8 +1,8 @@
 
 
-## 1. Sơ đồ Use Case (Mermaid Flowchart)
+1. Sơ đồ Use Case (Mermaid Flowchart)
 
-```mermaid
+code mermaid
 flowchart LR
     %% Định nghĩa các Actor
     STU(["🎓 Student\n(Sinh viên)"])
