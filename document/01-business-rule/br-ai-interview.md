@@ -1,4 +1,4 @@
-# BR-VIVA: AI Interview Loop (Speech & Follow-up Engine)
+# BR-VIVA: AI Interview Loop (Cloud Speech & Follow-up APIs)
 
 ## 1. Interview Loop Flow (State Machine mỗi câu hỏi)
 Mỗi câu hỏi chính trải qua chu trình:

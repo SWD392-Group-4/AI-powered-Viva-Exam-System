@@ -5,7 +5,7 @@
 [Viva Completed]
        │
        ▼
-[AI Grading Engine] ──(Đối chiếu Transcript vs Rubric)──> [AI Suggested Score & Feedback]
+[Scoring Worker (Calling Cloud LLM API)] ──(Đối chiếu Transcript vs Rubric)──> [AI Suggested Score & Feedback]
                                                                      │
                                                                      ▼
                                                           [Lecturer Review Board]

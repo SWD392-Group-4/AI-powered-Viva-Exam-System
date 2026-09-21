@@ -71,7 +71,7 @@ flowchart LR
    - Thiết lập Rubric chấm điểm chi tiết (tiêu chí, trọng số %).
    - Giảng viên kiểm duyệt, chỉnh sửa hoặc tạo câu hỏi thủ công.
 
-2. **Module 3: Lõi phỏng vấn ảo AI (Real-time Viva Interview Engine)**:
+2. **Module 3: Điều phối phỏng vấn ảo thời gian thực (Real-time Viva Orchestrator via Cloud APIs)**:
    - Đọc câu hỏi bằng giọng nói tự nhiên (TTS).
    - Thu âm và chuyển giọng nói thành văn bản thời gian thực (STT).
    - Lõi phỏng vấn thích ứng: phân tích câu trả lời và tự động hỏi đào sâu (Follow-up) theo ngữ cảnh khi sinh viên trả lời thiếu ý, mơ hồ hoặc mâu thuẫn.

@@ -25,7 +25,7 @@ flowchart TB
 
     subgraph Backend["Tầng Nghiệp vụ Lõi (AIVES Modular Monolith)"]
         API["REST API Modules\n(Auth, Ngân hàng câu hỏi, Ca thi, Chấm điểm, Audit)"]
-        REALTIME["Real-time Viva Engine\n(Điều phối câu hỏi & đối thoại qua WebSocket)"]
+        REALTIME["Real-time Viva Orchestrator\n(Điều phối câu hỏi & gọi Cloud AI APIs qua WebSocket)"]
         WORKER["Background Jobs (BullMQ)\n(Chấm điểm tự động theo Rubric, xử lý âm thanh)"]
     end
 
@@ -79,10 +79,10 @@ flowchart TB
             AUDIT_MOD["Audit & Evidence Module"]
         end
 
-        subgraph VivaOrch["Real-Time AI Viva Engine"]
+        subgraph VivaOrch["Real-Time Viva Orchestrator"]
             VIVA_FSM["Viva Room State Machine"]
-            SPEECH_ADAPTER["Speech Provider Adapter (STT / TTS Client)"]
-            AI_ADAPTER["LLM / Follow-up Engine Client"]
+            SPEECH_ADAPTER["Speech Provider Adapter (Cloud STT / TTS Client)"]
+            AI_ADAPTER["Cloud LLM / Follow-up API Client"]
         end
 
         subgraph BackgroundWorker["Background Job Consumers (BullMQ / Celery)"]
@@ -164,7 +164,7 @@ src/
 │   ├── question-bank/              # Module: Ngân hàng câu hỏi, RAG & Rubric (BR-BANK)
 │   ├── exam-session/               # Module: Tạo đợt thi, bốc đề chống trùng (BR-SESSION)
 │   ├── viva-room/                  # Module: WebSocket Gateway, State Machine thời gian thực (BR-VIVA)
-│   ├── grading/                    # Module: AI Scoring Engine & Human-in-the-Loop Review (BR-GRADE)
+│   ├── grading/                    # Module: Scoring (Cloud LLM API) & Human-in-the-Loop Review (BR-GRADE)
 │   └── audit-evidence/             # Module: Ghi âm, Transcript bất biến, Khiếu nại (BR-AUDIT)
 ├── jobs/                           # Background Workers (BullMQ)
 │   ├── scoring.processor.ts        # Worker chấm điểm AI ngầm sau khi kết thúc ca thi
@@ -185,7 +185,7 @@ sequenceDiagram
     participant STU as Sinh viên (Browser)
     participant WS as Viva WebSocket Module
     participant FSM as Redis State Machine
-    participant AI as LLM Follow-up Provider
+    participant AI as External Cloud LLM API
     participant QUEUE as BullMQ (Redis)
     participant WORKER as Background Scoring Worker
     participant DB as PostgreSQL

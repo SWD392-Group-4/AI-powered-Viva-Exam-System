@@ -22,7 +22,7 @@ Hệ thống AIVES xoay quanh 3 quy trình nghiệp vụ then chốt xuyên su�
 | STT | Workflow | Tên Quy Trình | Đối tượng tham gia (Actors) | Business Rules / SLA liên quan |
 | :---: | :--- | :--- | :--- | :--- |
 | **WF-1** | **Question & Rubric Preparation** | Chuẩn bị Ngân hàng Câu hỏi & Rubric (RAG + Thẩm định) | Giảng viên, AI RAG Worker, System | `BR-AUTH-001`, `BR-BANK-001`, `BR-BANK-002`, `BR-BANK-003` |
-| **WF-2** | **Real-Time Viva Examination** | Phỏng vấn Vấn đáp Trực tiếp với AI Giám khảo ảo | Sinh viên, AI Engine (STT/TTS/LLM), WebSocket FSM | `BR-AUTH-002`, `BR-AUTH-003`, `BR-VIVA-001` -> `004` |
+| **WF-2** | **Real-Time Viva Examination** | Phỏng vấn Vấn đáp Trực tiếp với AI Giám khảo ảo | Sinh viên, External AI Cloud Services (Gemini/Whisper APIs), WebSocket FSM | `BR-AUTH-002`, `BR-AUTH-003`, `BR-VIVA-001` -> `004` |
 | **WF-3** | **AI Scoring & HITL Review** | Chấm điểm AI Đối chiếu Rubric & Giảng viên Phê duyệt | Background Worker, AI LLM, Giảng viên, Sinh viên | `BR-GRADE-001`, `BR-GRADE-002`, `BR-GRADE-003` |
 
 ---
@@ -77,7 +77,7 @@ sequenceDiagram
     actor STU as 🎓 Sinh viên
     participant WS as 🔌 WebSocket Gateway
     participant FSM as ⚡ Redis Room FSM
-    participant AI as 🤖 Voice & LLM Engine
+    participant AI as ☁️ External AI Cloud APIs (Gemini / Whisper)
     participant S3 as 🪣 Audio Storage
 
     STU->>WS: Kết nối WebSocket phòng thi (Auth Token)
@@ -134,7 +134,7 @@ sequenceDiagram
     autonumber
     participant QUEUE as 📬 Job Queue (BullMQ)
     participant WORKER as ⚙️ Scoring Worker
-    participant AI as 🤖 LLM Rubric Scorer
+    participant AI as ☁️ External Cloud LLM API (Gemini / OpenAI)
     participant DB as 🗄️ PostgreSQL
     actor LEC as 👨‍🏫 Giảng viên
     actor STU as 🎓 Sinh viên

@@ -1,67 +1,79 @@
 flowchart LR
-    %% Định nghĩa các Actor
-    STU(["🎓 Student\n(Sinh viên)"])
-    LEC(["👨‍🏫 Lecturer\n(Giảng viên)"])
-    ADM(["👨‍💻 Admin\n(Quản trị viên)"])
-    AI(["🤖 AI Engine\n(Hệ thống AI)"])
+    %% ==========================================
+    %% ACTORS (No Icons, Specific System Names)
+    %% ==========================================
+    Student["Student<br/>(Candidate)"]
+    Lecturer["Lecturer<br/>(Examiner)"]
+    Admin["System Admin"]
+    External_AI["External AI Cloud Services<br/>(Gemini / OpenAI / Whisper APIs)"]
 
-    %% Nhóm chức năng của Sinh viên
-    subgraph Student_Actions ["Chức năng của Sinh viên"]
+    %% ==========================================
+    %% SYSTEM BOUNDARY: AIVES
+    %% ==========================================
+    subgraph AIVES ["AI-Powered Viva Exam System (AIVES)"]
         direction TB
-        UC_TestMic([Kiểm tra Audio/Mic])
-        UC_JoinRoom([Tham gia Phòng thi Ảo])
-        UC_Answer([Trả lời Phỏng vấn bằng Giọng nói])
-        UC_ViewResult([Xem Điểm & Báo cáo Chi tiết])
+
+        %% Student Use Cases
+        subgraph Sub_Student ["Candidate Examination"]
+            UC_ConductViva(["Take Viva Exam"])
+            UC_CheckAudio(["Test Microphone & Audio"])
+            UC_AnswerQuestion(["Answer Question by Voice"])
+            UC_AdaptiveFollowUp(["Conduct Adaptive Follow-up"])
+            UC_ViewResult(["View Published Exam Result"])
+        end
+
+        %% Examiner Use Cases
+        subgraph Sub_Lecturer ["Exam & Grading Management (HITL)"]
+            UC_ManageExam(["Manage Viva Exams & Candidates"])
+            UC_ManageBank(["Manage Question Bank"])
+            UC_DefineRubric(["Define Rubric & Criteria"])
+            UC_GenerateRAG(["Generate Questions via AI RAG"])
+            UC_ReviewGrade(["Review Exam Attempt (HITL)"])
+            UC_AutoScoring(["Perform AI Rubric Scoring"])
+            UC_OverrideScore(["Override Score with Rationale"])
+            UC_PublishResult(["Publish Official Exam Results"])
+        end
+
+        %% Admin Use Cases
+        subgraph Sub_Admin ["System Administration"]
+            UC_ManageUsers(["Manage Users & Exam Roles"])
+            UC_ConfigSystem(["Configure System & AI Endpoints"])
+        end
     end
 
-    %% Nhóm chức năng của Giảng viên
-    subgraph Lecturer_Actions ["Chức năng của Giảng viên (HITL)"]
-        direction TB
-        UC_UploadDoc([Tải lên Tài liệu Môn học])
-        UC_ManageBank([Quản lý Ngân hàng Câu hỏi & Rubric])
-        UC_CreateExam([Tạo Đợt thi / Ca thi])
-        UC_ReviewExam([Thẩm định Bài thi Sinh viên])
-        UC_PublishScore([Công bố Điểm Chính thức])
-    end
+    %% ==========================================
+    %% PRIMARY ACTOR ASSOCIATIONS
+    %% ==========================================
+    Student --- UC_ConductViva
+    Student --- UC_ViewResult
 
-    %% Nhóm chức năng của Admin
-    subgraph Admin_Actions ["Chức năng của Admin"]
-        direction TB
-        UC_ManageUsers([Quản lý Người dùng & Môn học])
-        UC_ConfigSys([Cấu hình Hệ thống & AI Endpoints])
-    end
+    Lecturer --- UC_ManageExam
+    Lecturer --- UC_ManageBank
+    Lecturer --- UC_ReviewGrade
+    Lecturer --- UC_PublishResult
 
-    %% Nhóm chức năng tự động của AI
-    subgraph AI_Actions ["Tác vụ tự động của AI"]
-        direction TB
-        UC_GenQ([Sinh Câu hỏi tự động qua RAG])
-        UC_FollowUp([Hỏi xoáy thích ứng - Follow-up])
-        UC_Grade([Chấm điểm & Viết nhận xét ngầm])
-    end
+    Admin --- UC_ManageUsers
+    Admin --- UC_ConfigSystem
 
-    %% Gắn Actor với Use Case (Sinh viên)
-    STU --> UC_TestMic
-    STU --> UC_JoinRoom
-    STU --> UC_Answer
-    STU --> UC_ViewResult
+    %% ==========================================
+    %% INCLUDE RELATIONSHIPS (Dashed Arrow to Included UC)
+    %% ==========================================
+    UC_ConductViva -.->|"<<include>>"| UC_CheckAudio
+    UC_ConductViva -.->|"<<include>>"| UC_AnswerQuestion
+    UC_ManageBank -.->|"<<include>>"| UC_DefineRubric
+    UC_ReviewGrade -.->|"<<include>>"| UC_AutoScoring
 
-    %% Gắn Actor với Use Case (Giảng viên)
-    LEC --> UC_UploadDoc
-    LEC --> UC_ManageBank
-    LEC --> UC_CreateExam
-    LEC --> UC_ReviewExam
-    LEC --> UC_PublishScore
+    %% ==========================================
+    %% EXTEND RELATIONSHIPS (Dashed Arrow to Base UC)
+    %% ==========================================
+    UC_AdaptiveFollowUp -.->|"<<extend>>"| UC_AnswerQuestion
+    UC_GenerateRAG -.->|"<<extend>>"| UC_ManageBank
+    UC_OverrideScore -.->|"<<extend>>"| UC_ReviewGrade
 
-    %% Gắn Actor với Use Case (Admin)
-    ADM --> UC_ManageUsers
-    ADM --> UC_ConfigSys
-
-    %% Mối quan hệ Include / Extend (Mô phỏng)
-    UC_ManageBank -.->|<<includes>>| UC_GenQ
-    UC_Answer -.->|<<includes>>| UC_FollowUp
-    UC_ReviewExam -.->|<<includes>>| UC_Grade
-
-    %% Tác nhân AI thực thi ngầm
-    AI --- UC_GenQ
-    AI --- UC_FollowUp
-    AI --- UC_Grade
+    %% ==========================================
+    %% SECONDARY ACTOR (EXTERNAL CLOUD AI APIS) ASSOCIATIONS
+    %% ==========================================
+    UC_AnswerQuestion --- External_AI
+    UC_AdaptiveFollowUp --- External_AI
+    UC_GenerateRAG --- External_AI
+    UC_AutoScoring --- External_AI
