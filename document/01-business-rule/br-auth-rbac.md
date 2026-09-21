@@ -11,15 +11,15 @@
 
 ## 2. Business Rules
 
-### BR-AUTH-001: Course-based Lecturer Authorization
-- **Context**: Giảng viên quản lý đề thi, câu hỏi và điểm số.
-- **Rule**: `LECTURER` chỉ có quyền xem/sửa/xóa câu hỏi và duyệt điểm thuộc về các Môn học (`Course`) mà họ được phân công phụ trách.
-- **Exception**: Giảng viên có quyền `COURSE_COORDINATOR` hoặc `ADMIN` có thể xem toàn bộ dữ liệu thuộc môn đó.
+### BR-AUTH-001: Exam-based Examiner Authorization
+- **Context**: Giảng viên / Giám khảo quản lý đề thi, câu hỏi và điểm số.
+- **Rule**: `LECTURER` chỉ có quyền xem/sửa/xóa câu hỏi và duyệt điểm thuộc về các Kỳ thi (`Exam`) mà họ được phân công phụ trách (`EXAM_EXAMINER`).
+- **Exception**: Giảng viên có quyền `CHIEF_EXAMINER` hoặc `ADMIN` có thể xem toàn bộ dữ liệu thuộc kỳ thi đó.
 
-### BR-AUTH-002: Student Viva Access Scope
-- **Context**: Sinh viên tham gia lượt phỏng vấn viva.
+### BR-AUTH-002: Candidate Viva Access Scope
+- **Context**: Thí sinh tham gia lượt phỏng vấn viva.
 - **Rule**: `STUDENT` chỉ được phép truy cập và bắt đầu lượt vấn đáp (`VivaAttempt`) khi:
-  1. Tài khoản sinh viên được chỉ định hoặc được phân công cho môn học tương ứng.
+  1. Tài khoản thí sinh có tên trong danh sách được chỉ định của kỳ thi tương ứng (`EXAM_CANDIDATE`).
   2. Lượt vấn đáp chưa ở trạng thái hoàn thành (`COMPLETED`).
 - **Enforcement**: Từ chối truy cập với mã `403 Forbidden` nếu không đúng quyền.
 

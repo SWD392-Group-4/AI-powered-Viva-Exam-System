@@ -3,7 +3,7 @@
 ## 1. Data Model Requirements
 Mỗi câu hỏi trong ngân hàng (`QuestionBankItem`) gồm:
 - `Content`: Nội dung câu hỏi chính (text).
-- `CourseId` & `TopicId`: Gắn với môn và chủ đề.
+- `ExamId` & `TopicId`: Gắn với kỳ thi và chủ đề.
 - `BloomLevel`: `REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`.
 - `RubricId`: Bắt buộc liên kết với 1 Rubric chi tiết.
 - `ExpectedKeywords` / `ModelAnswer`: Ý chính cần trả lời.

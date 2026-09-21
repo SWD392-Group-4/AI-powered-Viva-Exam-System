@@ -6,9 +6,51 @@
 
 ---
 
-## 1. Architectural Topology Overview
+## 1. Kiến trúc Hệ thống (System Architecture Overview)
 
-Hệ thống được thiết kế theo mô hình **Modular Monolith** kết hợp **Background Job Queue (BullMQ / Celery)** và **WebSocket Gateway**. Toàn bộ mã nguồn backend tập trung trong 1 repository/ứng dụng duy nhất, được phân tách nội bộ thành các module nghiệp vụ độc lập (loose coupling, high cohesion):
+### 1.1. Sơ đồ Kiến trúc Tổng quan (High-Level Architecture)
+
+Nhìn ở góc độ tổng thể cấp cao, kiến trúc hệ thống **AIVES** được tổ chức thành các tầng rõ ràng, tinh gọn, tối ưu chi phí hạ tầng nhưng vẫn đảm bảo tính module hóa cao và khả năng xử lý thời gian thực:
+
+```mermaid
+flowchart TB
+    subgraph Users["Người dùng (Actors)"]
+        STU["Sinh viên (Student)"]
+        LEC["Giảng viên / Quản trị viên (Lecturer / Admin)"]
+    end
+
+    subgraph Presentation["Tầng Giao diện (Presentation Layer)"]
+        CLIENT["Web Application (Next.js)\n• Phòng thi trực tuyến tương tác âm thanh realtime\n• Portal quản lý môn học, đề thi & thẩm định điểm"]
+    end
+
+    subgraph Backend["Tầng Nghiệp vụ Lõi (AIVES Modular Monolith)"]
+        API["REST API Modules\n(Auth, Ngân hàng câu hỏi, Ca thi, Chấm điểm, Audit)"]
+        REALTIME["Real-time Viva Engine\n(Điều phối câu hỏi & đối thoại qua WebSocket)"]
+        WORKER["Background Jobs (BullMQ)\n(Chấm điểm tự động theo Rubric, xử lý âm thanh)"]
+    end
+
+    subgraph Infrastructure["Tầng Dữ liệu & Lưu trữ (Data Layer)"]
+        DB[("PostgreSQL + pgvector\n(CSDL quan hệ & Vector tri thức)")]
+        CACHE[("Redis\n(State phòng thi realtime, BullMQ Queue, Cache)")]
+        STORAGE[("Object Storage (MinIO / S3)\n(Băng ghi âm & bằng chứng phòng thi)")]
+    end
+
+    subgraph External["Dịch vụ AI Đám mây (External AI Services)"]
+        LLM["LLM APIs (Gemini / OpenAI)\n(Sinh câu hỏi xoáy thích ứng & Đánh giá Rubric)"]
+        SPEECH["Speech Services (STT / TTS)\n(Chuyển đổi Giọng nói ⇄ Văn bản)"]
+    end
+
+    Users -->|HTTPS / WSS| Presentation
+    Presentation <-->|HTTP REST / WebSocket| Backend
+    Backend <--> Infrastructure
+    Backend <--> External
+```
+
+---
+
+### 1.2. Sơ đồ Topology & Thành phần Chi tiết (Detailed Architectural Topology)
+
+Chi tiết cấu trúc bên trong ứng dụng **Modular Monolith** kết hợp **Background Job Queue (BullMQ / Celery)** và **WebSocket Gateway**:
 
 ```mermaid
 flowchart TB

@@ -174,6 +174,6 @@ sequenceDiagram
 
 | Quy trình | Thành phần Kiến Trúc Phụ Trách | Dữ Liệu Tương Tác Chính | Đầu ra (Deliverable) |
 | :--- | :--- | :--- | :--- |
-| **Workflow 1: Question & Rubric** | Next.js Lecturer Portal, RAG Worker, PostgreSQL (`pgvector`) | `COURSE_DOCUMENT`, `DOCUMENT_CHUNK`, `TOPIC`, `RUBRIC`, `QUESTION_BANK_ITEM` | Ngân hàng câu hỏi chuẩn hóa có Rubric trạng thái `APPROVED`. |
-| **Workflow 2: Real-Time Viva** | WebSocket Gateway, Redis FSM, STT/TTS Client, S3/MinIO Storage | `EXAM_PLAN`, `VIVA_ATTEMPT`, `EXAM_QUESTION_ASSIGNMENT`, `INTERVIEW_EXCHANGE` | Lượt thi hoàn thành (`COMPLETED`), file ghi âm và toàn bộ transcript đối thoại. |
+| **Workflow 1: Question & Rubric** | Next.js Lecturer Portal, RAG Worker, PostgreSQL (`pgvector`) | `EXAM_DOCUMENT`, `DOCUMENT_CHUNK`, `TOPIC`, `RUBRIC`, `QUESTION_BANK_ITEM` | Ngân hàng câu hỏi chuẩn hóa có Rubric trạng thái `APPROVED`. |
+| **Workflow 2: Real-Time Viva** | WebSocket Gateway, Redis FSM, STT/TTS Client, S3/MinIO Storage | `EXAM`, `VIVA_ATTEMPT`, `EXAM_QUESTION_ASSIGNMENT`, `INTERVIEW_EXCHANGE` | Lượt thi hoàn thành (`COMPLETED`), file ghi âm và toàn bộ transcript đối thoại. |
 | **Workflow 3: AI Scoring & HITL** | BullMQ Scoring Worker, LLM Client, Lecturer HITL Review Portal | `QUESTION_GRADE`, `CRITERIA_GRADE_DETAIL`, `EXAM_RESULT` | Kết quả thi chính thức được công bố (`PUBLISHED`) với đầy đủ bằng chứng đối soát. |

@@ -1,0 +1,43 @@
+erDiagram
+    %% ==========================================
+    %% DOMAIN 1: AUTH & ACCESS CONTROL (AUTH & RBAC)
+    %% ==========================================
+    USER ||--o{ EXAM_EXAMINER : "assigned as supervisor"
+    EXAM ||--o{ EXAM_EXAMINER : "supervised by"
+    USER ||--o{ EXAM_CANDIDATE : "enrolled as candidate"
+    EXAM ||--o{ EXAM_CANDIDATE : "admits eligible candidates"
+
+    %% ==========================================
+    %% DOMAIN 2: EXAM REPOSITORY & RUBRIC (BANK & RAG)
+    %% ==========================================
+    EXAM ||--o{ EXAM_DOCUMENT : "owns reference docs"
+    EXAM_DOCUMENT ||--o{ DOCUMENT_CHUNK : "split into RAG chunks"
+    EXAM ||--o{ TOPIC : "organized into topics"
+    TOPIC ||--o{ QUESTION_BANK_ITEM : "classifies"
+    EXAM ||--o{ RUBRIC : "defines scoring rubrics"
+    RUBRIC ||--|{ RUBRIC_CRITERIA : "composed of criteria (sum = 100%)"
+    EXAM ||--o{ QUESTION_BANK_ITEM : "contains questions"
+    RUBRIC ||--o{ QUESTION_BANK_ITEM : "sets scoring standard"
+
+    %% ==========================================
+    %% DOMAIN 3: EXAM SESSION & ASSIGNMENT (SESSION)
+    %% ==========================================
+    EXAM ||--o{ VIVA_ATTEMPT : "hosts exam attempts"
+    USER ||--o{ VIVA_ATTEMPT : "undertakes (Student)"
+    VIVA_ATTEMPT ||--|{ EXAM_QUESTION_ASSIGNMENT : "allocated questions"
+    QUESTION_BANK_ITEM ||--o{ EXAM_QUESTION_ASSIGNMENT : "drawn into"
+
+    %% ==========================================
+    %% DOMAIN 4: REAL-TIME VIVA INTERACTION (VIVA)
+    %% ==========================================
+    EXAM_QUESTION_ASSIGNMENT ||--|{ INTERVIEW_EXCHANGE : "conducts Q&A turns"
+
+    %% ==========================================
+    %% DOMAIN 5: AI GRADING & HITL REVIEW (GRADE)
+    %% ==========================================
+    EXAM_QUESTION_ASSIGNMENT ||--o| QUESTION_GRADE : "evaluated with score (1:0..1)"
+    QUESTION_GRADE ||--|{ CRITERIA_GRADE_DETAIL : "breaks down by criteria"
+    RUBRIC_CRITERIA ||--o{ CRITERIA_GRADE_DETAIL : "evaluated against"
+    USER ||--o{ QUESTION_GRADE : "reviewed by examiner (HITL)"
+    VIVA_ATTEMPT ||--o| EXAM_RESULT : "aggregated final result (1:0..1)"
+    USER ||--o{ EXAM_RESULT : "approved & published by examiner"
