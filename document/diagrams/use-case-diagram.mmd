@@ -1,67 +1,67 @@
 flowchart LR
-    %% Định nghĩa các Actor
-    STU(["🎓 Student\n(Sinh viên)"])
-    LEC(["👨‍🏫 Lecturer\n(Giảng viên)"])
-    ADM(["👨‍💻 Admin\n(Quản trị viên)"])
-    AI(["🤖 AI Engine\n(Hệ thống AI)"])
+    %% Define Actors
+    STU(["🎓 Student"])
+    LEC(["👨‍🏫 Lecturer"])
+    ADM(["👨‍💻 Admin"])
+    AI(["🤖 AI Engine"])
 
-    %% Nhóm chức năng của Sinh viên
-    subgraph Student_Actions ["Chức năng của Sinh viên"]
+    %% Student Actions
+    subgraph Student_Actions ["Student Actions"]
         direction TB
-        UC_TestMic([Kiểm tra Audio/Mic])
-        UC_JoinRoom([Tham gia Phòng thi Ảo])
-        UC_Answer([Trả lời Phỏng vấn bằng Giọng nói])
-        UC_ViewResult([Xem Điểm & Báo cáo Chi tiết])
+        UC_TestMic([Test Audio/Mic])
+        UC_JoinRoom([Join Virtual Exam Room])
+        UC_Answer([Answer Voice Interview])
+        UC_ViewResult([View Score & Detailed Report])
     end
 
-    %% Nhóm chức năng của Giảng viên
-    subgraph Lecturer_Actions ["Chức năng của Giảng viên (HITL)"]
+    %% Lecturer Actions
+    subgraph Lecturer_Actions ["Lecturer Actions (HITL)"]
         direction TB
-        UC_UploadDoc([Tải lên Tài liệu Môn học])
-        UC_ManageBank([Quản lý Ngân hàng Câu hỏi & Rubric])
-        UC_CreateExam([Tạo Đợt thi / Ca thi])
-        UC_ReviewExam([Thẩm định Bài thi Sinh viên])
-        UC_PublishScore([Công bố Điểm Chính thức])
+        UC_UploadDoc([Upload Course Documents])
+        UC_ManageBank([Manage Question Bank & Rubric])
+        UC_CreateExam([Create Exam Session])
+        UC_ReviewExam([Review Student Exam])
+        UC_PublishScore([Publish Final Score])
     end
 
-    %% Nhóm chức năng của Admin
-    subgraph Admin_Actions ["Chức năng của Admin"]
+    %% Admin Actions
+    subgraph Admin_Actions ["Admin Actions"]
         direction TB
-        UC_ManageUsers([Quản lý Người dùng & Môn học])
-        UC_ConfigSys([Cấu hình Hệ thống & AI Endpoints])
+        UC_ManageUsers([Manage Users & Courses])
+        UC_ConfigSys([Configure System & AI Endpoints])
     end
 
-    %% Nhóm chức năng tự động của AI
-    subgraph AI_Actions ["Tác vụ tự động của AI"]
+    %% AI Actions
+    subgraph AI_Actions ["Automated AI Actions"]
         direction TB
-        UC_GenQ([Sinh Câu hỏi tự động qua RAG])
-        UC_FollowUp([Hỏi xoáy thích ứng - Follow-up])
-        UC_Grade([Chấm điểm & Viết nhận xét ngầm])
+        UC_GenQ([Auto-generate Questions via RAG])
+        UC_FollowUp([Adaptive Follow-up Questions])
+        UC_Grade([Background AI Scoring & Feedback])
     end
 
-    %% Gắn Actor với Use Case (Sinh viên)
+    %% Attach Actors to Use Cases (Student)
     STU --> UC_TestMic
     STU --> UC_JoinRoom
     STU --> UC_Answer
     STU --> UC_ViewResult
 
-    %% Gắn Actor với Use Case (Giảng viên)
+    %% Attach Actors to Use Cases (Lecturer)
     LEC --> UC_UploadDoc
     LEC --> UC_ManageBank
     LEC --> UC_CreateExam
     LEC --> UC_ReviewExam
     LEC --> UC_PublishScore
 
-    %% Gắn Actor với Use Case (Admin)
+    %% Attach Actors to Use Cases (Admin)
     ADM --> UC_ManageUsers
     ADM --> UC_ConfigSys
 
-    %% Mối quan hệ Include / Extend (Mô phỏng)
+    %% Include / Extend Relationships (Simulation)
     UC_ManageBank -.->|<<includes>>| UC_GenQ
     UC_Answer -.->|<<includes>>| UC_FollowUp
     UC_ReviewExam -.->|<<includes>>| UC_Grade
 
-    %% Tác nhân AI thực thi ngầm
+    %% AI Background Execution
     AI --- UC_GenQ
     AI --- UC_FollowUp
     AI --- UC_Grade
