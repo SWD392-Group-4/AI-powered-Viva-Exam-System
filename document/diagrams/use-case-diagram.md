@@ -1,72 +1,72 @@
+# Use Case Diagram
 
+## 1. Use Case Diagram (Mermaid Flowchart)
 
-1. Sơ đồ Use Case (Mermaid Flowchart)
-
-code mermaid
+```mermaid
 flowchart LR
-    %% Định nghĩa các Actor
-    STU(["🎓 Student\n(Sinh viên)"])
-    LEC(["👨‍🏫 Lecturer\n(Giảng viên)"])
-    ADM(["👨‍💻 Admin\n(Quản trị viên)"])
-    AI(["🤖 AI Engine\n(Hệ thống AI)"])
+    %% Define Actors
+    STU(["🎓 Student"])
+    LEC(["👨‍🏫 Lecturer"])
+    ADM(["👨‍💻 Admin"])
+    AI(["🤖 AI Engine"])
 
-    %% Nhóm chức năng của Sinh viên
-    subgraph Student_Actions ["Chức năng của Sinh viên"]
+    %% Student Actions
+    subgraph Student_Actions ["Student Actions"]
         direction TB
-        UC_TestMic([Kiểm tra Audio/Mic])
-        UC_JoinRoom([Tham gia Phòng thi Ảo])
-        UC_Answer([Trả lời Phỏng vấn bằng Giọng nói])
-        UC_ViewResult([Xem Điểm & Báo cáo Chi tiết])
+        UC_TestMic([Test Audio/Mic])
+        UC_JoinRoom([Join Virtual Exam Room])
+        UC_Answer([Answer Voice Interview])
+        UC_ViewResult([View Score & Detailed Report])
     end
 
-    %% Nhóm chức năng của Giảng viên
-    subgraph Lecturer_Actions ["Chức năng của Giảng viên (HITL)"]
+    %% Lecturer Actions
+    subgraph Lecturer_Actions ["Lecturer Actions (HITL)"]
         direction TB
-        UC_UploadDoc([Tải lên Tài liệu Môn học])
-        UC_ManageBank([Quản lý Ngân hàng Câu hỏi & Rubric])
-        UC_CreateExam([Tạo Đợt thi / Ca thi])
-        UC_ReviewExam([Thẩm định Bài thi Sinh viên])
-        UC_PublishScore([Công bố Điểm Chính thức])
+        UC_UploadDoc([Upload Course Documents])
+        UC_ManageBank([Manage Question Bank & Rubric])
+        UC_CreateExam([Create Exam Session])
+        UC_ReviewExam([Review Student Exam])
+        UC_PublishScore([Publish Final Score])
     end
 
-    %% Nhóm chức năng của Admin
-    subgraph Admin_Actions ["Chức năng của Admin"]
+    %% Admin Actions
+    subgraph Admin_Actions ["Admin Actions"]
         direction TB
-        UC_ManageUsers([Quản lý Người dùng & Môn học])
-        UC_ConfigSys([Cấu hình Hệ thống & AI Endpoints])
+        UC_ManageUsers([Manage Users & Courses])
+        UC_ConfigSys([Configure System & AI Endpoints])
     end
 
-    %% Nhóm chức năng tự động của AI
-    subgraph AI_Actions ["Tác vụ tự động của AI"]
+    %% AI Actions
+    subgraph AI_Actions ["Automated AI Actions"]
         direction TB
-        UC_GenQ([Sinh Câu hỏi tự động qua RAG])
-        UC_FollowUp([Hỏi xoáy thích ứng - Follow-up])
-        UC_Grade([Chấm điểm & Viết nhận xét ngầm])
+        UC_GenQ([Auto-generate Questions via RAG])
+        UC_FollowUp([Adaptive Follow-up Questions])
+        UC_Grade([Background AI Scoring & Feedback])
     end
 
-    %% Gắn Actor với Use Case (Sinh viên)
+    %% Attach Actors to Use Cases (Student)
     STU --> UC_TestMic
     STU --> UC_JoinRoom
     STU --> UC_Answer
     STU --> UC_ViewResult
 
-    %% Gắn Actor với Use Case (Giảng viên)
+    %% Attach Actors to Use Cases (Lecturer)
     LEC --> UC_UploadDoc
     LEC --> UC_ManageBank
     LEC --> UC_CreateExam
     LEC --> UC_ReviewExam
     LEC --> UC_PublishScore
 
-    %% Gắn Actor với Use Case (Admin)
+    %% Attach Actors to Use Cases (Admin)
     ADM --> UC_ManageUsers
     ADM --> UC_ConfigSys
 
-    %% Mối quan hệ Include / Extend (Mô phỏng)
+    %% Include / Extend Relationships (Simulation)
     UC_ManageBank -.->|<<includes>>| UC_GenQ
     UC_Answer -.->|<<includes>>| UC_FollowUp
     UC_ReviewExam -.->|<<includes>>| UC_Grade
 
-    %% Tác nhân AI thực thi ngầm
+    %% AI Background Execution
     AI --- UC_GenQ
     AI --- UC_FollowUp
     AI --- UC_Grade
@@ -74,24 +74,24 @@ flowchart LR
 
 ---
 
-## 2. Danh sách các Tác nhân (Actors)
+## 2. List of Actors
 
-1. **Sinh viên (Student)**: Thí sinh tham gia kỳ thi vấn đáp. Tương tác chính là thi qua giọng nói.
-2. **Giảng viên (Lecturer)**: Người chịu trách nhiệm về chuyên môn, quản lý đề, chấm thi và thẩm định kết quả (Human-in-the-Loop).
-3. **Quản trị viên (Admin)**: Người phụ trách hệ thống, cấu hình người dùng và kết nối API.
-4. **Hệ thống AI (AI Engine)**: Tác nhân phụ hỗ trợ tạo đề, hỏi xoáy trực tiếp và chấm điểm tự động.
+1. **Student**: The examinee participating in the viva exam. The primary interaction is voice-based examination.
+2. **Lecturer**: The person responsible for academic content, managing exams, grading, and reviewing results (Human-in-the-Loop).
+3. **Admin**: The person in charge of the system, configuring users and API connections.
+4. **AI Engine**: The automated assistant agent that supports question generation, real-time follow-up questions, and automated background grading.
 
 ---
 
-## 3. Mô tả Các Chức Năng Chính (Use Case Descriptions)
+## 3. Use Case Descriptions
 
-| Tên Use Case | Tác nhân chính | Mô tả ngắn gọn |
+| Use Case Name | Primary Actor | Brief Description |
 | :--- | :--- | :--- |
-| **Quản lý Ngân hàng Câu hỏi & Rubric** | Giảng viên | Giảng viên duyệt các câu hỏi và tiêu chí chấm điểm được tạo thủ công hoặc nhờ AI gợi ý. |
-| **Sinh Câu hỏi tự động qua RAG** | Hệ thống AI | (*Included*) AI đọc giáo trình tải lên để trích xuất và sinh câu hỏi trắc nghiệm / tự luận. |
-| **Tham gia Phòng thi Ảo** | Sinh viên | Thí sinh bắt đầu kết nối vào phòng thi để đối thoại trực tiếp với Giám khảo AI. |
-| **Trả lời Phỏng vấn bằng Giọng nói** | Sinh viên | Thí sinh dùng Micro để trả lời câu hỏi do AI phát ra. |
-| **Hỏi xoáy thích ứng (Follow-up)** | Hệ thống AI | (*Included*) Nếu thí sinh trả lời thiếu, AI tự động sinh câu hỏi phụ để làm rõ ý trong thời gian thực. |
-| **Thẩm định Bài thi Sinh viên** | Giảng viên | Sau khi ca thi kết thúc, giảng viên vào nghe lại/đọc transcript và xem điểm do AI gợi ý. |
-| **Chấm điểm & Viết nhận xét ngầm** | Hệ thống AI | (*Included*) Xử lý ngầm phía hệ thống: Đối chiếu transcript của sinh viên với Rubric để xuất điểm và lý do. |
-| **Công bố Điểm Chính thức** | Giảng viên | Quyết định cuối cùng (HITL), chốt điểm và công bố kết quả cho sinh viên xem. |
+| **Manage Question Bank & Rubric** | Lecturer | The lecturer reviews questions and grading criteria generated manually or suggested by AI. |
+| **Auto-generate Questions via RAG** | AI Engine | (*Included*) AI reads uploaded course materials to extract and generate multiple-choice / essay questions. |
+| **Join Virtual Exam Room** | Student | The examinee connects to the exam room to interact directly with the AI Examiner. |
+| **Answer Voice Interview** | Student | The examinee uses a microphone to answer questions prompted by the AI. |
+| **Adaptive Follow-up Questions** | AI Engine | (*Included*) If the examinee's answer is incomplete, the AI automatically generates follow-up questions to clarify points in real-time. |
+| **Review Student Exam** | Lecturer | After the exam session ends, the lecturer listens to/reads the transcript and reviews the score suggested by the AI. |
+| **Background AI Scoring & Feedback** | AI Engine | (*Included*) Background processing: Matches the student's transcript against the Rubric to output a score and rationale. |
+| **Publish Final Score** | Lecturer | The final decision (HITL), locking the score and publishing the results for the student to view. |
