@@ -1,0 +1,205 @@
+---
+title: AIVES - Physical ERD (SQL Server)
+---
+erDiagram
+    %% ===== RELATIONSHIPS (khoá ngoại thực tế) =====
+    users                ||--o{ lessons              : "fk_lessons_lecturer"
+    lessons              ||--o{ topics               : "fk_topics_lesson"
+    topics               ||--o{ questions            : "fk_q_topic"
+    rubrics              |o--o{ questions            : "fk_q_rubric"
+    users                ||--o{ rubrics              : "fk_rubrics_creator"
+    rubrics              ||--o{ rubric_criteria      : "fk_rc_rubric"
+    users                ||--o{ viva_exams           : "fk_exams_lecturer"
+    viva_exams           ||--o{ viva_exam_questions  : "fk_veq_exam"
+    questions            ||--o{ viva_exam_questions  : "fk_veq_question"
+    viva_exams           ||--o{ viva_attempts        : "fk_att_exam"
+    users                ||--o{ viva_attempts        : "fk_att_student"
+    viva_attempts        ||--o{ interview_exchanges  : "fk_ie_attempt"
+    viva_exam_questions  ||--o{ interview_exchanges  : "fk_ie_veq"
+    interview_exchanges  |o--o| interview_exchanges  : "fk_ie_parent"
+    viva_attempts        ||--o{ question_grades      : "fk_qg_attempt"
+    viva_exam_questions  ||--o{ question_grades      : "fk_qg_veq"
+    users                |o--o{ question_grades      : "fk_qg_lecturer"
+    question_grades      ||--o{ criteria_grades      : "fk_cg_qg"
+    rubric_criteria      ||--o{ criteria_grades      : "fk_cg_criteria"
+    question_grades      ||--o{ grade_appeals        : "fk_ga_qg"
+    users                |o--o{ grade_appeals        : "fk_ga_lecturer"
+    users                |o--o{ audit_logs           : "fk_audit_actor"
+    users                |o--o{ system_settings      : "fk_setting_user"
+
+    %% ===== BẢNG NGHIỆP VỤ =====
+    users {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(255)   email           UK
+        NVARCHAR(255)   password_hash
+        NVARCHAR(150)   full_name
+        NVARCHAR(20)    role
+        NVARCHAR(20)    student_code    UK
+        BIT             is_active
+        DATETIME        created_at
+        DATETIME        updated_at
+    }
+    lessons {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    lecturer_id     FK
+        NVARCHAR(200)   title
+        NVARCHAR(MAX)   description
+        DATETIME        created_at
+        DATETIME        updated_at
+    }
+    topics {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    lesson_id       FK
+        NVARCHAR(200)   name
+        NVARCHAR(MAX)   description
+    }
+    rubrics {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    created_by      FK
+        NVARCHAR(200)   name
+        NVARCHAR(MAX)   description
+        DECIMAL         max_score
+        DATETIME        created_at
+    }
+    rubric_criteria {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    rubric_id       FK
+        NVARCHAR(200)   name
+        NVARCHAR(MAX)   description
+        DECIMAL         weight_percent
+        INT             order_no
+    }
+    questions {
+        NVARCHAR(20)    id                  PK
+        NVARCHAR(20)    topic_id            FK
+        NVARCHAR(20)    rubric_id           FK
+        NVARCHAR(MAX)   content
+        NVARCHAR(20)    bloom_level
+        NVARCHAR(MAX)   model_answer
+        NVARCHAR(MAX)   expected_keywords
+        NVARCHAR(20)    source
+        NVARCHAR(20)    status
+        NVARCHAR(500)   question_audio_key
+        DATETIME        created_at
+        DATETIME        updated_at
+    }
+    viva_exams {
+        NVARCHAR(20)    id                          PK
+        NVARCHAR(20)    lecturer_id                 FK
+        NVARCHAR(200)   title
+        NVARCHAR(MAX)   description
+        INT             duration_minutes
+        INT             max_follow_up_per_question
+        INT             prepare_seconds
+        INT             answer_seconds
+        NVARCHAR(MAX)   domain_keywords
+        NVARCHAR(20)    status
+        DATETIME        start_at
+        DATETIME        end_at
+        DATETIME        created_at
+        DATETIME        updated_at
+    }
+    viva_exam_questions {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    viva_exam_id    FK, UK
+        NVARCHAR(20)    question_id     FK, UK
+        INT             order_no        UK
+        DECIMAL         weight
+    }
+    viva_attempts {
+        NVARCHAR(20)    id                  PK
+        NVARCHAR(20)    viva_exam_id        FK, UK
+        NVARCHAR(20)    student_id          FK, UK
+        NVARCHAR(20)    status
+        NVARCHAR(20)    result_status
+        DECIMAL         total_ai_score
+        DECIMAL         total_final_score
+        NVARCHAR(500)   full_audio_key
+        DATETIME        started_at
+        DATETIME        completed_at
+        DATETIME        published_at
+        DATETIME        created_at
+    }
+    interview_exchanges {
+        NVARCHAR(20)    id                      PK
+        NVARCHAR(20)    viva_attempt_id         FK
+        NVARCHAR(20)    viva_exam_question_id   FK
+        NVARCHAR(20)    parent_exchange_id      FK, UK
+        INT             depth
+        NVARCHAR(MAX)   question_text
+        NVARCHAR(500)   question_audio_key
+        NVARCHAR(MAX)   transcript
+        NVARCHAR(500)   answer_audio_key
+        NVARCHAR(20)    follow_up_reason
+        NVARCHAR(20)    ai_decision
+        NVARCHAR(MAX)   ai_decision_reason
+        DATETIME        answer_started_at
+        DATETIME        answer_ended_at
+        INT             latency_ms
+        DATETIME        created_at
+    }
+    question_grades {
+        NVARCHAR(20)    id                      PK
+        NVARCHAR(20)    viva_attempt_id         FK, UK
+        NVARCHAR(20)    viva_exam_question_id   FK, UK
+        DECIMAL         ai_score
+        DECIMAL         final_score
+        NVARCHAR(MAX)   ai_strengths
+        NVARCHAR(MAX)   ai_weaknesses
+        NVARCHAR(MAX)   ai_feedback
+        NVARCHAR(MAX)   lecturer_note
+        NVARCHAR(20)    status
+        NVARCHAR(20)    graded_by               FK
+        DATETIME        graded_at
+        DATETIME        created_at
+    }
+    criteria_grades {
+        NVARCHAR(20)    id                  PK
+        NVARCHAR(20)    question_grade_id   FK, UK
+        NVARCHAR(20)    rubric_criteria_id  FK, UK
+        DECIMAL         ai_score
+        DECIMAL         final_score
+        NVARCHAR(MAX)   evidence_quote
+        NVARCHAR(MAX)   rationale
+    }
+    grade_appeals {
+        NVARCHAR(20)    id                  PK
+        NVARCHAR(20)    question_grade_id   FK
+        NVARCHAR(MAX)   reason
+        NVARCHAR(20)    status
+        DECIMAL         score_before
+        DECIMAL         score_after
+        NVARCHAR(MAX)   response
+        NVARCHAR(20)    resolved_by         FK
+        DATETIME        created_at
+        DATETIME        resolved_at
+    }
+
+    %% ===== BẢNG HỆ THỐNG (không có trong Conceptual ERD) =====
+    background_jobs {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(50)    job_type
+        NVARCHAR(MAX)   payload
+        NVARCHAR(20)    status
+        INT             attempts
+        DATETIME        next_run_at
+        NVARCHAR(MAX)   last_error
+        DATETIME        created_at
+        DATETIME        updated_at
+    }
+    audit_logs {
+        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    actor_id        FK
+        NVARCHAR(100)   action
+        NVARCHAR(100)   entity_type
+        NVARCHAR(20)    entity_id
+        NVARCHAR(MAX)   old_value
+        NVARCHAR(MAX)   new_value
+        DATETIME        created_at
+    }
+    system_settings {
+        NVARCHAR(100)   setting_key     PK
+        NVARCHAR(MAX)   setting_value
+        NVARCHAR(20)    updated_by      FK
+        DATETIME        updated_at
+    }

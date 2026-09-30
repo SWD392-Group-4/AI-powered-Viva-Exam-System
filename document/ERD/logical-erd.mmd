@@ -1,0 +1,158 @@
+---
+title: AIVES - Logical ERD
+---
+erDiagram
+    %% ===== RELATIONSHIPS (theo Conceptual ERD) =====
+    LECTURER            ||--|{ LESSON              : "Manages"
+    LESSON              ||--|{ TOPIC               : "Contains"
+    TOPIC               ||--|{ QUESTION            : "Groups"
+    RUBRIC              ||--|{ QUESTION            : "Evaluates"
+    RUBRIC              ||--|{ RUBRIC_CRITERIA     : "Consists of"
+    LECTURER            ||--|{ VIVA_EXAM           : "Creates"
+    VIVA_EXAM           ||--|{ VIVA_EXAM_QUESTION  : "Includes"
+    QUESTION            ||--|{ VIVA_EXAM_QUESTION  : "Selected in"
+    VIVA_EXAM           ||--|{ VIVA_ATTEMPT        : "Taken in"
+    STUDENT             ||--|{ VIVA_ATTEMPT        : "Takes"
+    VIVA_ATTEMPT        ||--|{ INTERVIEW_EXCHANGE  : "Records"
+    VIVA_EXAM_QUESTION  ||--|{ INTERVIEW_EXCHANGE  : "Asked in"
+    INTERVIEW_EXCHANGE  |o--o| INTERVIEW_EXCHANGE  : "Follows up"
+    VIVA_ATTEMPT        ||--|{ QUESTION_GRADE      : "Receives"
+    VIVA_EXAM_QUESTION  ||--|{ QUESTION_GRADE      : "Graded for"
+    LECTURER            |o--|{ QUESTION_GRADE      : "Finalizes"
+    QUESTION_GRADE      ||--|{ CRITERIA_GRADE      : "Broken into"
+    RUBRIC_CRITERIA     ||--|{ CRITERIA_GRADE      : "Applied in"
+    QUESTION_GRADE      ||--o{ GRADE_APPEAL        : "Appealed by"
+    LECTURER            |o--|{ GRADE_APPEAL        : "Resolves"
+
+    %% ===== ENTITIES =====
+    LECTURER {
+        int      lecturer_id   PK
+        string   email         UK
+        string   password_hash
+        string   full_name
+        boolean  is_active
+    }
+    STUDENT {
+        int      student_id    PK
+        string   student_code  UK
+        string   email         UK
+        string   password_hash
+        string   full_name
+        boolean  is_active
+    }
+    LESSON {
+        int      lesson_id     PK
+        int      lecturer_id   FK
+        string   title
+        text     description
+    }
+    TOPIC {
+        int      topic_id      PK
+        int      lesson_id     FK
+        string   name
+        text     description
+    }
+    QUESTION {
+        int      question_id       PK
+        int      topic_id          FK
+        int      rubric_id         FK
+        text     content
+        enum     bloom_level       "REMEMBER, UNDERSTAND, APPLY, ANALYZE"
+        text     model_answer
+        text     expected_keywords
+        enum     source            "MANUAL, AI_GENERATED"
+        enum     status            "DRAFT, APPROVED, REJECTED, ARCHIVED"
+    }
+    RUBRIC {
+        int      rubric_id     PK
+        string   name
+        text     description
+        decimal  max_score
+    }
+    RUBRIC_CRITERIA {
+        int      criteria_id    PK
+        int      rubric_id      FK
+        string   name
+        text     description
+        decimal  weight_percent
+        int      order_no
+    }
+    VIVA_EXAM {
+        int      viva_exam_id               PK
+        int      lecturer_id                FK
+        string   title
+        text     description
+        int      duration_minutes
+        int      max_follow_up_per_question
+        int      prepare_seconds
+        int      answer_seconds
+        text     domain_keywords
+        enum     status                     "DRAFT, SCHEDULED, IN_PROGRESS, COMPLETED, ARCHIVED"
+        datetime start_at
+        datetime end_at
+    }
+    VIVA_EXAM_QUESTION {
+        int      viva_exam_question_id PK
+        int      viva_exam_id          FK
+        int      question_id           FK
+        int      order_no
+        decimal  weight
+    }
+    VIVA_ATTEMPT {
+        int      attempt_id        PK
+        int      viva_exam_id      FK
+        int      student_id        FK
+        enum     status            "NOT_STARTED, IN_PROGRESS, COMPLETED, ABANDONED"
+        enum     result_status     "NONE, GRADING, PENDING_REVIEW, GRADING_FAILED, PUBLISHED"
+        decimal  total_ai_score
+        decimal  total_final_score
+        string   full_audio_key
+        datetime started_at
+        datetime completed_at
+        datetime published_at
+    }
+    INTERVIEW_EXCHANGE {
+        int      exchange_id           PK
+        int      attempt_id            FK
+        int      viva_exam_question_id FK
+        int      parent_exchange_id    FK "NULL = câu gốc"
+        int      depth
+        text     question_text
+        text     transcript
+        enum     follow_up_reason      "INCOMPLETE, AMBIGUOUS, CONTRADICTORY"
+        enum     ai_decision           "FOLLOW_UP, NEXT, SKIPPED"
+        int      latency_ms
+    }
+    QUESTION_GRADE {
+        int      question_grade_id     PK
+        int      attempt_id            FK
+        int      viva_exam_question_id FK
+        int      graded_by             FK "Lecturer, NULL khi chưa chốt"
+        decimal  ai_score
+        decimal  final_score
+        text     ai_feedback
+        text     lecturer_note
+        enum     status                "AI_DRAFT, APPROVED, FAILED"
+        datetime graded_at
+    }
+    CRITERIA_GRADE {
+        int      criteria_grade_id PK
+        int      question_grade_id FK
+        int      criteria_id       FK
+        decimal  ai_score
+        decimal  final_score
+        text     evidence_quote
+        text     rationale
+    }
+    GRADE_APPEAL {
+        int      appeal_id         PK
+        int      question_grade_id FK
+        int      resolved_by       FK "Lecturer, NULL khi PENDING"
+        text     reason
+        enum     status            "PENDING, ACCEPTED, REJECTED"
+        decimal  score_before
+        decimal  score_after
+        text     response
+        datetime created_at
+        datetime resolved_at
+    }

@@ -1,0 +1,31 @@
+---
+title: AIVES - Conceptual ERD
+---
+erDiagram
+    %% ===== CONTENT: bài học, câu hỏi, rubric =====
+    LECTURER            ||--|{ LESSON              : "Manages"
+    LESSON              ||--|{ TOPIC               : "Contains"
+    TOPIC               ||--|{ QUESTION            : "Groups"
+    RUBRIC              ||--|{ QUESTION            : "Evaluates"
+    RUBRIC              ||--|{ RUBRIC_CRITERIA     : "Consists of"
+
+    %% ===== EXAM: đề thi & lượt thi =====
+    LECTURER            ||--|{ VIVA_EXAM           : "Creates"
+    VIVA_EXAM           ||--|{ VIVA_EXAM_QUESTION  : "Includes"
+    QUESTION            ||--|{ VIVA_EXAM_QUESTION  : "Selected in"
+    VIVA_EXAM           ||--|{ VIVA_ATTEMPT        : "Taken in"
+    STUDENT             ||--|{ VIVA_ATTEMPT        : "Takes"
+
+    %% ===== VIVA ROOM: hỏi - đáp =====
+    VIVA_ATTEMPT        ||--|{ INTERVIEW_EXCHANGE  : "Records"
+    VIVA_EXAM_QUESTION  ||--|{ INTERVIEW_EXCHANGE  : "Asked in"
+    INTERVIEW_EXCHANGE  |o--o| INTERVIEW_EXCHANGE  : "Follows up"
+
+    %% ===== GRADING: chấm điểm, HITL, phúc khảo =====
+    VIVA_ATTEMPT        ||--|{ QUESTION_GRADE      : "Receives"
+    VIVA_EXAM_QUESTION  ||--|{ QUESTION_GRADE      : "Graded for"
+    LECTURER            |o--|{ QUESTION_GRADE      : "Finalizes"
+    QUESTION_GRADE      ||--|{ CRITERIA_GRADE      : "Broken into"
+    RUBRIC_CRITERIA     ||--|{ CRITERIA_GRADE      : "Applied in"
+    QUESTION_GRADE      ||--o{ GRADE_APPEAL        : "Appealed by"
+    LECTURER            |o--|{ GRADE_APPEAL        : "Resolves"

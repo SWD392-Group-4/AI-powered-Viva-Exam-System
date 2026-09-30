@@ -1,7 +1,7 @@
 # Workflows Identification & Specification: AIVES
 
 > **Tài liệu**: Xác định và đặc tả 3 quy trình công việc cốt lõi (Identify 3 Core Workflows) cho Hệ thống Thi Vấn Đáp Thông Minh Ứng Dụng AI (AIVES).  
-> **Căn cứ**: Dựa trên [00-overview](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/00-overview/README.md), [01-business-rule](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/01-business-rule/README.md), và [02-architecture-design.md](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/02-architecture-design.md).
+> **Căn cứ**: Dựa trên [00-overview](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/00-overview/README.md), [01-business-rule](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/01-business-rule/README.md), và [02-architecture-design](02-architecture-design/README.md).
 
 ---
 
