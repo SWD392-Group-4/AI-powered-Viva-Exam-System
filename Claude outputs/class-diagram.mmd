@@ -1,0 +1,273 @@
+---
+title: AIVES - Class Diagram (Domain Model)
+---
+classDiagram
+    direction TB
+
+    %% ================= USERS =================
+    class User {
+        <<abstract>>
+        -String id
+        -String email
+        -String passwordHash
+        -String fullName
+        -Role role
+        -boolean isActive
+        -LocalDateTime createdAt
+        +login(email, password) String
+        +changePassword(oldPwd, newPwd) void
+    }
+    class Admin {
+        +manageUser(User user) void
+        +updateSetting(key, value) void
+    }
+    class Lecturer {
+        +createLesson(title, description) Lesson
+        +createVivaExam(title, config) VivaExam
+        +finalizeGrade(QuestionGrade grade, finalScore, note) void
+        +publishResult(VivaAttempt attempt) void
+        +resolveAppeal(GradeAppeal appeal, accepted, response) void
+    }
+    class Student {
+        -String studentCode
+        +startAttempt(VivaAttempt attempt) void
+        +submitAnswer(InterviewExchange exchange, audio) void
+        +viewResult(VivaAttempt attempt) VivaAttempt
+        +submitAppeal(QuestionGrade grade, reason) GradeAppeal
+    }
+
+    %% ================= CONTENT =================
+    class Lesson {
+        -String id
+        -String title
+        -String description
+        -LocalDateTime createdAt
+        +addTopic(name, description) Topic
+    }
+    class Topic {
+        -String id
+        -String name
+        -String description
+        +addQuestion(Question question) void
+    }
+    class Question {
+        -String id
+        -String content
+        -BloomLevel bloomLevel
+        -String modelAnswer
+        -List~String~ expectedKeywords
+        -QuestionSource source
+        -QuestionStatus status
+        -String questionAudioKey
+        +assignRubric(Rubric rubric) void
+        +approve() void
+        +reject() void
+        +archive() void
+    }
+    class Rubric {
+        -String id
+        -String name
+        -String description
+        -BigDecimal maxScore
+        +addCriteria(RubricCriteria criteria) void
+        +isComplete() boolean
+    }
+    class RubricCriteria {
+        -String id
+        -String name
+        -String description
+        -BigDecimal weightPercent
+        -int orderNo
+    }
+
+    %% ================= EXAM =================
+    class VivaExam {
+        -String id
+        -String title
+        -String description
+        -int durationMinutes
+        -int maxFollowUpPerQuestion
+        -int prepareSeconds
+        -int answerSeconds
+        -List~String~ domainKeywords
+        -ExamStatus status
+        -LocalDateTime startAt
+        -LocalDateTime endAt
+        +addQuestion(Question question, orderNo, weight) VivaExamQuestion
+        +assignStudent(Student student) VivaAttempt
+        +schedule(startAt, endAt) void
+    }
+    class VivaExamQuestion {
+        -String id
+        -int orderNo
+        -BigDecimal weight
+    }
+    class VivaAttempt {
+        -String id
+        -AttemptStatus status
+        -ResultStatus resultStatus
+        -BigDecimal totalAiScore
+        -BigDecimal totalFinalScore
+        -String fullAudioKey
+        -LocalDateTime startedAt
+        -LocalDateTime completedAt
+        -LocalDateTime publishedAt
+        +start() void
+        +complete() void
+        +calculateTotalScore() BigDecimal
+        +publish() void
+    }
+    class InterviewExchange {
+        -String id
+        -int depth
+        -String questionText
+        -String questionAudioKey
+        -String transcript
+        -String answerAudioKey
+        -FollowUpReason followUpReason
+        -AiDecision aiDecision
+        -String aiDecisionReason
+        -LocalDateTime answerStartedAt
+        -LocalDateTime answerEndedAt
+        -int latencyMs
+        +isFollowUp() boolean
+        +createFollowUp(questionText, reason) InterviewExchange
+    }
+
+    %% ================= GRADING =================
+    class QuestionGrade {
+        -String id
+        -BigDecimal aiScore
+        -BigDecimal finalScore
+        -String aiStrengths
+        -String aiWeaknesses
+        -String aiFeedback
+        -String lecturerNote
+        -GradeStatus status
+        -LocalDateTime gradedAt
+        +approve(Lecturer lecturer) void
+        +override(Lecturer lecturer, finalScore, note) void
+        +needsNote(finalScore) boolean
+    }
+    class CriteriaGrade {
+        -String id
+        -BigDecimal aiScore
+        -BigDecimal finalScore
+        -String evidenceQuote
+        -String rationale
+    }
+    class GradeAppeal {
+        -String id
+        -String reason
+        -AppealStatus status
+        -BigDecimal scoreBefore
+        -BigDecimal scoreAfter
+        -String response
+        -LocalDateTime createdAt
+        -LocalDateTime resolvedAt
+        +accept(Lecturer lecturer, newScore, response) void
+        +reject(Lecturer lecturer, response) void
+    }
+
+    %% ================= ENUMS =================
+    class Role {
+        <<enumeration>>
+        ADMIN
+        LECTURER
+        STUDENT
+    }
+    class BloomLevel {
+        <<enumeration>>
+        REMEMBER
+        UNDERSTAND
+        APPLY
+        ANALYZE
+    }
+    class QuestionSource {
+        <<enumeration>>
+        MANUAL
+        AI_GENERATED
+    }
+    class QuestionStatus {
+        <<enumeration>>
+        DRAFT
+        APPROVED
+        REJECTED
+        ARCHIVED
+    }
+    class ExamStatus {
+        <<enumeration>>
+        DRAFT
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+        ARCHIVED
+    }
+    class AttemptStatus {
+        <<enumeration>>
+        NOT_STARTED
+        IN_PROGRESS
+        COMPLETED
+        ABANDONED
+    }
+    class ResultStatus {
+        <<enumeration>>
+        NONE
+        GRADING
+        PENDING_REVIEW
+        GRADING_FAILED
+        PUBLISHED
+    }
+    class FollowUpReason {
+        <<enumeration>>
+        INCOMPLETE
+        AMBIGUOUS
+        CONTRADICTORY
+    }
+    class AiDecision {
+        <<enumeration>>
+        FOLLOW_UP
+        NEXT
+        SKIPPED
+    }
+    class GradeStatus {
+        <<enumeration>>
+        AI_DRAFT
+        APPROVED
+        FAILED
+    }
+    class AppealStatus {
+        <<enumeration>>
+        PENDING
+        ACCEPTED
+        REJECTED
+    }
+
+    %% ================= RELATIONSHIPS =================
+    User <|-- Admin
+    User <|-- Lecturer
+    User <|-- Student
+
+    Lecturer "1" --> "1..*" Lesson : manages
+    Lesson "1" *-- "1..*" Topic : contains
+    Topic "1" *-- "1..*" Question : groups
+    Question "1..*" --> "1" Rubric : evaluated by
+    Rubric "1" *-- "1..*" RubricCriteria : consists of
+
+    Lecturer "1" --> "1..*" VivaExam : creates
+    VivaExam "1" *-- "1..*" VivaExamQuestion : includes
+    VivaExamQuestion "1..*" --> "1" Question : selects
+    VivaExam "1" o-- "1..*" VivaAttempt : taken in
+    Student "1" --> "1..*" VivaAttempt : takes
+
+    VivaAttempt "1" *-- "1..*" InterviewExchange : records
+    InterviewExchange "1..*" --> "1" VivaExamQuestion : asked in
+    InterviewExchange "0..1" --> "0..1" InterviewExchange : follows up
+
+    VivaAttempt "1" *-- "1..*" QuestionGrade : receives
+    QuestionGrade "1..*" --> "1" VivaExamQuestion : graded for
+    QuestionGrade "1..*" --> "0..1" Lecturer : finalized by
+    QuestionGrade "1" *-- "1..*" CriteriaGrade : broken into
+    CriteriaGrade "1..*" --> "1" RubricCriteria : applies
+    QuestionGrade "1" o-- "0..*" GradeAppeal : appealed by
+    GradeAppeal "1..*" --> "0..1" Lecturer : resolved by
