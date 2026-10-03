@@ -38,7 +38,6 @@
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `student_id` | PK | int | Mã định danh sinh viên trong hệ thống |
-| `student_code` | UK | string | Mã số sinh viên (MSSV) |
 | `email` | UK | string | Email đăng nhập |
 | `password_hash` | | string | Mật khẩu đã băm |
 | `full_name` | | string | Họ tên |
@@ -100,25 +99,28 @@
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `viva_exam_id` | PK | int | Mã đề thi |
+| `viva_exam_id` | PK | string | Mã phiên thi, cũng là mã vào thi sinh viên nhập (`AIVES_EXAM_yyyy_xxxxxx`) |
 | `lecturer_id` | FK → `LECTURER` | int | Giảng viên tạo đề (**Creates**) |
 | `title` | | string | Tên đề thi |
 | `description` | | text | Mô tả |
-| `duration_minutes` | | int | Thời lượng bài thi (phút) |
+| `passcode` | | string | Mã truy cập 6 chữ số, sinh viên nhập cùng mã phiên để vào thi |
+| `duration_minutes` | | int | Thời lượng bài thi (phút), đếm ngược từ lúc sinh viên vào |
 | `max_follow_up_per_question` | | int | Số câu hỏi xoáy tối đa mỗi câu (`BR-VIVA-001`) |
 | `prepare_seconds` | | int | Thời gian suy nghĩ mỗi câu |
 | `answer_seconds` | | int | Thời gian trả lời mỗi câu |
 | `domain_keywords` | | text | Thuật ngữ chuyên ngành gửi cho STT (`BR-VIVA-004`) |
-| `status` | | enum | `DRAFT`, `SCHEDULED`, `IN_PROGRESS`, `COMPLETED`, `ARCHIVED` |
-| `start_at` | | datetime | Thời điểm mở đề |
-| `end_at` | | datetime | Thời điểm đóng đề |
+| `start_at` | | datetime | Thời điểm mở phiên |
+| `end_at` | | datetime | Thời điểm đóng phiên |
+| `cancelled_at` | | datetime | Thời điểm huỷ phiên (trống nếu không huỷ) |
+
+Trạng thái phiên (`UPCOMING`, `ONGOING`, `ENDED`, `CANCELLED`) không lưu thành thuộc tính mà tính từ `start_at`, `end_at`, `cancelled_at`.
 
 ### 3.9. `VIVA_EXAM_QUESTION`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `viva_exam_question_id` | PK | int | Mã câu hỏi trong đề |
-| `viva_exam_id` | FK → `VIVA_EXAM` | int | Đề thi (**Includes**) |
+| `viva_exam_id` | FK → `VIVA_EXAM` | string | Đề thi (**Includes**) |
 | `question_id` | FK → `QUESTION` | int | Câu hỏi gốc (**Selected in**) |
 | `order_no` | | int | Thứ tự câu trong đề |
 | `weight` | | decimal | Trọng số khi tính tổng điểm (`BR-GRADE-003`) |
@@ -128,14 +130,15 @@
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `attempt_id` | PK | int | Mã lượt thi |
-| `viva_exam_id` | FK → `VIVA_EXAM` | int | Đề thi (**Taken in**) |
+| `viva_exam_id` | FK → `VIVA_EXAM` | string | Phiên thi (**Taken in**) |
 | `student_id` | FK → `STUDENT` | int | Sinh viên (**Takes**) |
-| `status` | | enum | `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`, `ABANDONED` |
+| `status` | | enum | `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`, `ABANDONED`. Sinh viên tự vào phiên bằng mã nên lượt thi được tạo thẳng ở `IN_PROGRESS` |
 | `result_status` | | enum | `NONE`, `GRADING`, `PENDING_REVIEW`, `GRADING_FAILED`, `PUBLISHED` |
 | `total_ai_score` | | decimal | Tổng điểm AI đề xuất |
 | `total_final_score` | | decimal | Tổng điểm chính thức sau khi giảng viên chốt |
 | `full_audio_key` | | string | Đường dẫn file ghi âm toàn bài |
-| `started_at` | | datetime | Bắt đầu thi |
+| `started_at` | | datetime | Bắt đầu thi (lúc sinh viên vào phiên) |
+| `deadline_at` | | datetime | Hạn làm bài = bắt đầu + thời lượng, nhưng không vượt quá giờ đóng phiên |
 | `completed_at` | | datetime | Kết thúc thi |
 | `published_at` | | datetime | Thời điểm công bố điểm |
 

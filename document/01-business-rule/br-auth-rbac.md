@@ -18,10 +18,16 @@
 
 ### BR-AUTH-002: Candidate Viva Access Scope
 - **Context**: Thí sinh tham gia lượt phỏng vấn viva.
-- **Rule**: `STUDENT` chỉ được phép truy cập và bắt đầu lượt vấn đáp (`VivaAttempt`) khi:
-  1. Tài khoản thí sinh có tên trong danh sách được chỉ định của kỳ thi tương ứng (`EXAM_CANDIDATE`).
-  2. Lượt vấn đáp chưa ở trạng thái hoàn thành (`COMPLETED`).
-- **Enforcement**: Từ chối truy cập với mã `403 Forbidden` nếu không đúng quyền.
+- **Rule**: `STUDENT` chỉ được vào một phiên thi và bắt đầu lượt vấn đáp (`VivaAttempt`) khi:
+  1. Nhập đúng **mã phiên** (`AIVES_EXAM_yyyy_xxxxxx`) và **mã truy cập** 6 chữ số do người tạo phiên cung cấp. Không còn danh sách thí sinh được chỉ định trước.
+  2. Phiên đang mở (đã tới giờ mở, chưa tới giờ đóng) và chưa bị huỷ.
+  3. Mỗi sinh viên chỉ có 1 lượt vấn đáp trong 1 phiên; vào lại thì tiếp tục lượt cũ, đồng hồ không chạy lại.
+  4. Lượt vấn đáp chưa kết thúc: sinh viên chưa bấm kết thúc bài thi và chưa hết thời gian làm bài.
+- **Enforcement**:
+  - Sai mã phiên hoặc sai mã truy cập trả cùng một thông báo, để không dò được mã phiên nào có thật.
+  - Nhập sai 5 lần trong 10 phút thì tài khoản sinh viên bị khoá chức năng vào thi cho đến khi lần sai cũ nhất hết hạn (`429 Too Many Requests`).
+  - Phiên chưa mở, đã đóng, đã huỷ hoặc lượt thi đã kết thúc: từ chối với `409 Conflict`.
+  - Sinh viên chỉ xem được lượt thi của chính mình; lượt thi của người khác trả `404 Not Found`.
 
 ### BR-AUTH-003: Single Active Viva Connection per Student
 - **Context**: Tránh gian lận mở nhiều tab hoặc thiết bị cùng lúc.

@@ -37,7 +37,7 @@ Các thực thể ngoài khớp với actor trong use case diagram (Lecturer, St
 | L2 | Lecturer → AIVES | Course materials | Upload course materials |
 | L3 | Lecturer → AIVES | Rubric & criteria | Assign rubric |
 | L4 | Lecturer → AIVES | Question edits & approval | Review & edit questions, Approve question bank |
-| L5 | Lecturer → AIVES | Viva exam setup & student list | Tạo đề thi, gán sinh viên |
+| L5 | Lecturer → AIVES | Viva exam setup | Tạo phiên thi; nhận mã phiên + mã truy cập để gửi cho sinh viên (không còn gán danh sách sinh viên; trên hình vẫn ghi "student list") |
 | L6 | Lecturer → AIVES | Publish decision | Confirm & publish final score |
 | L7 | Lecturer → AIVES | Adjusted score + reason | Adjust score with reason (`BR-GRADE-002`) |
 | L8 | Lecturer → AIVES | Appeal resolution | View appeal |
@@ -54,7 +54,7 @@ Các thực thể ngoài khớp với actor trong use case diagram (Lecturer, St
 | # | Chiều | Luồng dữ liệu | Use case liên quan |
 | :---: | :--- | :--- | :--- |
 | S1 | Student → AIVES | Login credentials | Log in / Log out |
-| S2 | Student → AIVES | Start exam request | Take viva exam |
+| S2 | Student → AIVES | Start exam request (mã phiên + mã truy cập) | Take viva exam |
 | S3 | Student → AIVES | Voice answers (audio) | Answer by voice, Answer follow-up question |
 | S4 | Student → AIVES | Appeal request | Appeal |
 | S5 | AIVES → Student | Login result | Log in / Log out |

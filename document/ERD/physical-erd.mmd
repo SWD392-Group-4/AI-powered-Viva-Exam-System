@@ -29,18 +29,17 @@ erDiagram
 
     %% ===== BẢNG NGHIỆP VỤ =====
     users {
-        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    users_id    PK
         NVARCHAR(255)   email           UK
         NVARCHAR(255)   password_hash
         NVARCHAR(150)   full_name
         NVARCHAR(20)    role
-        NVARCHAR(20)    student_code    UK
         BIT             is_active
         DATETIME        created_at
         DATETIME        updated_at
     }
     lessons {
-        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    lessons_id    PK
         NVARCHAR(20)    lecturer_id     FK
         NVARCHAR(200)   title
         NVARCHAR(MAX)   description
@@ -48,13 +47,13 @@ erDiagram
         DATETIME        updated_at
     }
     topics {
-        NVARCHAR(20)    id              PK
-        NVARCHAR(20)    lesson_id       FK
+        NVARCHAR(20)    topics_id    PK
+        NVARCHAR(20)    lessons_id       FK
         NVARCHAR(200)   name
         NVARCHAR(MAX)   description
     }
     rubrics {
-        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    rubrics_id    PK
         NVARCHAR(20)    created_by      FK
         NVARCHAR(200)   name
         NVARCHAR(MAX)   description
@@ -62,17 +61,17 @@ erDiagram
         DATETIME        created_at
     }
     rubric_criteria {
-        NVARCHAR(20)    id              PK
-        NVARCHAR(20)    rubric_id       FK
+        NVARCHAR(20)    rubric_criteria_id    PK
+        NVARCHAR(20)    rubrics_id       FK
         NVARCHAR(200)   name
         NVARCHAR(MAX)   description
         DECIMAL         weight_percent
         INT             order_no
     }
     questions {
-        NVARCHAR(20)    id                  PK
-        NVARCHAR(20)    topic_id            FK
-        NVARCHAR(20)    rubric_id           FK
+        NVARCHAR(20)    questions_id    PK
+        NVARCHAR(20)    topics_id            FK
+        NVARCHAR(20)    rubrics_id           FK
         NVARCHAR(MAX)   content
         NVARCHAR(20)    bloom_level
         NVARCHAR(MAX)   model_answer
@@ -84,31 +83,32 @@ erDiagram
         DATETIME        updated_at
     }
     viva_exams {
-        NVARCHAR(20)    id                          PK
+        NVARCHAR(30)    viva_exams_id    PK
         NVARCHAR(20)    lecturer_id                 FK
         NVARCHAR(200)   title
         NVARCHAR(MAX)   description
+        NVARCHAR(6)     passcode
         INT             duration_minutes
         INT             max_follow_up_per_question
         INT             prepare_seconds
         INT             answer_seconds
         NVARCHAR(MAX)   domain_keywords
-        NVARCHAR(20)    status
         DATETIME        start_at
         DATETIME        end_at
+        DATETIME        cancelled_at
         DATETIME        created_at
         DATETIME        updated_at
     }
     viva_exam_questions {
-        NVARCHAR(20)    id              PK
-        NVARCHAR(20)    viva_exam_id    FK, UK
-        NVARCHAR(20)    question_id     FK, UK
+        NVARCHAR(20)    viva_exam_questions_id    PK
+        NVARCHAR(30)    viva_exams_id    FK, UK
+        NVARCHAR(20)    questions_id     FK, UK
         INT             order_no        UK
         DECIMAL         weight
     }
     viva_attempts {
-        NVARCHAR(20)    id                  PK
-        NVARCHAR(20)    viva_exam_id        FK, UK
+        NVARCHAR(20)    viva_attempts_id    PK
+        NVARCHAR(30)    viva_exams_id        FK, UK
         NVARCHAR(20)    student_id          FK, UK
         NVARCHAR(20)    status
         NVARCHAR(20)    result_status
@@ -116,14 +116,16 @@ erDiagram
         DECIMAL         total_final_score
         NVARCHAR(500)   full_audio_key
         DATETIME        started_at
+        DATETIME        deadline_at
         DATETIME        completed_at
         DATETIME        published_at
         DATETIME        created_at
+        DATETIME        updated_at
     }
     interview_exchanges {
-        NVARCHAR(20)    id                      PK
-        NVARCHAR(20)    viva_attempt_id         FK
-        NVARCHAR(20)    viva_exam_question_id   FK
+        NVARCHAR(20)    interview_exchanges_id    PK
+        NVARCHAR(20)    viva_attempts_id         FK
+        NVARCHAR(20)    viva_exam_questions_id   FK
         NVARCHAR(20)    parent_exchange_id      FK, UK
         INT             depth
         NVARCHAR(MAX)   question_text
@@ -139,9 +141,9 @@ erDiagram
         DATETIME        created_at
     }
     question_grades {
-        NVARCHAR(20)    id                      PK
-        NVARCHAR(20)    viva_attempt_id         FK, UK
-        NVARCHAR(20)    viva_exam_question_id   FK, UK
+        NVARCHAR(20)    question_grades_id    PK
+        NVARCHAR(20)    viva_attempts_id         FK, UK
+        NVARCHAR(20)    viva_exam_questions_id   FK, UK
         DECIMAL         ai_score
         DECIMAL         final_score
         NVARCHAR(MAX)   ai_strengths
@@ -154,8 +156,8 @@ erDiagram
         DATETIME        created_at
     }
     criteria_grades {
-        NVARCHAR(20)    id                  PK
-        NVARCHAR(20)    question_grade_id   FK, UK
+        NVARCHAR(20)    criteria_grades_id    PK
+        NVARCHAR(20)    question_grades_id   FK, UK
         NVARCHAR(20)    rubric_criteria_id  FK, UK
         DECIMAL         ai_score
         DECIMAL         final_score
@@ -163,8 +165,8 @@ erDiagram
         NVARCHAR(MAX)   rationale
     }
     grade_appeals {
-        NVARCHAR(20)    id                  PK
-        NVARCHAR(20)    question_grade_id   FK
+        NVARCHAR(20)    grade_appeals_id    PK
+        NVARCHAR(20)    question_grades_id   FK
         NVARCHAR(MAX)   reason
         NVARCHAR(20)    status
         DECIMAL         score_before
@@ -177,7 +179,7 @@ erDiagram
 
     %% ===== BẢNG HỆ THỐNG (không có trong Conceptual ERD) =====
     background_jobs {
-        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    background_jobs_id    PK
         NVARCHAR(50)    job_type
         NVARCHAR(MAX)   payload
         NVARCHAR(20)    status
@@ -188,7 +190,7 @@ erDiagram
         DATETIME        updated_at
     }
     audit_logs {
-        NVARCHAR(20)    id              PK
+        NVARCHAR(20)    audit_logs_id    PK
         NVARCHAR(20)    actor_id        FK
         NVARCHAR(100)   action
         NVARCHAR(100)   entity_type

@@ -34,7 +34,6 @@ erDiagram
     }
     STUDENT {
         int      student_id    PK
-        string   student_code  UK
         string   email         UK
         string   password_hash
         string   full_name
@@ -78,29 +77,30 @@ erDiagram
         int      order_no
     }
     VIVA_EXAM {
-        int      viva_exam_id               PK
+        string   viva_exam_id               PK
         int      lecturer_id                FK
         string   title
         text     description
+        string   passcode
         int      duration_minutes
         int      max_follow_up_per_question
         int      prepare_seconds
         int      answer_seconds
         text     domain_keywords
-        enum     status                     "DRAFT, SCHEDULED, IN_PROGRESS, COMPLETED, ARCHIVED"
         datetime start_at
         datetime end_at
+        datetime cancelled_at
     }
     VIVA_EXAM_QUESTION {
         int      viva_exam_question_id PK
-        int      viva_exam_id          FK
+        string   viva_exam_id          FK
         int      question_id           FK
         int      order_no
         decimal  weight
     }
     VIVA_ATTEMPT {
         int      attempt_id        PK
-        int      viva_exam_id      FK
+        string   viva_exam_id      FK
         int      student_id        FK
         enum     status            "NOT_STARTED, IN_PROGRESS, COMPLETED, ABANDONED"
         enum     result_status     "NONE, GRADING, PENDING_REVIEW, GRADING_FAILED, PUBLISHED"
@@ -108,6 +108,7 @@ erDiagram
         decimal  total_final_score
         string   full_audio_key
         datetime started_at
+        datetime deadline_at
         datetime completed_at
         datetime published_at
     }

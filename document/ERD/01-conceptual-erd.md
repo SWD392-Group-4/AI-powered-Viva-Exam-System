@@ -64,7 +64,7 @@ Các thực thể được chia theo 4 nhóm nghiệp vụ, tương ứng 4 modu
 | 6 | `LECTURER` **Creates** `VIVA_EXAM` | `\|\|--\|{` | Mỗi đề thi do đúng 1 giảng viên tạo. |
 | 7 | `VIVA_EXAM` **Includes** `VIVA_EXAM_QUESTION` | `\|\|--\|{` | Đề thi gồm 1..n câu hỏi. |
 | 8 | `QUESTION` **Selected in** `VIVA_EXAM_QUESTION` | `\|\|--\|{` | Một câu hỏi có thể được chọn vào nhiều đề thi. |
-| 9 | `VIVA_EXAM` **Taken in** `VIVA_ATTEMPT` | `\|\|--\|{` | Đề thi có nhiều lượt thi (mỗi sinh viên được gán 1 lượt). |
+| 9 | `VIVA_EXAM` **Taken in** `VIVA_ATTEMPT` | `\|\|--\|{` | Đề thi (phiên thi) có nhiều lượt thi; mỗi sinh viên vào phiên có đúng 1 lượt. |
 | 10 | `STUDENT` **Takes** `VIVA_ATTEMPT` | `\|\|--\|{` | Mỗi lượt thi thuộc đúng 1 sinh viên (`BR-AUTH-002`). |
 | 11 | `VIVA_ATTEMPT` **Records** `INTERVIEW_EXCHANGE` | `\|\|--\|{` | Lượt thi ghi lại toàn bộ các lượt hỏi - đáp. |
 | 12 | `VIVA_EXAM_QUESTION` **Asked in** `INTERVIEW_EXCHANGE` | `\|\|--\|{` | Mỗi lượt hỏi - đáp thuộc về 1 câu hỏi của đề (câu gốc hoặc câu xoáy). |
@@ -82,7 +82,7 @@ Các thực thể được chia theo 4 nhóm nghiệp vụ, tương ứng 4 modu
 ## 4. Luồng dữ liệu đọc theo sơ đồ
 
 1. **Chuẩn bị nội dung**: `LECTURER` → `LESSON` → `TOPIC` → `QUESTION` (gắn `RUBRIC` gồm các `RUBRIC_CRITERIA`).
-2. **Tạo đề & gán sinh viên**: `LECTURER` tạo `VIVA_EXAM`, chọn câu hỏi thành `VIVA_EXAM_QUESTION`, gán sinh viên → mỗi `STUDENT` có 1 `VIVA_ATTEMPT`.
+2. **Tạo phiên thi & sinh viên vào thi**: `LECTURER` tạo `VIVA_EXAM`, chọn câu hỏi thành `VIVA_EXAM_QUESTION`, nhận mã phiên + mã truy cập và gửi cho sinh viên. `STUDENT` nhập 2 mã này để vào phiên → mỗi `STUDENT` có 1 `VIVA_ATTEMPT` trong phiên đó.
 3. **Thi vấn đáp**: mỗi câu trong đề sinh ra các `INTERVIEW_EXCHANGE`; câu xoáy nối với lượt trước qua quan hệ **Follows up**.
 4. **Chấm điểm**: AI tạo `QUESTION_GRADE` + các `CRITERIA_GRADE`; `LECTURER` chốt điểm (**Finalizes**).
 5. **Phúc khảo**: `STUDENT` gửi `GRADE_APPEAL` cho điểm câu hỏi; `LECTURER` xử lý (**Resolves**).

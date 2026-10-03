@@ -24,6 +24,7 @@
 | :--- | :--- | :--- | :--- |
 | Nội dung | Thực thể + quan hệ + bản số | Thêm thuộc tính, PK, FK, UK | Thêm kiểu dữ liệu SQL Server, bảng hệ thống |
 | Tên gọi | Thực thể nghiệp vụ: `VIVA_ATTEMPT` | Giữ tên thực thể | Tên bảng: `viva_attempts` (snake_case, số nhiều) |
+| Tên khoá | Không có | PK `<thực thể>_id` (`viva_exam_id`) | PK `<tên bảng>_id` (`viva_exams_id`); FK mang đúng tên PK nó trỏ tới, trừ FK theo vai trò (`lecturer_id`, `student_id`...) |
 | LECTURER / STUDENT | 2 thực thể | 2 thực thể | Gộp vào bảng `users`, phân biệt bằng cột `role` |
 | Kiểu dữ liệu | Không có | Không ghi (hoặc kiểu chung trong file `.mmd`) | `NVARCHAR(n)`, `INT`, `DECIMAL`, `DATETIME`, `BIT` |
 | Phụ thuộc DBMS | Không | Không | Có (SQL Server) |
@@ -36,13 +37,13 @@
 | Conceptual / Logical | Physical (bảng) | Module BE | Ghi chú |
 | :--- | :--- | :--- | :--- |
 | `LECTURER` | `users` (`role = LECTURER`) | auth | Gộp bảng |
-| `STUDENT` | `users` (`role = STUDENT`) | auth | Gộp bảng, có thêm `student_code` |
+| `STUDENT` | `users` (`role = STUDENT`) | auth | Gộp bảng; không có mã số sinh viên riêng, dùng `users_id` dạng `STxxxxxx` |
 | `LESSON` | `lessons` | content | |
 | `TOPIC` | `topics` | content | |
 | `QUESTION` | `questions` | content | |
 | `RUBRIC` | `rubrics` | content | |
 | `RUBRIC_CRITERIA` | `rubric_criteria` | content | |
-| `VIVA_EXAM` | `viva_exams` | exam | |
+| `VIVA_EXAM` | `viva_exams` | exam | Khoá chính `viva_exams_id` cũng là mã vào thi |
 | `VIVA_EXAM_QUESTION` | `viva_exam_questions` | exam | Bảng trung gian QUESTION - VIVA_EXAM |
 | `VIVA_ATTEMPT` | `viva_attempts` | exam / vivaroom | |
 | `INTERVIEW_EXCHANGE` | `interview_exchanges` | vivaroom | Tự tham chiếu (hỏi xoáy) |

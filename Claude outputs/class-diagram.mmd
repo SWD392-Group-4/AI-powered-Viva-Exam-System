@@ -29,7 +29,6 @@ classDiagram
         +resolveAppeal(GradeAppeal appeal, accepted, response) void
     }
     class Student {
-        -String studentCode
         +startAttempt(VivaAttempt attempt) void
         +submitAnswer(InterviewExchange exchange, audio) void
         +viewResult(VivaAttempt attempt) VivaAttempt
@@ -85,17 +84,20 @@ classDiagram
         -String id
         -String title
         -String description
+        -String passcode
         -int durationMinutes
         -int maxFollowUpPerQuestion
         -int prepareSeconds
         -int answerSeconds
         -List~String~ domainKeywords
-        -ExamStatus status
         -LocalDateTime startAt
         -LocalDateTime endAt
+        -LocalDateTime cancelledAt
         +addQuestion(Question question, orderNo, weight) VivaExamQuestion
-        +assignStudent(Student student) VivaAttempt
-        +schedule(startAt, endAt) void
+        +getStatus(now) ExamStatus
+        +join(Student student, passcode) VivaAttempt
+        +regeneratePasscode() String
+        +cancel() void
     }
     class VivaExamQuestion {
         -String id
@@ -110,10 +112,11 @@ classDiagram
         -BigDecimal totalFinalScore
         -String fullAudioKey
         -LocalDateTime startedAt
+        -LocalDateTime deadlineAt
         -LocalDateTime completedAt
         -LocalDateTime publishedAt
-        +start() void
-        +complete() void
+        +finish() void
+        +getRemainingSeconds(now) long
         +calculateTotalScore() BigDecimal
         +publish() void
     }
@@ -197,11 +200,10 @@ classDiagram
     }
     class ExamStatus {
         <<enumeration>>
-        DRAFT
-        SCHEDULED
-        IN_PROGRESS
-        COMPLETED
-        ARCHIVED
+        UPCOMING
+        ONGOING
+        ENDED
+        CANCELLED
     }
     class AttemptStatus {
         <<enumeration>>
