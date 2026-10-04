@@ -2,7 +2,7 @@
 
 > **Hệ thống**: AI-powered Viva Exam System (AIVES)  
 > **Mục đích**: Mô tả dữ liệu của hệ thống qua 3 mức: Conceptual → Logical → Physical.  
-> **DBMS đích**: Microsoft SQL Server (xem [02-architecture-design](../02-architecture-design/README.md)).
+> **DBMS đích**: PostgreSQL trên Supabase (Cloud Managed, PostgreSQL 17) & hỗ trợ tương thích Microsoft SQL Server (xem [02-architecture-design](../02-architecture-design/README.md)).
 
 ---
 
@@ -12,7 +12,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | Conceptual | [01-conceptual-erd.md](01-conceptual-erd.md) | [conceptual-erd.png](images/conceptual-erd.png) | [conceptual-erd.mmd](conceptual-erd.mmd) | Hệ thống có những **thực thể** nào và chúng **quan hệ** ra sao? |
 | Logical | [02-logical-erd.md](02-logical-erd.md) | [logical-erd.png](images/logical-erd.png) | [logical-erd.mmd](logical-erd.mmd) | Mỗi thực thể có **thuộc tính** gì, khoá chính / khoá ngoại là gì? (chưa phụ thuộc DBMS) |
-| Physical | [03-physical-erd.md](03-physical-erd.md) | [physical-erd.png](images/physical-erd.png) | [physical-erd.mmd](physical-erd.mmd) | Dữ liệu được **lưu thế nào trên SQL Server**: tên bảng, kiểu cột, ràng buộc? |
+| Physical | [03-physical-erd.md](03-physical-erd.md) | [physical-erd.png](images/physical-erd.png) | [physical-erd.mmd](physical-erd.mmd) | Dữ liệu được **lưu thế nào trên CSDL (Supabase PostgreSQL / SQL Server)**: tên bảng, kiểu cột, ràng buộc? Đã triển khai Code-First qua Spring Data JPA. |
 
 > Muốn xem / sửa sơ đồ: mở file `.mmd` trên [mermaid.live](https://mermaid.live) hoặc plugin Mermaid của IDE, sửa xong export lại PNG vào `images/`.
 

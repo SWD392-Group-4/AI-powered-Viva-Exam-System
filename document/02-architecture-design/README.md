@@ -28,13 +28,13 @@ flowchart LR
         TTS["Google Text-to-Speech"]
     end
 
-    subgraph DB["DB"]
-        MSSQL[("Microsoft SQL Server")]
+    subgraph DB["Database"]
+        SUPABASE[("Supabase PostgreSQL / SQL Server")]
     end
 
     REACT <-- "Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY" --> SPRING
     SPRING <-- "Request: HTTPS REST + API Key<br/>Response: HTTPS RESPONSE (JSON)" --> EXT
-    SPRING <-- "Request: JDBC (Spring Data JPA), port 1433 TCP/IP<br/>Response: ResultSet → Entity" --> MSSQL
+    SPRING <-- "Request: JDBC (Spring Data JPA), SSL TCP/IP<br/>Response: ResultSet → Entity" --> SUPABASE
 ```
 
 Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều về), giống các cặp nét liền / nét đứt trên ảnh.
@@ -47,7 +47,7 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | :--- | :--- | :--- |
 | **FE** | **Vite + React**, **TailwindCSS** | Web app cho cả sinh viên và giảng viên: phòng thi (ghi âm, phát câu hỏi, hiển thị transcript), quản lý bài học / câu hỏi / rubric / đề thi, màn hình thẩm định điểm, phúc khảo. |
 | **BE** | **Java + Spring Boot** | Toàn bộ nghiệp vụ: xác thực JWT, phân quyền, điều phối phòng thi, gọi AI, chấm điểm, lưu dữ liệu. Là thành phần **duy nhất** giữ API key và được gọi dịch vụ AI. |
-| **DB** | **Microsoft SQL Server** | Lưu toàn bộ dữ liệu nghiệp vụ theo [Physical ERD](../ERD/03-physical-erd.md) (16 bảng). |
+| **DB** | **Supabase PostgreSQL / SQL Server** | Lưu toàn bộ dữ liệu nghiệp vụ theo [Physical ERD](../ERD/03-physical-erd.md) (16 bảng) qua Spring Data JPA Code-First. |
 | **3rd Party** | **Gemini Flash** | LLM: sinh câu hỏi gợi ý, quyết định hỏi xoáy (`BR-VIVA-001/002`), chấm điểm theo rubric (`BR-GRADE-001`). |
 | | **Google Speech-to-Text** | Chuyển audio câu trả lời của sinh viên thành transcript (`BR-VIVA-004`). |
 | | **Google Text-to-Speech** | Chuyển câu hỏi (text) thành giọng đọc để phát cho sinh viên. |
@@ -62,7 +62,7 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | 2 | BE → FE | HTTP response | Mã trạng thái HTTP + JSON body | Audio câu hỏi (TTS) trả về dạng base64 trong JSON hoặc qua một endpoint tải file riêng |
 | 3 | BE → 3rd Party | HTTPS REST + API Key | JSON (prompt cho Gemini, audio base64 cho STT, text cho TTS) | API key chỉ nằm ở BE (biến môi trường), **không bao giờ** gửi xuống FE |
 | 4 | 3rd Party → BE | HTTPS response | JSON (kết quả LLM, transcript, audio base64) | Output của Gemini yêu cầu trả đúng JSON schema để BE kiểm tra |
-| 5 | BE → DB | JDBC qua Spring Data JPA | Câu lệnh SQL | Kết nối TCP/IP cổng **1433** |
+| 5 | BE → DB | JDBC qua Spring Data JPA | Câu lệnh SQL | Kết nối TCP/IP qua SSL (Port 5432 / 6543 với Supabase Postgres hoặc 1433 với SQL Server) |
 | 6 | DB → BE | JDBC | `ResultSet` được Hibernate map thành Entity | |
 
 **Mã trạng thái HTTP dùng thống nhất**: `200` / `201` thành công, `400` dữ liệu sai, `401` chưa đăng nhập / token hết hạn, `403` không đủ quyền (`BR-AUTH-002`), `404` không tìm thấy, `409` xung đột trạng thái (ví dụ bắt đầu lượt thi đã `COMPLETED`), `500` lỗi hệ thống, `502` / `504` lỗi hoặc quá thời gian khi gọi dịch vụ AI.
@@ -77,7 +77,7 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | FE | TailwindCSS | Dựng giao diện nhanh, đồng bộ style giữa các màn hình. |
 | FE | MediaRecorder / Web Audio API (có sẵn trong trình duyệt) | Ghi âm câu trả lời và đo khoảng lặng (`BR-VIVA-003`). Micro chỉ chạy trên `https://` hoặc `localhost`. |
 | BE | Java + Spring Boot (Spring Web, Spring Security + JWT, Spring Data JPA, Bean Validation) | Chuẩn phổ biến cho backend Java, chia layer rõ ràng, tích hợp sẵn bảo mật và ORM. |
-| DB | Microsoft SQL Server | CSDL quan hệ; dùng `NVARCHAR` để lưu tiếng Việt. |
+| DB | Supabase PostgreSQL (Postgres 17) & SQL Server | CSDL quan hệ chuẩn ACID; Spring Data JPA Code-First tự động đồng bộ schema và hỗ trợ đa nền tảng. |
 | AI | Gemini Flash | Chi phí thấp, độ trễ thấp, hỗ trợ trả output theo JSON schema. |
 | AI | Google Cloud Speech-to-Text / Text-to-Speech | Hỗ trợ tiếng Việt (`vi-VN`), gọi được qua REST. |
 

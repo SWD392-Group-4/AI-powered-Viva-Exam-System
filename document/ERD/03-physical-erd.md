@@ -1,8 +1,9 @@
-# Physical ERD - AIVES (SQL Server)
+# Physical ERD - AIVES (Supabase PostgreSQL & SQL Server)
 
-> **Mức**: Physical - bảng thật trên **Microsoft SQL Server**: tên bảng, kiểu cột, NULL, khoá, ràng buộc, index.  
+> **Mức**: Physical - bảng thật trên **Supabase PostgreSQL** (PostgreSQL 17.x, Cloud Managed) & tương thích **Microsoft SQL Server**: tên bảng, kiểu cột, NULL, khoá, ràng buộc, index.  
 > **Mã nguồn**: [physical-erd.mmd](physical-erd.mmd)  
-> **Đi từ**: [02-logical-erd.md](02-logical-erd.md)
+> **Đi từ**: [02-logical-erd.md](02-logical-erd.md)  
+> **Triển khai**: Đã hoàn thành 100% Code-First qua **Spring Data JPA** trong repository `aives-backend`.
 
 ---
 
@@ -12,21 +13,21 @@
 
 ---
 
-## 2. Quy ước
+## 2. Quy ước & Ánh xạ kiểu dữ liệu
 
-| Hạng mục | Quy ước | Lý do |
-| :--- | :--- | :--- |
-| Tên bảng / cột | `snake_case`, tên bảng số nhiều (`viva_attempts`) | Thống nhất, dễ map sang JPA |
-| Khoá chính | Cột `<tên bảng>_id` kiểu `NVARCHAR(20)` (vd `users_id`, `viva_attempts_id`); giá trị do BE sinh | Mỗi bảng có tên khoá chính riêng, không đặt chung một tên. Riêng `viva_exams_id` là `NVARCHAR(30)` (xem mục 6) |
-| Khoá ngoại | Mang đúng tên và kiểu của PK mà nó trỏ tới (vd `viva_attempts.viva_exams_id` → `viva_exams.viva_exams_id`) | Nhìn tên cột là biết trỏ tới bảng nào |
-| Khoá ngoại theo vai trò | Giữ tên theo vai trò: `lecturer_id`, `student_id`, `created_by`, `graded_by`, `resolved_by`, `actor_id`, `updated_by`, `parent_exchange_id` | Một bảng có thể trỏ tới `users` (hoặc chính nó) với nhiều ý nghĩa khác nhau |
-| Chuỗi | `NVARCHAR(n)` / `NVARCHAR(MAX)` | Lưu đúng tiếng Việt có dấu (Unicode) |
-| Enum | `NVARCHAR(20)` + `CHECK (... IN (...))` | SQL Server không có kiểu ENUM |
-| Điểm số | `DECIMAL(5,2)` (thang 10) | Xem lưu ý về `DECIMAL` ở mục 5 |
-| Thời gian | `DATETIME` | |
-| Đúng / sai | `BIT` | |
-| Xoá dữ liệu | Không dùng `ON DELETE CASCADE`; dữ liệu thi chỉ chuyển `ARCHIVED` | Tránh lỗi *multiple cascade paths* của SQL Server |
-| Unique cho phép NULL | Filtered unique index `WHERE col IS NOT NULL` | SQL Server coi các NULL trong `UNIQUE` là trùng nhau |
+| Hạng mục | Quy ước logic | PostgreSQL (Supabase) | SQL Server | Ghi chú / Lý do |
+| :--- | :--- | :--- | :--- | :--- |
+| Tên bảng / cột | `snake_case`, tên bảng số nhiều (`viva_attempts`) | `snake_case` | `snake_case` | Thống nhất, tương thích Hibernate JPA naming strategy |
+| Khoá chính | Cột `<tên bảng>_id` (vd `users_id`, `viva_attempts_id`); BE sinh | `VARCHAR(20)` | `NVARCHAR(20)` | Mỗi bảng có tên PK riêng. Riêng `viva_exams_id` là `VARCHAR(30)` |
+| Khoá ngoại | Tên trùng PK được trỏ tới | `VARCHAR(20)` / `VARCHAR(30)` | `NVARCHAR(20)` / `NVARCHAR(30)` | Nhìn tên cột nhận diện ngay bảng cha |
+| Khoá ngoại theo vai trò | Giữ tên vai trò: `lecturer_id`, `student_id`, `created_by`, `graded_by`, `resolved_by`, `actor_id`, `updated_by`, `parent_exchange_id` | `VARCHAR(20)` | `NVARCHAR(20)` | Trỏ tới `users` hoặc tự tham chiếu nhiều ý nghĩa |
+| Chuỗi Unicode | Chuỗi ngắn / dài | `VARCHAR(n)` / `TEXT` | `NVARCHAR(n)` / `NVARCHAR(MAX)` | Lưu tiếng Việt có dấu, mô tả, transcript |
+| Enum | Chuỗi ngắn + CHECK constraint | `VARCHAR(20)` + `CHECK` | `NVARCHAR(20)` + `CHECK` | Độc lập nền tảng, dễ migrate |
+| Điểm số / Trọng số | Số thập phân có độ chính xác | `NUMERIC(5,2)` / `NUMERIC(6,2)` | `DECIMAL(5,2)` / `DECIMAL(6,2)` | Thang 10; tổng điểm 6 chữ số, không bị làm tròn |
+| Thời gian | Ngày giờ kèm timezone | `TIMESTAMPTZ` / `TIMESTAMP` | `DATETIME` / `DATETIME2` | Lưu giờ UTC chuẩn quốc tế |
+| Đúng / sai | Logic boolean | `BOOLEAN` (`TRUE`/`FALSE`) | `BIT` (`1`/`0`) | Map trực tiếp sang `java.lang.Boolean` trong JPA |
+| Xoá dữ liệu | Không dùng `CASCADE`; dữ liệu chỉ chuyển trạng thái | Soft status / archive | Soft status / archive | Tránh xóa nhầm dữ liệu lịch sử thi |
+| Unique cho phép NULL | Cho phép nhiều dòng NULL | Mặc định ANSI SQL | Filtered index `WHERE col IS NOT NULL` | PostgreSQL cho phép nhiều NULL trong UNIQUE theo chuẩn SQL |
 
 ---
 
@@ -292,12 +293,29 @@ Ràng buộc bảng: `CHECK (status = 'PENDING' OR resolved_by IS NOT NULL)`. Fi
 
 ## 7. Hiện trạng triển khai
 
-| Bảng | Trạng thái | Script (repo `aives-backend`, thư mục `database/`) |
-| :--- | :--- | :--- |
-| `users` | Đã tạo, đang dùng | `01_users.sql` |
-| `viva_exams`, `viva_attempts` | Đã tạo, đang dùng | `02_viva_exams.sql` |
-| 13 bảng còn lại | Chưa tạo | Viết script khi làm tới module tương ứng |
+Toàn bộ **16 bảng** vật lý đã được triển khai đầy đủ theo phương pháp **Code-First (Spring Data JPA)** trong repository `aives-backend`, đồng bộ thành công lên CSDL **Supabase (PostgreSQL 17.x)** và đã được kiểm chứng hoạt động thực tế.
 
-Database tạo theo các bản script cũ thì chạy tiếp theo thứ tự: `03_alter_users.sql`, `04_viva_exams_id_as_code.sql`, `05_rename_viva_attempts_fk.sql`.
+| # | Tên bảng CSDL | Trạng thái | JPA Entity Class | Module Backend |
+| :-: | :--- | :---: | :--- | :--- |
+| 1 | `users` | Đã tạo & Đang dùng | `com.aives.modules.auth.entity.User` | `auth` |
+| 2 | `lessons` | Đã tạo (Code-First) | `com.aives.modules.content.entity.Lesson` | `content` |
+| 3 | `topics` | Đã tạo (Code-First) | `com.aives.modules.content.entity.Topic` | `content` |
+| 4 | `rubrics` | Đã tạo (Code-First) | `com.aives.modules.content.entity.Rubric` | `content` |
+| 5 | `rubric_criteria` | Đã tạo (Code-First) | `com.aives.modules.content.entity.RubricCriterion` | `content` |
+| 6 | `questions` | Đã tạo (Code-First) | `com.aives.modules.content.entity.Question` | `content` |
+| 7 | `viva_exams` | Đã tạo & Đang dùng | `com.aives.modules.exam.entity.VivaExam` | `exam` |
+| 8 | `viva_exam_questions` | Đã tạo (Code-First) | `com.aives.modules.exam.entity.VivaExamQuestion` | `exam` |
+| 9 | `viva_attempts` | Đã tạo & Đang dùng | `com.aives.modules.exam.entity.VivaAttempt` | `exam` / `vivaroom` |
+| 10 | `interview_exchanges` | Đã tạo (Code-First) | `com.aives.modules.vivaroom.entity.InterviewExchange` | `vivaroom` |
+| 11 | `question_grades` | Đã tạo (Code-First) | `com.aives.modules.grading.entity.QuestionGrade` | `grading` |
+| 12 | `criteria_grades` | Đã tạo (Code-First) | `com.aives.modules.grading.entity.CriteriaGrade` | `grading` |
+| 13 | `grade_appeals` | Đã tạo (Code-First) | `com.aives.modules.grading.entity.GradeAppeal` | `grading` |
+| 14 | `background_jobs` | Đã tạo (Code-First) | `com.aives.modules.system.entity.BackgroundJob` | `system` |
+| 15 | `audit_logs` | Đã tạo (Code-First) | `com.aives.modules.system.entity.AuditLog` | `system` |
+| 16 | `system_settings` | Đã tạo (Code-First) | `com.aives.modules.system.entity.SystemSetting` | `system` |
 
-Trong code hiện tại, các cột `max_follow_up_per_question`, `prepare_seconds`, `answer_seconds`, `domain_keywords`, `result_status`, `total_ai_score`, `total_final_score`, `full_audio_key`, `published_at` đã có trong bảng nhưng chưa được dùng (sẽ dùng khi làm lõi phỏng vấn và chấm điểm).
+### Kiểm chứng trên Supabase:
+- **Database Engine**: PostgreSQL 17.11 (AWS Tokyo `ap-northeast-1`).
+- **JPA DDL Auto**: `spring.jpa.hibernate.ddl-auto: update`.
+- **Health Check Endpoint**: `/api/health/tables` truy vấn trực tiếp `information_schema.tables` và trả về đúng danh sách 16 bảng public.
+- **Tương thích SQL Server**: Với các môi trường chạy On-Premise hoặc SQL Server truyền thống, các script DDL trong thư mục `database/` (`01_users.sql`, `02_viva_exams.sql`...) vẫn được duy trì làm tài liệu tham khảo đồng bộ.
