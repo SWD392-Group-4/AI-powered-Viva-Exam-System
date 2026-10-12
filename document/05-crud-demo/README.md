@@ -162,7 +162,36 @@ curl -X DELETE http://localhost:8080/api/admin/users/{userId} \
   -H "Authorization: Bearer <ADMIN_BEARER_TOKEN>"
 ```
 
+### 3.3. Kịch bản Đăng ký tài khoản Sinh viên kèm Xác thực OTP (Student Self-Registration)
+
+1. **Thao tác trên Giao diện (Frontend)**:
+   - Truy cập trang Đăng ký (`/register`).
+   - Nhập Họ và tên, Email sinh viên (`@fpt.edu.vn`), Mật khẩu và Xác nhận mật khẩu.
+   - Bấm **"Đăng ký"** -> Hệ thống kiểm tra hợp lệ, hiển thị hộp thoại xác thực OTP 6 số và gửi mã xác thực tới hòm thư qua `faives.support@gmail.com`.
+   - Sinh viên kiểm tra email, nhập mã OTP (hiệu lực 5 phút, đếm ngược cooldown 60 giây gửi lại).
+   - Nhập đúng OTP -> Hệ thống kích hoạt tài khoản thành công và chuyển sang trang Đăng nhập (`/login`).
+
+2. **Kiểm thử bằng API (REST / cURL)**:
+   - **Bước 1: Gửi yêu cầu mã OTP đăng ký**:
+   ```bash
+   curl -X POST http://localhost:8080/api/auth/send-otp \
+     -H "Content-Type: application/json" \
+     -d '{"email": "student09@fpt.edu.vn"}'
+   ```
+   - **Bước 2: Hoàn tất đăng ký với mã OTP**:
+   ```bash
+   curl -X POST http://localhost:8080/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "student09@fpt.edu.vn",
+       "password": "Password123",
+       "fullName": "Lê Văn Cường",
+       "otp": "123456"
+     }'
+   ```
+
 ---
+
 
 ## 4. Bảng tổng hợp tính năng CRUD phục vụ Báo cáo & Đánh giá
 

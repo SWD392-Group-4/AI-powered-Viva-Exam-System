@@ -214,6 +214,7 @@ Trạng thái phiên (`UPCOMING`, `ONGOING`, `ENDED`, `CANCELLED`) không lưu t
 | Mỗi câu trong 1 lượt thi chỉ có 1 bản ghi điểm | `QUESTION_GRADE` (`attempt_id`, `viva_exam_question_id`) | – |
 | Lệch điểm > 2.0 phải có `lecturer_note` | `QUESTION_GRADE` | `BR-GRADE-002` |
 | Sinh viên chỉ xem điểm khi `result_status = PUBLISHED` | `VIVA_ATTEMPT` | `BR-GRADE-003` |
+| Mã OTP hết hạn sau 5 phút; nhập sai tối đa 5 lần; tần suất gửi lại ≥ 60s | `OTP_VERIFICATION` | `BR-AUTH-005` |
 
 ---
 

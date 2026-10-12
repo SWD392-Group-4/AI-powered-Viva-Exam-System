@@ -41,3 +41,13 @@
 - **Context**: Giảng viên truy cập qua ứng dụng di động (AIVES Mobile).
 - **Rule**: Giảng viên trên Mobile có quyền xem danh sách các ca thi và giám sát trực tiếp tiến độ phòng thi (danh sách thí sinh, thời gian còn lại, trạng thái thi).
 - **Phân định**: Các nghiệp vụ quản trị chuyên sâu (tải tài liệu RAG, tạo ca thi, thiết lập rubric, thẩm định & sửa điểm chi tiết) được thực hiện tập trung trên Web Portal.
+
+### BR-AUTH-005: Student Registration Email Verification via OTP
+- **Context**: Sinh viên tự đăng ký tài khoản mới trên hệ thống (`POST /api/auth/register`).
+- **Rule**:
+  1. **Yêu cầu mã xác thực OTP**: Trước khi tài khoản sinh viên được tạo thành công, hệ thống phải xác minh quyền sở hữu email thông qua mã OTP 6 chữ số gửi qua hòm thư chính thức của hệ thống (`faives.support@gmail.com`).
+  2. **Hiệu lực mã**: Mã OTP có hiệu lực tối đa 5 phút kể từ thời điểm gửi.
+  3. **Tần suất gửi lại (Rate Limit / Cooldown)**: Thời gian chờ tối thiểu giữa 2 lần gửi mã OTP liên tiếp tới cùng một email là 60 giây.
+  4. **Giới hạn số lần thử (Brute-force protection)**: Nếu nhập sai mã OTP quá 5 lần, mã hiện tại bị hủy hiệu lực và người dùng phải yêu cầu gửi lại mã mới (`OTP_MAX_ATTEMPTS_EXCEEDED`).
+  5. **Hoàn tất đăng ký**: Chỉ khi mã OTP hợp lệ và chưa hết hạn, hệ thống mới lưu tài khoản sinh viên vào cơ sở dữ liệu với trạng thái kích hoạt (`active = true`).
+

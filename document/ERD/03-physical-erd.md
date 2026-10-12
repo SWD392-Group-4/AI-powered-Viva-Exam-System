@@ -272,6 +272,8 @@ Ràng buộc bảng: `CHECK (status = 'PENDING' OR resolved_by IS NOT NULL)`. Fi
 | `background_jobs` | Hàng đợi việc chạy ngầm trong BE (chấm điểm AI sau khi thi xong, xử lý audio). Job được ghi cùng transaction nghiệp vụ nên không mất khi server khởi động lại. | `job_type` (`EVALUATE_ATTEMPT`, `AUDIO_UPLOAD`), `payload` (JSON), `status` (`PENDING`, `RUNNING`, `DONE`, `FAILED`), `attempts`, `next_run_at`, `last_error`. Index `(status, next_run_at)`. |
 | `audit_logs` | Vết thao tác quan trọng: ghi đè điểm, công bố kết quả, duyệt câu hỏi, xử lý phúc khảo. | `actor_id` → `users.users_id`, `action`, `entity_type`, `entity_id`, `old_value`, `new_value`. Index `(entity_type, entity_id)`. |
 | `system_settings` | Cấu hình dạng key - value: model AI, ngôn ngữ STT, giọng TTS... | `setting_key` (PK), `setting_value`, `updated_by` → `users.users_id`. |
+| `otp_verifications` | Lưu trữ và xác thực mã OTP gửi qua email (xác thực đăng ký tài khoản sinh viên). | `otp_verifications_id` (PK, `VARCHAR(20)`), `email` (`VARCHAR(255)`), `otp_code` (`VARCHAR(10)`), `type` (`VARCHAR(20)` - `REGISTRATION`), `attempts` (`INT`), `verified` (`BIT`), `expires_at` (`DATETIME`), `created_at` (`DATETIME`). Index `(email, type)`. |
+
 
 ---
 
