@@ -23,14 +23,21 @@
   2. Phiên đang mở (đã tới giờ mở, chưa tới giờ đóng) và chưa bị huỷ.
   3. Mỗi sinh viên chỉ có 1 lượt vấn đáp trong 1 phiên; vào lại thì tiếp tục lượt cũ, đồng hồ không chạy lại.
   4. Lượt vấn đáp chưa kết thúc: sinh viên chưa bấm kết thúc bài thi và chưa hết thời gian làm bài.
+  5. **Kiểm tra thiết bị (Mobile Device Control)**: Nếu sinh viên tham gia thi từ ứng dụng di động (`platform = MOBILE`), ca thi phải được bật cấu hình `allow_mobile_exam = TRUE`. Nếu ca thi không cho phép thi trên di động (`allow_mobile_exam = FALSE` - giá trị mặc định), hệ thống chặn vào thi với mã lỗi `400` (`MOBILE_EXAM_NOT_ALLOWED`: "Ca thi này không cho phép làm bài trên thiết bị di động. Vui lòng sử dụng máy tính.").
 - **Enforcement**:
   - Sai mã phiên hoặc sai mã truy cập trả cùng một thông báo, để không dò được mã phiên nào có thật.
   - Nhập sai 5 lần trong 10 phút thì tài khoản sinh viên bị khoá chức năng vào thi cho đến khi lần sai cũ nhất hết hạn (`429 Too Many Requests`).
   - Phiên chưa mở, đã đóng, đã huỷ hoặc lượt thi đã kết thúc: từ chối với `409 Conflict`.
+  - Thiết bị mobile không được cấp quyền thi: từ chối với `400 Bad Request` (`MOBILE_EXAM_NOT_ALLOWED`).
   - Sinh viên chỉ xem được lượt thi của chính mình; lượt thi của người khác trả `404 Not Found`.
 
 ### BR-AUTH-003: Single Active Viva Connection per Student
 - **Context**: Tránh gian lận mở nhiều tab hoặc thiết bị cùng lúc.
-- **Rule**: Tại một thời điểm, một sinh viên chỉ có duy nhất 1 WebSocket connection phỏng vấn đang active.
-- **Enforcement**: Nếu sinh viên kết nối từ client thứ hai khi buổi thi chưa đóng:
-  - Hệ thống ngắt kết nối client cũ với mã đóng `DUPLICATE_SESSION`.
+- **Rule**: Tại một thời điểm, một sinh viên chỉ có duy nhất 1 kết nối / phiên phỏng vấn đang active.
+- **Enforcement**: Nếu sinh viên kết nối từ client thứ hai (ví dụ từ web sang mobile hoặc mở tab mới) khi buổi thi chưa đóng:
+  - Hệ thống ngắt kết nối / vô hiệu hoá client cũ với mã lỗi `DUPLICATE_SESSION`.
+
+### BR-AUTH-004: Lecturer Mobile Access Scope
+- **Context**: Giảng viên truy cập qua ứng dụng di động (AIVES Mobile).
+- **Rule**: Giảng viên trên Mobile có quyền xem danh sách các ca thi và giám sát trực tiếp tiến độ phòng thi (danh sách thí sinh, thời gian còn lại, trạng thái thi).
+- **Phân định**: Các nghiệp vụ quản trị chuyên sâu (tải tài liệu RAG, tạo ca thi, thiết lập rubric, thẩm định & sửa điểm chi tiết) được thực hiện tập trung trên Web Portal.

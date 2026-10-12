@@ -174,3 +174,34 @@ Hệ thống thiết kế theo nguyên lý **Mobile-First & Adaptive**:
 - **Desktop (>= 1024px)**: Giao diện đầy đủ hai cột, tối ưu cho giảng viên soạn thảo đề thi và sinh viên ngồi máy tính làm bài viva với webcam/micro.
 - **Tablet (768px - 1023px)**: Bảng dữ liệu tự động chuyển sang chế độ cuộn ngang mượt mà, menu thu gọn dạng Sidebar/Drawer.
 - **Mobile (< 768px)**: Thẻ bài thu gọn, nút bấm to bản hỗ trợ cảm ứng (tối thiểu 48x48px), thanh điều hướng đáy (Bottom Navigation Bar) thuận tiện thao tác một tay.
+
+---
+
+## 6. Thiết Kế Trải Nghiệm Ứng Dụng Di Động (AIVES Mobile App)
+
+Ứng dụng di động được xây dựng bằng **React Native (Expo Router)** tối ưu trải nghiệm cảm ứng mượt mà và Voice tương tác:
+
+### 6.1. Luồng Sinh Viên (Student Mobile Flow)
+1. **Đăng nhập (`/login`)**:
+   - Form đăng nhập email / mật khẩu tích hợp kiểm tra định dạng và lưu trữ Bearer token trong Secure Storage.
+2. **Trang chủ (`/(tabs)/index`)**:
+   - Thẻ chào mừng thí sinh, thống kê nhanh (ca thi sắp tới, đã hoàn thành, điểm trung bình).
+   - Danh sách ca thi gần đây và trạng thái điểm số.
+3. **Vào phòng thi (`/(tabs)/two`)**:
+   - Form nhập Mã ca thi (`AIVES_EXAM_yyyy_xxxxxx`) và Passcode 6 chữ số.
+   - Gửi yêu cầu `POST /api/exam-sessions/join` kèm `platform: "MOBILE"`.
+   - **Kiểm soát thiết bị (`BR-AUTH-002`)**: Nếu ca thi không bật `allow_mobile_exam`, hiển thị thông báo từ chối rõ ràng yêu cầu sinh viên sử dụng máy tính.
+4. **Phòng thi vấn đáp AI (`/exam-room`)**:
+   - Thanh trạng thái đỉnh: Mã ca thi, đồng hồ đếm ngược tổng thời gian ca thi.
+   - Thẻ câu hỏi nổi bật: Thể hiện câu hỏi chính / câu hỏi xoáy, mức độ Bloom, tiêu chí rubric.
+   - Bộ thu âm Voice tương tác: Nút micro to bản chạm để ghi âm (Expo Audio), sóng âm trực quan (Audio wave animation), tự động bóc băng qua Backend STT.
+   - Phát âm câu hỏi của AI qua giọng đọc TTS.
+   - Nút bỏ qua câu hỏi (`skip`) hoặc kết thúc bài thi sớm.
+5. **Xem kết quả & Đánh giá (`/results`)**:
+   - Hero Card hiển thị điểm số tổng kết sau khi Giảng viên phê duyệt (`HITL Review`).
+   - Danh sách chi tiết từng câu: Điểm đạt, nhận xét của AI và bằng chứng đối chiếu rubric.
+
+### 6.2. Luồng Giảng Viên (Lecturer Mobile Flow)
+1. **Xem danh mục ca thi**: Danh sách các ca thi được phân công phụ trách kèm nhãn trạng thái (`UPCOMING`, `ONGOING`, `ENDED`).
+2. **Giám sát trực tiếp phòng thi (Live Exam Monitor)**: Xem danh sách thí sinh đang thi trong ca, thời gian còn lại, và tiến độ hoàn thành lượt thi theo thời gian thực.
+*(Các thao tác phức tạp như tải tài liệu RAG, tạo đề thi, thiết lập rubric và thẩm định ghi đè điểm số chi tiết được thực hiện tập trung trên Web Portal).*

@@ -113,7 +113,7 @@ sequenceDiagram
 ```
 
 #### Các bước thực hiện:
-1. **Kiểm tra truy cập**: Xác thực quyền vào phòng thi và đảm bảo chỉ có duy nhất 1 kết nối active (`BR-AUTH-002`, `BR-AUTH-003`).
+1. **Kiểm tra truy cập & Thiết bị**: Xác thực quyền vào phòng thi và đảm bảo chỉ có duy nhất 1 kết nối active (`BR-AUTH-002`, `BR-AUTH-003`). Nếu sinh viên vào thi từ thiết bị di động (`platform = MOBILE`), hệ thống kiểm tra điều kiện ca thi phải được bật cờ `allow_mobile_exam`.
 2. **Hỏi & Trả lời**:
    - Hệ thống phát âm câu hỏi qua TTS (`TTS_PLAY`).
    - Sinh viên có khoảng thời gian chuẩn bị (`STUDENT_PREPARE`), sau đó trả lời qua micro (`STUDENT_SPEAKING`).

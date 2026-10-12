@@ -141,6 +141,7 @@ Ràng buộc bảng: `CHECK (status <> 'APPROVED' OR rubrics_id IS NOT NULL)` (`
 | `prepare_seconds` | INT | | DEFAULT 30 |
 | `answer_seconds` | INT | | DEFAULT 120 |
 | `domain_keywords` | NVARCHAR(MAX) | ✓ | Mảng JSON (`BR-VIVA-004`) |
+| `allow_mobile_exam` | BIT / BOOLEAN | | DEFAULT 0 (FALSE). Cờ cho phép sinh viên thi trên thiết bị di động (`BR-AUTH-002`) |
 | `start_at` | DATETIME | | Giờ mở phiên (lưu UTC) |
 | `end_at` | DATETIME | | Giờ đóng phiên (lưu UTC) |
 | `cancelled_at` | DATETIME | ✓ | Khác NULL nghĩa là phiên đã bị huỷ |

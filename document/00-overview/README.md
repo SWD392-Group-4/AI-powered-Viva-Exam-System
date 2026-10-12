@@ -55,11 +55,11 @@ flowchart LR
 
 ## 4. Các vai trò chính trong hệ thống (User Roles)
 
-| Vai trò | Mô tả | Trải nghiệm chính trên hệ thống |
-| :--- | :--- | :--- |
-| **Sinh viên (Thí sinh)** | Thí sinh tham gia phỏng vấn | - Kiểm tra âm thanh (mic/loa).<br>- Tương tác giọng nói trực tiếp với AI trong phòng thi ảo.<br>- Xem báo cáo chi tiết: điểm từng câu, transcript và nhận xét sau khi giảng viên duyệt. |
-| **Giảng viên** | Người quản lý chuyên môn & chốt điểm | - Quản lý, biên tập và duyệt ngân hàng câu hỏi + Rubric (tự tạo hoặc AI RAG sinh ra).<br>- Xem transcript chi tiết buổi vấn đáp của sinh viên.<br>- Xem điểm AI đề xuất, điều chỉnh và chốt điểm chính thức (Human-in-the-Loop). |
-| **Quản trị viên (Admin)** | Quản lý hệ thống | - Phân quyền tài khoản giảng viên theo môn học.<br>- Cấu hình endpoint AI (OpenAI/Anthropic/Whisper/TTS).<br>- Cấu hình ngôn ngữ hệ thống. |
+| Vai trò | Mô tả | Trải nghiệm chính trên hệ thống | Nền tảng hỗ trợ |
+| :--- | :--- | :--- | :--- |
+| **Sinh viên (Thí sinh)** | Thí sinh tham gia phỏng vấn | - Kiểm tra âm thanh (mic/loa).<br>- Tương tác giọng nói trực tiếp với AI trong phòng thi ảo.<br>- Xem báo cáo chi tiết: điểm từng câu, transcript và nhận xét sau khi giảng viên duyệt. | **Web Portal** & **Mobile App** *(Mobile chỉ khả dụng khi ca thi được bật cờ `allowMobileExam`)* |
+| **Giảng viên** | Người quản lý chuyên môn & chốt điểm | - Quản lý, biên tập và duyệt ngân hàng câu hỏi + Rubric.<br>- Thiết lập ca thi (bật/tắt cờ cho phép thi trên di động).<br>- Xem transcript chi tiết buổi vấn đáp của sinh viên.<br>- Xem điểm AI đề xuất, điều chỉnh và chốt điểm chính thức (HITL).<br>- Giám sát trực tiếp phòng thi trên di động. | **Web Portal** (Đầy đủ chức năng quản trị, tạo đề & thẩm định)<br>**Mobile App** (Xem danh sách & giám sát ca thi) |
+| **Quản trị viên (Admin)** | Quản lý hệ thống | - Phân quyền tài khoản giảng viên theo môn học.<br>- Cấu hình endpoint AI (OpenAI/Gemini/Whisper/TTS).<br>- Cấu hình ngôn ngữ hệ thống. | **Web Portal** |
 
 ---
 
