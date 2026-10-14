@@ -16,7 +16,7 @@
 
 - **Khoá**: `PK` khoá chính, `FK` khoá ngoại, `UK` giá trị duy nhất.
 - **Tên khoá chính**: `<tên thực thể>_id` (ví dụ `lesson_id`, `attempt_id`).
-- **Kiểu dữ liệu logic** (cột "Kiểu" trong bảng dưới): `string` chuỗi ngắn, `text` chuỗi dài, `int` số nguyên, `decimal` số thực, `datetime` ngày giờ, `boolean` đúng/sai, `enum` chỉ nhận một tập giá trị cố định. Sang Physical mới đổi thành kiểu của SQL Server.
+- **Kiểu dữ liệu logic** (cột "Kiểu" trong bảng dưới): `string` chuỗi ngắn, `text` chuỗi dài, `int` số nguyên, `decimal` số thực, `datetime` ngày giờ, `boolean` đúng/sai, `enum` chỉ nhận một tập giá trị cố định. Sang Physical mới đổi thành kiểu của PostgreSQL.
 - Quan hệ và bản số giữ nguyên như Conceptual ERD (20 quan hệ).
 
 ---
