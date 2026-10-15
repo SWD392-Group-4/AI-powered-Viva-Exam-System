@@ -85,7 +85,7 @@ Các thực thể ngoài khớp với actor trong use case diagram (Lecturer, St
 
 ## 4. Ghi chú
 
-- Context Diagram **không** vẽ kho dữ liệu (SQL Server) vì đó là thành phần bên trong hệ thống. Kho dữ liệu sẽ xuất hiện ở DFD mức 1.
+- Context Diagram **không** vẽ kho dữ liệu (PostgreSQL) vì đó là thành phần bên trong hệ thống. Kho dữ liệu sẽ xuất hiện ở DFD mức 1.
 - Luồng **Course materials** (L2) và **Prompt: generate question** (A1) đến từ use case *Upload course materials*. Hiện [ERD](../ERD/README.md) chưa có thực thể lưu tài liệu môn học, nên nhóm cần bổ sung ERD hoặc bỏ 2 luồng này cho khớp.
 - Không có actor **Admin** vì use case diagram không có Admin.
 
