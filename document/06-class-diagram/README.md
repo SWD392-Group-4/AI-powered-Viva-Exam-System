@@ -12,6 +12,16 @@
 Sơ đồ thể hiện toàn bộ các thực thể JPA, các thuộc tính chính, kiểu dữ liệu, các Enum và mối quan hệ giữa các thực thể:
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#F5F3FF',
+    'primaryTextColor': '#1E1B4B',
+    'primaryBorderColor': '#7C3AED',
+    'lineColor': '#64748B',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'
+  }
+}}%%
 classDiagram
     direction TB
 
@@ -342,6 +352,16 @@ classDiagram
 Sơ đồ thể hiện cách các lớp trong Backend phối hợp theo mô hình chuẩn **Controller → Service → Repository → Database**:
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EEF2FF',
+    'primaryTextColor': '#1E1B4B',
+    'primaryBorderColor': '#6366F1',
+    'lineColor': '#64748B',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif'
+  }
+}}%%
 classDiagram
     direction LR
 

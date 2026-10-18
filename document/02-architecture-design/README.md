@@ -13,30 +13,48 @@
 Bản Mermaid tương đương (sửa được trực tiếp trên GitHub):
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EEF2FF',
+    'primaryTextColor': '#1E1B4B',
+    'primaryBorderColor': '#6366F1',
+    'lineColor': '#64748B',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
 flowchart LR
-    subgraph FE["FE Clients"]
-        REACT["Vite + React<br/>TailwindCSS (Web Portal)"]
-        MOBILE["React Native + Expo<br/>TypeScript (Mobile App)"]
+    %% Định nghĩa bảng màu ngữ nghĩa chuẩn thiết kế
+    classDef client fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1,rx:8,ry:8;
+    classDef backend fill:#F5F3FF,stroke:#8B5CF6,stroke-width:2px,color:#5B21B6,rx:8,ry:8;
+    classDef ai fill:#FFE4E6,stroke:#F43F5E,stroke-width:1.5px,color:#9F1239,rx:8,ry:8;
+    classDef db fill:#ECFDF5,stroke:#10B981,stroke-width:1.5px,color:#065F46,rx:4,ry:4;
+
+    subgraph FE [" 🖥️ FE Clients (Frontend Layer) "]
+        REACT["🌐 <b>Vite + React</b><br/>TailwindCSS (Web Portal)"]:::client
+        MOBILE["📱 <b>React Native + Expo</b><br/>TypeScript (Mobile App)"]:::client
     end
 
-    subgraph BE["BE"]
-        SPRING["Java + Spring Boot"]
+    subgraph BE [" ⚙️ Backend Core (Monolith) "]
+        SPRING["🚀 <b>Java + Spring Boot</b><br/>Spring Security, JPA & REST"]:::backend
     end
 
-    subgraph EXT["3rd Party - Services"]
-        GEMINI["Gemini Flash"]
-        STT["Google Speech-to-Text"]
-        TTS["Google Text-to-Speech"]
+    subgraph EXT [" 🤖 3rd Party - AI & Speech Services "]
+        GEMINI["🧠 <b>Gemini Flash</b><br/>Prompt & JSON Schema"]:::ai
+        STT["🎙️ <b>Google Speech-to-Text</b><br/>Bóc băng Audio vi-VN"]:::ai
+        TTS["🔊 <b>Google Text-to-Speech</b><br/>Đọc câu hỏi vấn đáp"]:::ai
     end
 
-    subgraph DB["DB"]
-        PG[("PostgreSQL")]
+    subgraph DB [" 🗄️ Persistence Layer "]
+        PG[("🐘 <b>PostgreSQL 16</b><br/>18 Bảng quan hệ")]:::db
     end
 
-    REACT <-- "Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY" --> SPRING
-    MOBILE <-- "Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY" --> SPRING
-    SPRING <-- "Request: HTTPS REST + API Key<br/>Response: HTTPS RESPONSE (JSON)" --> EXT
-    SPRING <-- "Request: JDBC (Spring Data JPA), port 5432 TCP/IP<br/>Response: ResultSet → Entity" --> PG
+    %% Luồng kết nối với nhãn giao thức rõ ràng
+    REACT <--> |"Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY"| SPRING
+    MOBILE <--> |"Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY"| SPRING
+    SPRING <--> |"Request: HTTPS REST + API Key<br/>Response: JSON Output"| EXT
+    SPRING <--> |"Request: JDBC (Spring Data JPA), Port 5432 TCP/IP<br/>Response: ResultSet → Entity"| PG
 ```
 
 Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều về), giống các cặp nét liền / nét đứt trên ảnh.
@@ -155,34 +173,60 @@ Cách này không cần thêm message broker (Redis, RabbitMQ...), đúng với 
 ### 6.1. Một lượt hỏi - đáp trong phòng thi
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'actorBkg': '#EEF2FF',
+    'actorBorder': '#6366F1',
+    'actorTextColor': '#1E1B4B',
+    'signalColor': '#64748B',
+    'signalTextColor': '#1E293B',
+    'noteBkgColor': '#FEF3C7',
+    'noteBorderColor': '#F59E0B',
+    'noteTextColor': '#78350F',
+    'fontFamily': 'Inter, system-ui, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
 sequenceDiagram
     autonumber
-    participant FE as FE (React)
-    participant BE as BE (Spring Boot)
-    participant STT as Google STT
-    participant AI as Gemini Flash
-    participant TTS as Google TTS
-    participant DB as PostgreSQL
+    actor SV as 👨‍🎓 Sinh viên
+    participant FE as 💻 FE (React/Mobile)
+    participant BE as ⚙️ BE (Spring Boot)
+    participant STT as 🎙️ Google STT
+    participant AI as 🧠 Gemini Flash
+    participant TTS as 🔊 Google TTS
+    participant DB as 🗄️ PostgreSQL
 
+    SV->>FE: Bấm bắt đầu lượt thi
     FE->>BE: POST /api/attempts/{id}/start (JWT)
     BE->>DB: Kiểm tra lượt thi thuộc SV và chưa COMPLETED (BR-AUTH-002)
     BE->>TTS: synthesize(câu hỏi 1)
     TTS-->>BE: audio (base64)
     BE-->>FE: 200 {exchangeId, questionText, audio}
+    FE-->>SV: Phát giọng đọc câu hỏi + Hiển thị đồng hồ đếm ngược
 
-    Note over FE: SV nghe câu hỏi, chuẩn bị, trả lời.<br/>FE ghi âm và tự khoá mic khi im lặng ≥ 10s (BR-VIVA-003)
+    rect rgb(254, 249, 195)
+        Note over SV, FE: SV nghe câu hỏi, chuẩn bị, trả lời.<br/>FE ghi âm và tự khoá mic khi im lặng ≥ 10s (BR-VIVA-003)
+    end
 
+    SV->>FE: Hoàn thành trả lời (hoặc mic tự ngắt)
     FE->>BE: POST /api/attempts/{id}/answers (multipart: exchangeId + audio)
-    BE->>STT: recognize(audio, vi-VN, domain_keywords)
-    STT-->>BE: transcript
-    BE->>DB: Lưu transcript vào interview_exchanges
-    BE->>AI: câu hỏi + transcript + rubric + lịch sử (JSON schema)
-    AI-->>BE: {decision: FOLLOW_UP | NEXT, reason, followUpQuestion}
-    BE->>BE: Kiểm tra số câu xoáy ≤ max_follow_up_per_question, câu ≤ 40 từ (BR-VIVA-001/002)
-    BE->>TTS: synthesize(câu xoáy hoặc câu tiếp theo)
-    TTS-->>BE: audio (base64)
+    
+    rect rgb(240, 249, 255)
+        BE->>STT: recognize(audio, vi-VN, domain_keywords)
+        STT-->>BE: transcript
+        BE->>DB: Lưu transcript vào interview_exchanges
+        BE->>AI: câu hỏi + transcript + rubric + lịch sử (JSON schema)
+        AI-->>BE: {decision: FOLLOW_UP | NEXT, reason, followUpQuestion}
+        BE->>BE: Kiểm tra số câu xoáy ≤ max_follow_up_per_question, câu ≤ 40 từ (BR-VIVA-001/002)
+        BE->>TTS: synthesize(câu xoáy hoặc câu tiếp theo)
+        TTS-->>BE: audio (base64)
+    end
+
     BE->>DB: Lưu interview_exchanges mới (parent_exchange_id nếu là câu xoáy)
     BE-->>FE: 200 {exchangeId, questionText, audio, isFinished}
+    FE-->>SV: Cập nhật câu hỏi mới & Tiếp tục lượt thi
 ```
 
 ### 6.2. Chấm điểm và công bố

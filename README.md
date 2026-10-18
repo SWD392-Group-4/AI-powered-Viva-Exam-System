@@ -10,6 +10,7 @@
 
 | # | Hạng mục Báo cáo / Đánh giá | Đường dẫn tài liệu chi tiết | Mô tả nội dung chính |
 | :-: | :--- | :--- | :--- |
+| **0** | **Master Mainflow (Core Workflows)** | [core-workflows.md](document/core-workflows.md) | Sơ đồ Mainflow tổng thể End-to-End toàn hệ thống (5 giai đoạn), Ma trận RACI, đặc tả luồng Voice AI thích ứng và thẩm định HITL |
 | **1** | **Show UI/UX Design** | [04-ui-ux-design/README.md](document/04-ui-ux-design/README.md) | Thiết kế Material Design 3, Site Map, đặc tả màn hình phòng thi vấn đáp (Audio Wave, VAD), màn hình quản lý phiên thi, thẩm định điểm |
 | **2** | **Demo CRUD Features** | [05-crud-demo/README.md](document/05-crud-demo/README.md) | Kịch bản chi tiết Demo tính năng CRUD Phiên thi (Exam Sessions), Quản trị người dùng (User Management), kèm tài khoản kiểm thử và cURL API |
 | **3** | **Show Class Diagram** | [06-class-diagram/README.md](document/06-class-diagram/README.md) | Sơ đồ lớp toàn hệ thống (Domain Entity 16 bảng JPA, Enum, Kiến trúc phân tầng Controller → Service → Repository) bằng Mermaid |
@@ -19,6 +20,7 @@
 
 ## Các tài liệu Kiến trúc & Nghiệp vụ Bổ trợ
 
+- [core-workflows.md](document/core-workflows.md): **Master End-to-End Mainflow**, luồng phỏng vấn Voice AI thích ứng, chấm điểm ngầm và thẩm định điểm.
 - [00-overview/README.md](document/00-overview/README.md): Tổng quan bài toán, giải pháp và phạm vi đồ án.
 - [01-business-rule/README.md](document/01-business-rule/README.md): Toàn bộ quy tắc nghiệp vụ (Phân quyền, Phỏng vấn AI, Chấm điểm, Ngân hàng đề).
 - [02-architecture-design/README.md](document/02-architecture-design/README.md): Kiến trúc hệ thống tổng thể, Sequence diagram luồng thi vấn đáp, tích hợp Gemini Flash, Google STT/TTS.

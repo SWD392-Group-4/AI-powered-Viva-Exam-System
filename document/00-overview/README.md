@@ -27,28 +27,45 @@ Thi vấn đáp (Viva / Oral Exam) là hình thức đánh giá năng lực rấ
 ## 3. Quy trình hoạt động tinh gọn (End-to-End Workflow)
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EEF2FF',
+    'primaryTextColor': '#1E1B4B',
+    'primaryBorderColor': '#6366F1',
+    'lineColor': '#64748B',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
 flowchart LR
-    subgraph Phase1["1. Chuẩn bị (Question & Rubric)"]
-        A[Giáo trình / Slide] -->|RAG AI| B[Ngân hàng câu hỏi]
-        C[Giảng viên] -->|Duyệt & gán Rubric| B
+    %% Semantic class definitions
+    classDef actor fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1,rx:8,ry:8;
+    classDef ai fill:#FFE4E6,stroke:#F43F5E,stroke-width:2px,color:#9F1239,rx:8,ry:8;
+    classDef artifact fill:#F5F3FF,stroke:#8B5CF6,stroke-width:1.5px,color:#5B21B6,rx:6,ry:6;
+    classDef result fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46,rx:8,ry:8;
+
+    subgraph Phase1 [" 📚 1. Chuẩn bị (Question & Rubric) "]
+        A["📄 Giáo trình / Slide"]:::artifact -->|"RAG Trích xuất"| B["❓ Ngân hàng câu hỏi"]:::artifact
+        C["👨‍🏫 Giảng viên"]:::actor -->|"Biên tập & Gán Rubric"| B
     end
 
-    subgraph Phase2["2. Phỏng vấn ảo (Real-time Viva)"]
-        B --> D[Bộ câu hỏi vấn đáp]
-        E[Sinh viên] <-->|Voice: TTS đọc câu hỏi| F[AI Giám khảo ảo]
-        E <-->|Voice: STT bóc băng câu trả lời| F
-        F -->|Hỏi xoáy / Follow-up nếu thiếu ý| E
+    subgraph Phase2 [" 🎙️ 2. Phỏng vấn ảo (Real-time Viva) "]
+        B --> D["📋 Bộ đề thi Viva"]:::artifact
+        E["👨‍🎓 Sinh viên"]:::actor <--> |"🔊 Voice: TTS đọc câu hỏi"| F["🤖 AI Giám khảo ảo"]:::ai
+        E <--> |"🎙️ Voice: STT ghi nhận"| F
+        F --> |"⚡ Hỏi xoáy / Follow-up"| E
     end
 
-    subgraph Phase3["3. Chấm điểm (Grading & HITL)"]
-        F -->|Transcript câu trả lời| G[AI đối chiếu Rubric]
-        G -->|Điểm đề xuất & Nhận xét| C
-        C -->|Duyệt / Điều chỉnh điểm| H[Điểm chính thức]
-        H --> E
+    subgraph Phase3 [" ⚖️ 3. Chấm điểm & Thẩm định (Grading & HITL) "]
+        F --> |"📝 Transcript câu trả lời"| G["🤖 AI đối chiếu Rubric"]:::ai
+        G --> |"📊 Điểm đề xuất & Nhận xét"| C
+        C --> |"✅ Duyệt / Ghi đè điểm"| H["🏆 Điểm chính thức"]:::result
+        H --> |"Công bố kết quả"| E
     end
 
-    D -.-> Phase2
-    Phase2 -.-> Phase3
+    D -.-> |"Cấp đề thi"| Phase2
+    Phase2 -.-> |"Chuyển dữ liệu chấm"| Phase3
 ```
 
 ---

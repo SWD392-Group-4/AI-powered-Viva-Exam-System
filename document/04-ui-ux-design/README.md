@@ -26,37 +26,56 @@
 ## 2. Kiến trúc thông tin (Site Map)
 
 ```mermaid
-graph TD
-    Home["/ (Trang chủ)"]
-    Login["/login (Đăng nhập)"]
-    Register["/register (Đăng ký)"]
-    Profile["/profile (Hồ sơ cá nhân)"]
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EEF2FF',
+    'primaryTextColor': '#1E1B4B',
+    'primaryBorderColor': '#6366F1',
+    'lineColor': '#64748B',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
+flowchart TD
+    %% Role-based styling classes
+    classDef public fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px,color:#1E293B,rx:8,ry:8;
+    classDef student fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1,rx:8,ry:8;
+    classDef lecturer fill:#F5F3FF,stroke:#8B5CF6,stroke-width:1.5px,color:#5B21B6,rx:8,ry:8;
+    classDef admin fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px,color:#92400E,rx:8,ry:8;
+
+    subgraph PublicPortal [" 🌐 Cổng Chung (Public / Auth) "]
+        Home["🏠 <b>/</b><br/>(Trang chủ giới thiệu)"]:::public
+        Login["🔑 <b>/login</b><br/>(Đăng nhập)"]:::public
+        Register["📝 <b>/register</b><br/>(Đăng ký)"]:::public
+        Profile["👤 <b>/profile</b><br/>(Hồ sơ cá nhân)"]:::public
+    end
     
-    subgraph SinhVien ["Phân hệ Sinh viên (STUDENT)"]
-        JoinExam["/exam/join (Nhập mã & Passcode)"]
-        ExamRoom["/exam/attempts/:id (Phòng thi Vấn đáp AI)"]
-        StudentResults["/student/results (Xem điểm & Phúc khảo)"]
+    subgraph SinhVien [" 👨‍🎓 Phân hệ Sinh viên (STUDENT) "]
+        JoinExam["🚪 <b>/exam/join</b><br/>(Nhập mã & Passcode)"]:::student
+        ExamRoom["🎙️ <b>/exam/attempts/:id</b><br/>(Phòng thi Vấn đáp AI)"]:::student
+        StudentResults["📊 <b>/student/results</b><br/>(Xem điểm & Phúc khảo)"]:::student
     end
 
-    subgraph GiangVien ["Phân hệ Giảng viên (LECTURER)"]
-        ExamSessions["/exam-sessions (CRUD Phiên thi)"]
-        QuestionBank["/lecturer/questions (Ngân hàng câu hỏi)"]
-        Rubrics["/lecturer/rubrics (Quản lý Rubric)"]
-        Reviews["/lecturer/reviews (Thẩm định điểm AI)"]
-        Appeals["/lecturer/appeals (Xử lý phúc khảo)"]
+    subgraph GiangVien [" 👨‍🏫 Phân hệ Giảng viên (LECTURER) "]
+        ExamSessions["📋 <b>/exam-sessions</b><br/>(CRUD Phiên thi)"]:::lecturer
+        QuestionBank["❓ <b>/lecturer/questions</b><br/>(Ngân hàng câu hỏi & RAG)"]:::lecturer
+        Rubrics["📐 <b>/lecturer/rubrics</b><br/>(Quản lý tiêu chí Rubric)"]:::lecturer
+        Reviews["⚖️ <b>/lecturer/reviews</b><br/>(Thẩm định điểm AI)"]:::lecturer
+        Appeals["📬 <b>/lecturer/appeals</b><br/>(Xử lý đơn phúc khảo)"]:::lecturer
     end
 
-    subgraph QuanTri ["Phân hệ Quản trị viên (ADMIN)"]
-        AdminUsers["/admin/users (CRUD Tài khoản)"]
-        AdminSettings["/admin/settings (Cấu hình hệ thống)"]
+    subgraph QuanTri [" 🛡️ Phân hệ Quản trị viên (ADMIN) "]
+        AdminUsers["👥 <b>/admin/users</b><br/>(Quản lý tài khoản)"]:::admin
+        AdminSettings["⚙️ <b>/admin/settings</b><br/>(Cấu hình hệ thống & AI)"]:::admin
     end
 
     Home --> Login
     Home --> Register
     Login --> Profile
-    Login --> JoinExam
-    Login --> ExamSessions
-    Login --> AdminUsers
+    Login -->|"Role: STUDENT"| JoinExam
+    Login -->|"Role: LECTURER"| ExamSessions
+    Login -->|"Role: ADMIN"| AdminUsers
 
     JoinExam --> ExamRoom
     ExamRoom --> StudentResults
