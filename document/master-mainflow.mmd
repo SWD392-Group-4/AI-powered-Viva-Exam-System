@@ -28,12 +28,13 @@ flowchart TD
     %% ==========================================
     subgraph P1 [" 📚 Giai đoạn 1: Chuẩn Bị Tri Thức & Soạn Đề Thi "]
         L1["👨‍🏫 Giảng viên: Tạo Bài học (Lesson) & Chủ đề (Topic)"]:::client
-        L2["Tải tài liệu môn học / Yêu cầu AI gợi ý câu hỏi theo thang Bloom"]:::client
-        L3["🧠 Gemini Flash: Sinh câu hỏi nháp (DRAFT) & Đáp án mẫu"]:::ai
+        L2["Tải slide môn học (PPTX/PDF) lên Web Portal"]:::client
+        L2B["🗄️ GCS & Vertex AI RAG Engine: Lập chỉ mục vector (Spanner)"]:::ai
+        L3["🧠 Gemini 1.5 Flash: Sinh câu hỏi nháp (DRAFT) grounded từ slide & Đáp án mẫu"]:::ai
         L4["👨‍🏫 Giảng viên: Kiểm duyệt, sửa nội dung & Thiết lập Rubric (100%)"]:::client
         L5[("🗄️ Lưu Questions & Rubrics (Status: APPROVED)")]:::storage
 
-        L1 --> L2 --> L3 --> L4 --> L5
+        L1 --> L2 --> L2B --> L3 --> L4 --> L5
     end
 
     %% ==========================================
@@ -53,7 +54,7 @@ flowchart TD
     %% ==========================================
     %% GIAI ĐOẠN 3: CHECK-IN & KIỂM TRA THIẾT BỊ
     %% ==========================================
-    subgraph P3 [" 🚪 Giai đoạn 3: Xác Thực Truy Cập & Kiểm Tra Thiết Bị "]
+    subgraph P3 [" 🚪 Giai đoạn 3: Xác Thực Truy Cập & Kiểm Tra Thiết BỊ "]
         S1["🎓 Sinh viên: Đăng nhập Web Portal hoặc Mobile App"]:::client
         S2["Nhập session_code & access_code"]:::client
         S3{"⚙️ BE Kiểm tra: Thiết bị hợp lệ & Ca thi đang mở?"}:::decision
@@ -78,14 +79,15 @@ flowchart TD
         V5{"Phát hiện im lặng ≥ 10s hoặc SV bấm nộp câu?"}:::decision
         V6["FE: Đóng mic, gửi Audio lên BE (POST /api/attempts/{id}/answers)"]:::client
         V7["🎙️ Google STT: Chuyển Audio thành Transcript tiếng Việt"]:::ai
-        V8["🧠 Gemini Flash: Đánh giá transcript đối chiếu Rubric & Lịch sử đối thoại"]:::ai
+        V7B["📚 Vertex AI RAG: Truy xuất Top-5 chunks từ slide bài giảng môn học"]:::ai
+        V8["🧠 Gemini 1.5 Flash: Đánh giá transcript đối chiếu Rubric & Chunks slide"]:::ai
         V9{"AI Quyết định: Cần hỏi xoáy (FOLLOW_UP) hay Chuyển câu (NEXT)?"}:::decision
         V10["AI sinh câu hỏi xoáy ngắn gọn (≤ 40 từ) bám sát ý thiếu"]:::ai
         V11{"Đã hoàn thành hết số câu hỏi của đề thi?"}:::decision
         V12["⚙️ BE: Kết thúc lượt thi, viva_attempts.status = COMPLETED"]:::service
 
         V1 --> V2 --> V3 --> V4 --> V5
-        V5 -- "Hết giờ / Nộp" --> V6 --> V7 --> V8 --> V9
+        V5 -- "Hết giờ / Nộp" --> V6 --> V7 --> V7B --> V8 --> V9
         V9 -- "FOLLOW_UP (Chưa quá Max)" --> V10 --> V2
         V9 -- "NEXT (Đạt ý / Đủ trần)" --> V11
         V11 -- "Chưa hết" --> V1 --> V2
@@ -99,7 +101,8 @@ flowchart TD
     subgraph P5 [" ⚖️ Giai đoạn 5: Chấm Điểm AI, Thẩm Định HITL & Phúc Khảo "]
         G1[("⚙️ BE: Tạo Background Job EVALUATE_ATTEMPT trong DB")]:::storage
         G2["⚙️ Worker (@Scheduled + @Async): Lấy Job PENDING, đọc Transcript + Rubric"]:::service
-        G3["🧠 Gemini Flash: Chấm từng tiêu chí Rubric + Trích xuất bằng chứng (Evidence)"]:::ai
+        G2B["📚 Vertex AI RAG: Truy xuất ngữ cảnh slide bài giảng tương ứng"]:::ai
+        G3["🧠 Gemini 1.5 Flash: Chấm từng tiêu chí Rubric + Trích xuất bằng chứng (Evidence & Citations)"]:::ai
         G4[("🗄️ Lưu question_grades (AI_DRAFT) & criteria_grades -> PENDING_REVIEW")]:::storage
         G5["👨‍🏫 Giảng viên: Mở màn hình Thẩm định (Review Dashboard)"]:::client
         G6{"Giảng viên đồng ý với điểm AI?"}:::decision

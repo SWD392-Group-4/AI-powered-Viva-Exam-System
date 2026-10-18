@@ -27,7 +27,7 @@
 
 ## 2. Phân Hệ Quản Trị Hệ Thống (Admin System Management)
 - [ ] Bảng điều khiển quản trị (Admin Dashboard): thống kê số lượng người dùng theo vai trò, số phiên thi đang chạy, tài nguyên AI tiêu thụ *(Chưa có API Dashboard)*
-- [x] Giám sát trạng thái hoạt động của các dịch vụ nền (PostgreSQL, Google Cloud STT/TTS, Gemini Flash API) (`GET /api/health`, `/api/health/tables`)
+- [x] Giám sát trạng thái hoạt động của các dịch vụ nền (PostgreSQL, Google Cloud STT/TTS, Vertex AI RAG Engine qua IAM Service Account) (`GET /api/health`, `/api/health/tables`)
 - [x] Quản lý tài khoản người dùng toàn hệ thống (CRUD User) (`/api/admin/users`)
 - [ ] Danh sách người dùng hỗ trợ phân trang, lọc theo vai trò và tìm kiếm *(Hiện `getAllUsers` trả về toàn bộ List)*
 - [x] Tạo mới tài khoản Giảng viên và Sinh viên với quy tắc tự động sinh mã định danh (`STxxxxxx`, `LExxxxxx`, `ADxxxxxx`)
@@ -49,7 +49,8 @@
 
 ## 4. Phân Hệ Ngân Hàng Câu Hỏi & Sinh Đề AI (Question Bank & AI RAG)
 - [x] Tải lên tài liệu học liệu (giáo trình, slide bài giảng PDF/PPTX/DOCX/TXT) để trích xuất nội dung (`POST /api/content/imports/questions`)
-- [x] Tự động sinh câu hỏi và câu trả lời mẫu bằng AI (Gemini Flash RAG) theo chủ đề bài học
+- [x] Quản lý tài liệu học liệu & slide bài giảng RAG của Giảng viên (`/lecturer/materials`, lưu trữ Google Cloud Storage (GCS) theo môn học, đồng bộ lập chỉ mục Vertex AI RAG Corpus)
+- [x] Tự động sinh câu hỏi và câu trả lời mẫu bằng AI (Vertex AI RAG Grounded) đối soát với tài liệu slide môn học
 - [x] Phân loại câu hỏi theo 4 cấp độ tư duy Bloom (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`)
 - [ ] Quản lý ngân hàng câu hỏi (CRUD Question) *(Mới có Import và Get List, chưa có API Create/Update/Delete thủ công)*
 - [x] Quản lý vòng đời trạng thái câu hỏi (`DRAFT`, `APPROVED`, `ARCHIVED`, `REJECTED`) (`PUT /api/content/questions/{id}/status`)
@@ -149,7 +150,7 @@
 - [x] Service nền định kỳ quét hàng đợi công việc và thực thi đa luồng bất đồng bộ (`GradingScheduler` với `@Scheduled`)
 - [x] Cơ chế Atomic status transition (`NONE -> GRADING`) để đảm bảo không bị xử lý trùng lặp
 - [x] Đọc toàn bộ transcript của tất cả các lượt hỏi đáp chính và hỏi xoáy kèm Rubric đánh giá
-- [x] Gọi mô hình Gemini Flash chấm điểm tuân thủ định dạng nghiêm ngặt theo JSON Schema (`AnswerGrader`)
+- [x] Gọi mô hình Vertex AI Gemini 1.5 Flash chấm điểm đối soát slide bài giảng, tuân thủ định dạng nghiêm ngặt theo JSON Schema (`AnswerGrader`) kèm trích dẫn dẫn chứng (`groundingMetadata`)
 - [x] Chấm điểm chi tiết cho từng tiêu chí trong Rubric (`criteria_grades`)
 - [x] Trích dẫn bằng chứng cụ thể từ transcript: các điểm mạnh trả lời đúng (`strengths`, `evidenceQuote`)
 - [x] Chỉ ra các ý còn thiếu hoặc sai lệch so với Rubric (`weaknesses`)

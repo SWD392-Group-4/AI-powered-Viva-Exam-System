@@ -24,7 +24,8 @@ sequenceDiagram
     participant FE as 💻 FE (React / Expo)
     participant BE as ⚙️ BE Core (Spring Boot)
     participant STT as 🎙️ Google STT
-    participant AI as 🧠 Gemini Flash
+    participant RAG as 📚 Vertex AI RAG
+    participant AI as 🧠 Gemini 1.5 Flash
     participant TTS as 🔊 Google TTS
     participant DB as 🗄️ PostgreSQL
 
@@ -47,7 +48,9 @@ sequenceDiagram
         BE->>STT: recognize(audio, lang="vi-VN", keywords=[domain_terms])
         STT-->>BE: transcript text
         BE->>DB: Lưu transcript vào interview_exchanges
-        BE->>AI: Phân tích transcript + Rubric + Lịch sử câu hỏi (JSON Schema)
+        BE->>RAG: Truy xuất vector tương đồng (similarityTopK: 5)
+        RAG-->>BE: Top-5 chunks nội dung slide bài giảng
+        BE->>AI: Grounded Prompt: transcript + Top-5 chunks + Rubric (JSON Schema)
         AI-->>BE: {decision: "FOLLOW_UP" | "NEXT", reason: "...", followUpQuestion: "..."}
     end
 

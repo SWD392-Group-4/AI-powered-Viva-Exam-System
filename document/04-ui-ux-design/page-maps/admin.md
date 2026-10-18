@@ -45,37 +45,55 @@ flowchart TD
 
 ---
 
-## 3. Đặc Tả Chi Tiết Các Màn Hình Mới Cần Xây Dựng
+## 3. Đặc Tả Kiến Trúc Giao Diện (Admin Portal Layout Architecture)
 
-### 3.1. Bảng Điều Khiển Quản Trị (`/admin/dashboard` - AdminDashboardPage)
-- **Mục đích**: Giám sát hiệu năng và tài nguyên toàn hệ sinh thái AIVES, đưa ra cảnh báo sớm về hạn ngạch AI hoặc tải hệ thống.
-- **Wireframe Layout**:
+### 3.1. Cấu Trúc Bố Cục Sidebar Dọc (Left Sidebar Layout)
+Để tối ưu không gian hiển thị, tránh quá tải cho thanh Top Navbar (khi tài khoản Admin có nhiều danh mục quản trị lẫn khảo thí), phân hệ Admin chuyển sang kiến trúc **Layout Cột Dọc Bên Trái (Left Sidebar Layout)** với các tiêu chuẩn thiết kế:
+- **Thanh Cột Dọc Bên Trái (Fixed Left Sidebar - 260px)**:
+  - **Header Sidebar**: Logo AIVES kèm nhãn định danh `Admin Console / SOC`.
+  - **Nhóm 1: Quản Trị Hệ Thống (System Administration)**:
+    - 📊 `Bảng điều khiển` (`/admin/dashboard`) - SOC tổng quan vận hành, quota AI, metrics.
+    - 👥 `Tài khoản người dùng` (`/admin/users`) - CRUD người dùng, phân quyền SV/GV.
+    - ⚙️ `Cấu hình AI & Tham số` (`/admin/settings`) - Model LLM, STT/TTS, tham số hệ thống.
+    - 📜 `Nhật ký kiểm toán` (`/admin/audit-logs`) - Vết thao tác an toàn thông tin & điểm số (UC11).
+  - **Nhóm 2: Khảo Thí & Học Liệu (Exam Operations)**:
+    - ⏱️ `Phiên thi & Giám sát` (`/exam-sessions`)
+    - 📚 `Chương trình & Học liệu` (`/lecturer/curriculum`, `/lecturer/materials`)
+    - ❓ `Ngân hàng câu hỏi & Rubric` (`/lecturer/questions`, `/lecturer/rubrics`)
+    - ⚖️ `Thẩm định & Phúc khảo` (`/lecturer/reviews`, `/lecturer/appeals`)
+  - **Footer Sidebar**: Thông tin phiên bản (`v1.0.0-prod`), trạng thái kết nối máy chủ Cloud, nút Thu nhỏ/Mở rộng.
+- **Thanh Tiêu Đề Trên (Clean Top Header - 64px)**:
+  - Breadcrumb định vị ngữ cảnh (`Admin > Dashboard`).
+  - Trạng thái hệ thống thời gian thực (`System Operational` badge xanh).
+  - Chuyển đổi ngôn ngữ (`LanguageSwitch`).
+  - Profile rút gọn của Quản trị viên & Nút Đăng xuất.
+
+### 3.2. Bảng Điều Khiển Quản Trị Tinh Gọn (`/admin/dashboard` - AdminDashboardPage)
+- **Mục đích**: Giám sát hiệu năng và tài nguyên toàn hệ sinh thái AIVES, đưa ra cảnh báo sớm về hạn ngạch AI hoặc tải hệ thống với giao diện Clean, Clear, phân cấp trực quan.
+- **Wireframe Layout (Clean & Balanced)**:
 ```text
-+-------------------------------------------------------------------------+
-| [AIVES Logo]  [Dashboard] [Tài khoản] [Cấu hình AI] [Audit Logs]   [👤] |
-+-------------------------------------------------------------------------+
-|                                                                         |
-|  🛡️ Bảng Điều Khiển Quản Trị Hệ Thống AIVES                             |
-|                                                                         |
-|  +--------------------+ +--------------------+ +--------------------+   |
-|  | 👥 Tổng người dùng | | 📋 Ca thi hoạt động| | 🤖 Tài nguyên AI   |   |
-|  |  1,420 tài khoản   | |      8 phiên       | |   98.2% Sẵn sàng   |   |
-|  | (1.2k SV, 210 GV)  | |  (142 SV đang thi) | | (Google STT/TTS OK)|   |
-|  +--------------------+ +--------------------+ +--------------------+   |
-|                                                                         |
-|  +------------------- TRẠNG THÁI DỊCH VỤ NỀN ------------------------+  |
-|  | • PostgreSQL Database: KẾT NỐI BÌNH THƯỜNG (Supabase Cloud)        |
-|  | • Google Cloud Speech API: HOẠT ĐỘNG TỐT (Độ trễ trung bình: 1.2s) |
-|  | • Gemini Flash Model: HOẠT ĐỘNG TỐT (JSON Schema Enforced)         |
-|  +--------------------------------------------------------------------+  |
-|                                                                         |
-|  +------------------ HOẠT ĐỘNG KIỂM TOÁN GẦN NHẤT -------------------+  |
-|  | • [10:14] GV gv.an@aives.edu.vn đã điều chỉnh điểm bài thi AT001928 |
-|  | • [09:45] Admin đã tạo tài khoản giảng viên mới (LE190281)         |
-|  | [ Xem toàn bộ nhật ký Audit ]                                      |
-|  +--------------------------------------------------------------------+  |
-|                                                                         |
-+-------------------------------------------------------------------------+
++------------------+-------------------------------------------------------------------+
+| [AIVES Admin]    | [=] Breadcrumb: Admin > Dashboard        [● Live] [🌐 VI] [👤 Admin] [🚪] |
++------------------+-------------------------------------------------------------------+
+| [QUẢN TRỊ CORE]  |                                                                   |
+| 📊 Dashboard (●) |  Bảng Điều Khiển Quản Trị Hệ Thống              [🔄 Làm mới: 10:45] |
+| 👥 Người dùng    |  ---------------------------------------------------------------- |
+| ⚙️ Cấu hình AI   |  [👥 Tổng người dùng] [⏱️ Ca thi mở] [🤖 AI Quota] [🟢 Sẵn sàng]  |
+| 📜 Audit Logs    |     1,420 Users         8 Live          32% Used       99.98% OK      |
+|                  |                                                                   |
+| [KHẢO THÍ]       |  +-----------------------------+ +-----------------------------+  |
+| ⏱️ Phiên thi     |  | 📊 HẠN NGẠCH TÀI NGUYÊN AI   | | 🟢 TRẠNG THÁI DỊCH VỤ NỀN   |  |
+| 📚 Học liệu      |  | • Speech STT: 29% (Mức an toàn)| | • Supabase DB: 28ms (OK)     |  |
+| ❓ Ngân hàng câu |  | • Cloud TTS:  24% (Mức an toàn)| | • Cloud Speech: 1.1s (OK)    |  |
+| ⚖️ Thẩm định     |  | • Gemini LLM: 42% (Mức an toàn)| | • Gemini 2.5 Flash: 840ms    |  |
+|                  |  +-----------------------------+ | • Async Worker: 0 lỗi       |  |
+|                  |                                  +-----------------------------+  |
+|                  |  +-------------------------------------------------------------+  |
+|                  |  | 📜 HOẠT ĐỘNG KIỂM TOÁN GẦN NHẤT       [Xem toàn bộ nhật ký]  |  |
+|                  |  | • 10:14 | gv.an@aives.edu.vn | OVERRIDE_SCORE | AT001928         |  |
+|                  |  | • 09:45 | admin@aives.edu.vn | CREATE_USER    | LE190281         |  |
+| ⚙️ v1.0.0-prod   |  +-------------------------------------------------------------+  |
++------------------+-------------------------------------------------------------------+
 ```
 
 ### 3.2. Màn hình Nhật Ký Kiểm Toán Chuyên Sâu (`/admin/audit-logs` - AdminAuditLogsPage)

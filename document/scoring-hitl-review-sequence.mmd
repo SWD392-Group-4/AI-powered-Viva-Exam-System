@@ -22,7 +22,8 @@ sequenceDiagram
     autonumber
     participant JOB as ⚙️ Background Job Runner
     participant BE as 🚀 Spring Boot Service
-    participant AI as 🧠 Gemini Flash
+    participant RAG as 📚 Vertex AI RAG
+    participant AI as 🧠 Gemini 1.5 Flash
     participant DB as 🗄️ PostgreSQL
     actor GV as 👨‍🏫 Giảng viên
     actor SV as 🎓 Sinh viên
@@ -36,8 +37,10 @@ sequenceDiagram
     BE->>DB: Lấy toàn bộ transcript exchanges + rubric_criteria của đề thi
     DB-->>BE: transcript list, criteria list
 
-    BE->>AI: Prompt chấm điểm theo tiêu chí (JSON Schema: criteria_id, score, evidence, rationale)
-    AI-->>BE: Bảng điểm chi tiết kèm trích dẫn bằng chứng
+    BE->>RAG: Truy xuất chunks bài giảng tương ứng (RAG Corpus)
+    RAG-->>BE: Ngữ cảnh slide bài giảng (Top-K Chunks)
+    BE->>AI: Grounded Prompt: transcript + slide chunks + Rubric (JSON Schema)
+    AI-->>BE: Bảng điểm chi tiết kèm trích dẫn transcript (evidence) & dẫn chứng slide (citations)
     BE->>DB: INSERT INTO question_grades (status='AI_DRAFT') & criteria_grades
     BE->>DB: UPDATE viva_attempts SET result_status = 'PENDING_REVIEW'
     BE->>DB: UPDATE background_jobs SET status = 'COMPLETED'

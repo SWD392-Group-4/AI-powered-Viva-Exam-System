@@ -40,10 +40,11 @@ flowchart LR
         SPRING["🚀 <b>Java + Spring Boot</b><br/>Spring Security, JPA & REST"]:::backend
     end
 
-    subgraph EXT [" 🤖 3rd Party - AI & Speech Services "]
-        GEMINI["🧠 <b>Gemini Flash</b><br/>Prompt & JSON Schema"]:::ai
-        STT["🎙️ <b>Google Speech-to-Text</b><br/>Bóc băng Audio vi-VN"]:::ai
-        TTS["🔊 <b>Google Text-to-Speech</b><br/>Đọc câu hỏi vấn đáp"]:::ai
+    subgraph EXT [" ☁️ Google Cloud Platform (asia-southeast1) "]
+        GCS["🗂️ <b>Cloud Storage (GCS)</b><br/>Bucket lưu slide bài giảng"]:::ai
+        RAG["📚 <b>Vertex AI RAG Engine</b><br/>Spanner Vector DB (Top-K)"]:::ai
+        GEMINI["🧠 <b>Vertex AI Gemini 1.5 Flash</b><br/>Grounded LLM & JSON Schema"]:::ai
+        SPEECH["🎙️ <b>Speech APIs (STT / TTS)</b><br/>Bóc băng & Đọc câu hỏi"]:::ai
     end
 
     subgraph DB [" 🗄️ Persistence Layer "]
@@ -53,7 +54,9 @@ flowchart LR
     %% Luồng kết nối với nhãn giao thức rõ ràng
     REACT <--> |"Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY"| SPRING
     MOBILE <--> |"Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY"| SPRING
-    SPRING <--> |"Request: HTTPS REST + API Key<br/>Response: JSON Output"| EXT
+    SPRING <--> |"Google Cloud SDK / HTTPS (IAM Service Account)<br/>Storage, RAG Retrieval, Grounded LLM, Speech"| EXT
+    GCS -. "Auto Sync & Embed" .-> RAG
+    RAG -. "Top-5 Chunks" .-> GEMINI
     SPRING <--> |"Request: JDBC (Spring Data JPA), Port 5432 TCP/IP<br/>Response: ResultSet → Entity"| PG
 ```
 
@@ -66,9 +69,11 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | Khối | Công nghệ | Vai trò |
 | :--- | :--- | :--- |
 | **FE** | **Vite + React**, **TailwindCSS** | Web app cho cả sinh viên và giảng viên: phòng thi (ghi âm, phát câu hỏi, hiển thị transcript), quản lý bài học / câu hỏi / rubric / đề thi, màn hình thẩm định điểm, phúc khảo. |
-| **BE** | **Java + Spring Boot** | Toàn bộ nghiệp vụ: xác thực JWT, phân quyền, điều phối phòng thi, gọi AI, chấm điểm, lưu dữ liệu. Là thành phần **duy nhất** giữ API key và được gọi dịch vụ AI. |
+| **BE** | **Java + Spring Boot** | Toàn bộ nghiệp vụ: xác thực JWT, phân quyền, điều phối phòng thi, gọi AI, chấm điểm, lưu dữ liệu. Là thành phần **duy nhất** lưu trữ chứng chỉ Google Cloud IAM Service Account và được gọi các dịch vụ đám mây (không dùng API key). |
 | **DB** | **PostgreSQL** | Lưu toàn bộ dữ liệu nghiệp vụ theo [Physical ERD](../ERD/03-physical-erd.md) (18 bảng). |
-| **3rd Party** | **Gemini Flash** | LLM: sinh câu hỏi gợi ý, quyết định hỏi xoáy (`BR-VIVA-001/002`), chấm điểm theo rubric (`BR-GRADE-001`). |
+| **Google Cloud (asia-southeast1)** | **Cloud Storage (GCS)** | Lưu trữ slide bài giảng môn học (PPTX, PDF) do giảng viên tải lên theo từng môn học. |
+| | **Vertex AI RAG Engine** | Quản lý RAG Corpus trên RagManaged Cloud Spanner Vector DB, phân mảnh tài liệu (Chunk: 1024, Overlap: 256) và tính vector embedding (`text-multilingual-embedding-002`). |
+| | **Vertex AI Gemini 1.5 Flash** | Suy luận có căn cứ (Grounded Inference) dựa trên Top-5 chunks từ slide bài giảng: sinh câu hỏi gợi ý, quyết định hỏi xoáy (`BR-VIVA-001/002`), chấm điểm theo rubric (`BR-GRADE-001`) kèm trích dẫn dẫn chứng (`groundingMetadata`). |
 | | **Google Speech-to-Text** | Chuyển audio câu trả lời của sinh viên thành transcript (`BR-VIVA-004`). |
 | | **Google Text-to-Speech** | Chuyển câu hỏi (text) thành giọng đọc để phát cho sinh viên. |
 
@@ -80,8 +85,8 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | :---: | :--- | :--- | :--- | :--- |
 | 1 | FE (Web/Mobile) → BE | HTTPS REST + JWT | JSON; audio câu trả lời gửi dạng `multipart/form-data` | JWT gửi trong header `Authorization: Bearer <token>`; Mobile gửi `platform: "MOBILE"` khi join ca thi |
 | 2 | BE → FE (Web/Mobile) | HTTP response | Mã trạng thái HTTP + JSON body | Audio câu hỏi (TTS) trả về dạng base64/URL hoặc phát qua TTS trên client |
-| 3 | BE → 3rd Party | HTTPS REST + API Key | JSON (prompt cho Gemini, audio base64 cho STT, text cho TTS) | API key chỉ nằm ở BE (biến môi trường), **không bao giờ** gửi xuống FE hay Mobile |
-| 4 | 3rd Party → BE | HTTPS response | JSON (kết quả LLM, transcript, audio base64) | Output của Gemini yêu cầu trả đúng JSON schema để BE kiểm tra |
+| 3 | BE → Google Cloud | HTTPS REST / Cloud SDK | Upload slide GCS, RAG retrieval query, Grounded prompt (transcript + rubric), audio base64 (STT/TTS) | Xác thực qua Google Cloud IAM Service Account (`roles/aiplatform.user`, `roles/storage.objectAdmin`); **loại bỏ hoàn toàn static API key** |
+| 4 | Google Cloud → BE | HTTPS response | URI tài liệu, Top-5 semantic chunks, kết quả LLM theo JSON Schema kèm trích dẫn (citations), transcript STT, audio TTS | BE kiểm tra tính hợp lệ của JSON Schema và metadata dẫn chứng trước khi xử lý tiếp |
 | 5 | BE → DB | JDBC qua Spring Data JPA | Câu lệnh SQL | Kết nối TCP/IP cổng **5432** (mặc định của PostgreSQL) |
 | 6 | DB → BE | JDBC | `ResultSet` được Hibernate map thành Entity | |
 
@@ -100,8 +105,10 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | FE Mobile | Expo Audio / Expo Speech | Thu âm micro trực tiếp và phát giọng nói tổng hợp trên thiết bị di động. |
 | BE | Java + Spring Boot (Spring Web, Spring Security + JWT, Spring Data JPA, Bean Validation) | Chuẩn phổ biến cho backend Java, chia layer rõ ràng, tích hợp sẵn bảo mật và ORM. |
 | DB | PostgreSQL | CSDL quan hệ mã nguồn mở, miễn phí; database mã hoá UTF-8 nên `VARCHAR` / `TEXT` lưu đúng tiếng Việt. BE kết nối bằng driver `org.postgresql:postgresql`. |
-| AI | Gemini Flash | Chi phí thấp, độ trễ thấp, hỗ trợ trả output theo JSON schema. |
-| AI | Google Cloud Speech-to-Text / Text-to-Speech | Hỗ trợ tiếng Việt (`vi-VN`), gọi được qua REST an toàn từ Backend. |
+| AI Storage | Google Cloud Storage (GCS) | Lưu trữ phi cấu trúc các tệp slide bài giảng (PPTX, PDF) phân tách theo môn học. |
+| AI Retrieval | Vertex AI Managed RAG Engine + Cloud Spanner | Quản lý ngữ liệu vector, tìm kiếm tương đồng cosine Top-5 chunks với mô hình `text-multilingual-embedding-002`. |
+| AI Reasoning | Vertex AI Gemini 1.5 Flash | Suy luận có dẫn chứng (Grounded Inference), độ trễ thấp (< 1.5s), tuân thủ JSON Schema nghiêm ngặt. |
+| AI Speech | Google Cloud Speech-to-Text / Text-to-Speech | Hỗ trợ tiếng Việt (`vi-VN`), gọi an toàn qua Google Cloud SDK từ Backend. |
 
 ---
 
@@ -240,9 +247,9 @@ sequenceDiagram
 
 ## 7. Bảo mật
 
-- Toàn bộ giao tiếp FE ↔ BE và BE ↔ 3rd Party qua **HTTPS**.
+- Toàn bộ giao tiếp FE ↔ BE và BE ↔ Google Cloud Platform qua **HTTPS**.
 - **JWT** cấp khi đăng nhập; mọi API (trừ đăng nhập) phải có token. BE kiểm tra quyền theo role và theo quyền sở hữu dữ liệu (`BR-AUTH-001`, `BR-AUTH-002`).
-- **API key** của Gemini và Google Cloud chỉ lưu ở BE (biến môi trường / file cấu hình không commit lên git).
+- **Xác thực IAM Zero Trust**: Loại bỏ hoàn toàn API key tĩnh (`GEMINI_API_KEY`). BE sử dụng Google Cloud IAM Service Account tuân thủ nguyên tắc đặc quyền tối thiểu (Least Privilege) với 2 roles: `roles/aiplatform.user` (gọi RAG Corpus & Gemini LLM) và `roles/storage.objectAdmin` (quản lý slide trên GCS). Credentials lưu qua biến môi trường bí mật trên server, **không bao giờ** gửi xuống FE hay Mobile.
 - Mật khẩu lưu dạng băm (BCrypt) trong `users.password_hash`.
 - PostgreSQL chỉ mở cổng 5432 cho BE, không mở ra Internet.
 

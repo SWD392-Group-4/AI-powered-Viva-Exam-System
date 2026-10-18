@@ -19,11 +19,11 @@
 | Hình tròn | **AIVES System** | Process | Toàn bộ hệ thống (FE + BE + DB), xem như hộp đen. |
 | Hình chữ nhật | **Lecturer** | Người dùng | Giảng viên: chuẩn bị câu hỏi / rubric, tạo đề thi, thẩm định và công bố điểm, xử lý phúc khảo. |
 | Hình chữ nhật | **Student** | Người dùng | Sinh viên: làm bài thi vấn đáp bằng giọng nói, xem điểm, gửi phúc khảo. |
-| Hình chữ nhật | **Gemini Flash (LLM)** | Hệ thống ngoài | Sinh câu hỏi, quyết định hỏi xoáy, chấm điểm theo rubric. |
-| Hình chữ nhật | **Google Speech-to-Text** | Hệ thống ngoài | Chuyển audio câu trả lời thành transcript. |
+| Hình chữ nhật | **Google Cloud Platform (Vertex AI RAG & Gemini)** | Hệ thống ngoài | Quản lý slide môn học (GCS), tìm kiếm vector tương đồng (RAG Corpus Spanner), suy luận có căn cứ (Grounded Inference bằng Gemini 1.5 Flash). |
+| Hình chữ nhật | **Google Speech-to-Text** | Hệ thống ngoài | Chuyển audio câu trả lời thành transcript (`vi-VN`). |
 | Hình chữ nhật | **Google Text-to-Speech** | Hệ thống ngoài | Chuyển câu hỏi dạng text thành audio. |
 
-Các thực thể ngoài khớp với actor trong use case diagram (Lecturer, Student, AI Service). Riêng AI Service được tách thành 3 dịch vụ theo [sơ đồ kiến trúc](../02-architecture-design/README.md), vì mỗi dịch vụ nhận và trả dữ liệu khác nhau.
+Các thực thể ngoài khớp với actor trong use case diagram (Lecturer, Student, AI Cloud Platform). Nền tảng Google Cloud quản trị tập trung việc lưu trữ slide, truy xuất vector RAG và suy luận mô hình thông qua IAM Service Account.
 
 ---
 
@@ -64,22 +64,23 @@ Các thực thể ngoài khớp với actor trong use case diagram (Lecturer, St
 | S9 | AIVES → Student | Published score & feedback | View score (`BR-GRADE-003`) |
 | S10 | AIVES → Student | Appeal result | Appeal |
 
-### 3.3. AIVES ↔ Dịch vụ AI
+### 3.3. AIVES ↔ Dịch vụ AI & Google Cloud Platform
 
 | # | Chiều | Luồng dữ liệu | Mục đích |
 | :---: | :--- | :--- | :--- |
-| A1 | AIVES → Gemini | Prompt: generate question | Sinh câu hỏi nháp theo Bloom từ tài liệu môn học (`BR-BANK-002`) |
-| A2 | AIVES → Gemini | Prompt: follow-up decision | Gửi câu hỏi + transcript + rubric để AI quyết định hỏi xoáy (`BR-VIVA-001`) |
-| A3 | AIVES → Gemini | Prompt: grade by rubric | Gửi transcript + rubric để chấm điểm (`BR-GRADE-001`) |
-| A4 | Gemini → AIVES | Draft questions (Bloom) | Câu hỏi nháp, lưu với trạng thái `DRAFT` |
-| A5 | Gemini → AIVES | Follow-up decision & question | `FOLLOW_UP` / `NEXT` kèm câu hỏi xoáy ≤ 40 từ (`BR-VIVA-002`) |
-| A6 | Gemini → AIVES | Criteria scores + evidence | Điểm từng tiêu chí kèm trích dẫn từ transcript |
-| A7 | AIVES → Google STT | Answer audio + domain keywords | Audio câu trả lời kèm thuật ngữ chuyên ngành (`BR-VIVA-004`) |
-| A8 | Google STT → AIVES | Transcript | Văn bản câu trả lời |
-| A9 | AIVES → Google TTS | Question text | Nội dung câu hỏi / câu xoáy |
-| A10 | Google TTS → AIVES | Question audio | Audio để phát cho sinh viên |
+| A1 | AIVES → GCS & Vertex AI RAG | Upload slides & Import task | Đẩy slide lên GCS và kích hoạt lập chỉ mục RAG Corpus (`text-multilingual-embedding-002`) |
+| A2 | AIVES → Vertex AI RAG & Gemini | Prompt: generate questions + RAG Corpus ID | Sinh câu hỏi nháp đối soát kiến thức từ slide bài giảng theo thang Bloom (`BR-BANK-002`) |
+| A3 | AIVES → Vertex AI RAG & Gemini | Prompt: follow-up decision + Top-5 Chunks | RAG truy xuất Top-5 chunks từ slide kết hợp transcript + rubric để AI quyết định hỏi xoáy (`BR-VIVA-001`) |
+| A4 | AIVES → Vertex AI RAG & Gemini | Prompt: grade by rubric + RAG context | Đối chiếu transcript, rubric và nội dung slide bài giảng để chấm điểm minh bạch (`BR-GRADE-001`) |
+| A5 | Vertex AI → AIVES | Grounded draft questions (Bloom) | Danh sách câu hỏi nháp có căn cứ từ slide môn học (Status: `DRAFT`) |
+| A6 | Vertex AI → AIVES | Follow-up decision & question | Quyết định `FOLLOW_UP` / `NEXT` kèm câu hỏi xoáy ≤ 40 từ (`BR-VIVA-002`) |
+| A7 | Vertex AI → AIVES | Criteria scores + Grounding citations | Điểm từng tiêu chí kèm trích dẫn bằng chứng từ transcript và trích dẫn slide (`groundingMetadata`) |
+| A8 | AIVES → Google STT | Answer audio + domain keywords | Audio câu trả lời kèm thuật ngữ chuyên ngành (`BR-VIVA-004`) |
+| A9 | Google STT → AIVES | Transcript | Văn bản câu trả lời sau khi bóc băng |
+| A10 | AIVES → Google TTS | Question text | Nội dung câu hỏi / câu xoáy cần phát âm |
+| A11 | Google TTS → AIVES | Question audio | Luồng âm thanh tổng hợp để phát cho sinh viên |
 
-**Tổng cộng**: 35 luồng dữ liệu (Lecturer 15, Student 10, Gemini 6, STT 2, TTS 2).
+**Tổng cộng**: 37 luồng dữ liệu (Lecturer 15, Student 10, Vertex AI RAG 7, STT 2, TTS 2).
 
 ---
 

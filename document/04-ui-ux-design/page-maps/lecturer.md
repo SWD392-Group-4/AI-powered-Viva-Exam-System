@@ -17,6 +17,7 @@
 | `/lecturer/curriculum` | **Quản Lý Bài Học & Chủ Đề (Curriculum)** | `LECTURER`, `ADMIN` | Cần bổ sung (`CurriculumManagementPage.tsx`) | Quản lý danh mục Bài học (`lessons`) và các Chủ đề con (`topics`) trực thuộc môn học phụ trách theo CSDL quan hệ. |
 | `/lecturer/questions` | **Ngân Hàng Câu Hỏi & RAG** | `LECTURER`, `ADMIN` | Đã có (`QuestionBankPage.tsx`) | Quản lý câu hỏi theo 4 mức Bloom, tải file giáo trình/slide môn học để AI trích xuất câu hỏi nháp (`DRAFT`), gán rubric và phê duyệt sang `APPROVED` (`BR-BANK-002`). |
 | `/lecturer/rubrics` | **Quản Lý Tiêu Chí Rubric** | `LECTURER`, `ADMIN` | Đã có (`RubricManagementPage.tsx`) | Thiết lập danh mục Rubric chấm điểm: tiêu chí, mô tả chuẩn và trọng số % đảm bảo tổng đúng bằng 100% (`BR-BANK-001`). Hỗ trợ tải file rubric bằng AI. |
+| `/lecturer/materials` | **Quản Lý Học Liệu & Slide RAG** | `LECTURER`, `ADMIN` | Đang triển khai (`MaterialsManagementPage.tsx`) | Quản lý danh mục tài liệu/slide môn học đã tải lên Google Cloud Storage (GCS) theo môn học, theo dõi trạng thái đồng bộ Vertex AI RAG Corpus (`INDEXING`, `READY`, `FAILED`), cho phép tìm kiếm, xem trước, tải lại, gán bài học/chủ đề và xóa tài liệu của tài khoản giảng viên. |
 | `/lecturer/reviews` | **Thẩm Định Điểm AI (HITL Review Board)** | `LECTURER`, `ADMIN` | Đã có (`LecturerReviewPage.tsx`) | Danh sách các lượt thi đã hoàn thành (`COMPLETED`) đang ở trạng thái `PENDING_REVIEW` do AI chấm ngầm đề xuất. |
 | `/lecturer/reviews/:attemptId` | **Đối Soát & Duyệt Điểm Chi Tiết** | `LECTURER`, `ADMIN` | Đã có (`LecturerReviewPage.tsx`) | Màn hình split-view 2 cột đối chiếu: Audio/Transcript lời nói sinh viên vs Bảng điểm gợi ý của AI. Quyền ghi đè điểm (`OverrideScore`), bắt buộc nhập lý do nếu chênh lệch $> 2.0$ điểm (`BR-GRADE-002`) và nút Công bố điểm (`PUBLISHED`). |
 | `/lecturer/appeals` | **Quản Lý Đơn Phúc Khảo** | `LECTURER`, `ADMIN` | Đã có (`AppealsManagementPage.tsx`) | Tiếp nhận khiếu nại của sinh viên, xem lại bằng chứng transcript gốc, ra quyết định Chấp thuận (điều chỉnh điểm) hoặc Từ chối kèm phản hồi giải thích. |
@@ -111,3 +112,17 @@ flowchart TD
     - Trạng thái phòng thi: `ĐANG TRẢ LỜI CÂU 2/4`, `CHUẨN BỊ`, `ĐÃ NỘP BÀI`.
     - Thời lượng còn lại của từng thí sinh.
     - Trạng thái tín hiệu: Micro On/Off, Ping mạng.
+
+### 3.4. Màn hình Quản Lý Học Liệu & Slide RAG (`/lecturer/materials` - MaterialsManagementPage)
+- **Mục đích**: Cho phép giảng viên quản lý toàn diện các tài liệu, bài giảng slide (.pptx, .pdf) đã tải lên Google Cloud Storage (GCS) và nạp vào Vertex AI RAG Corpus theo môn học.
+- **Phân quyền (RBAC)**: Giảng viên chỉ xem và thao tác trên học liệu do chính mình tải lên (`lecturerId`), Quản trị viên (`ADMIN`) có quyền xem toàn bộ.
+- **Thành phần & Chức năng**:
+  - **Bộ lọc & Tìm kiếm**: Lọc theo Bài học (`lessonId`), Chủ đề (`topicId`), Trạng thái RAG (`INDEXING`, `READY`, `FAILED`), tìm kiếm theo tên file / tiêu đề.
+  - **Nút "Upload tài liệu mới"**: Mở `UploadMaterialModal` chọn file `.pptx, .ppt, .pdf`, gán bài học/chủ đề và gửi lên backend lưu GCS + lập chỉ mục RAG Corpus.
+  - **Bảng danh sách học liệu**:
+    - Tiêu đề & Tên file gốc, kích thước, định dạng icon (.pptx / .pdf).
+    - Bài học & Chủ đề liên kết.
+    - Đường dẫn Cloud Storage (`gs://...`).
+    - Trạng thái nạp RAG Corpus kèm badge màu (`READY`: xanh lá, `INDEXING`: xanh dương xoay, `FAILED`: đỏ).
+    - Ngày tải lên.
+    - Hành động: Nạp lại RAG (`Re-index`), Đổi bài học/chủ đề liên kết, Xóa tài liệu (xóa khỏi GCS & RAG Corpus).
