@@ -16,8 +16,7 @@
 | `/lecturer/exam-sessions/:id/monitor` | **Giám Sát Trực Tiếp Ca Thi (Live Monitor)** | `LECTURER`, `ADMIN` | Cần bổ sung (`LiveExamMonitorPage.tsx`) | Giám sát trạng thái phòng thi theo thời gian thực (`BR-AUTH-004`): danh sách thí sinh đang làm bài, thời gian còn lại, câu hỏi hiện tại, trạng thái mic/kết nối. |
 | `/lecturer/curriculum` | **Quản Lý Bài Học & Chủ Đề (Curriculum)** | `LECTURER`, `ADMIN` | Cần bổ sung (`CurriculumManagementPage.tsx`) | Quản lý danh mục Bài học (`lessons`) và các Chủ đề con (`topics`) trực thuộc môn học phụ trách theo CSDL quan hệ. |
 | `/lecturer/questions` | **Ngân Hàng Câu Hỏi & RAG** | `LECTURER`, `ADMIN` | Đã có (`QuestionBankPage.tsx`) | Quản lý câu hỏi theo 4 mức Bloom, tải file giáo trình/slide môn học để AI trích xuất câu hỏi nháp (`DRAFT`), gán rubric và phê duyệt sang `APPROVED` (`BR-BANK-002`). |
-| `/lecturer/rubrics` | **Quản Lý Tiêu Chí Rubric** | `LECTURER`, `ADMIN` | Đã có (`RubricManagementPage.tsx`) | Thiết lập danh mục Rubric chấm điểm: tiêu chí, mô tả chuẩn và trọng số % đảm bảo tổng đúng bằng 100% (`BR-BANK-001`). Hỗ trợ tải file rubric bằng AI. |
-| `/lecturer/materials` | **Quản Lý Học Liệu & Slide RAG** | `LECTURER`, `ADMIN` | Đang triển khai (`MaterialsManagementPage.tsx`) | Quản lý danh mục tài liệu/slide môn học đã tải lên Google Cloud Storage (GCS) theo môn học, theo dõi trạng thái đồng bộ Vertex AI RAG Corpus (`INDEXING`, `READY`, `FAILED`), cho phép tìm kiếm, xem trước, tải lại, gán bài học/chủ đề và xóa tài liệu của tài khoản giảng viên. |
+| `/lecturer/materials` | **Quản Lý Học Liệu & Slide RAG** | `LECTURER`, `ADMIN` | Đã triển khai (`MaterialsManagementPage.tsx`) | Quản lý danh mục tài liệu/slide môn học đã tải lên Google Cloud Storage (GCS) theo môn học, theo dõi trạng thái đồng bộ Vertex AI RAG Corpus (`INDEXING`, `READY`, `FAILED`), cho phép tìm kiếm, xem trước, tải lại, gán bài học/chủ đề và xóa tài liệu của tài khoản giảng viên. |
 | `/lecturer/reviews` | **Thẩm Định Điểm AI (HITL Review Board)** | `LECTURER`, `ADMIN` | Đã có (`LecturerReviewPage.tsx`) | Danh sách các lượt thi đã hoàn thành (`COMPLETED`) đang ở trạng thái `PENDING_REVIEW` do AI chấm ngầm đề xuất. |
 | `/lecturer/reviews/:attemptId` | **Đối Soát & Duyệt Điểm Chi Tiết** | `LECTURER`, `ADMIN` | Đã có (`LecturerReviewPage.tsx`) | Màn hình split-view 2 cột đối chiếu: Audio/Transcript lời nói sinh viên vs Bảng điểm gợi ý của AI. Quyền ghi đè điểm (`OverrideScore`), bắt buộc nhập lý do nếu chênh lệch $> 2.0$ điểm (`BR-GRADE-002`) và nút Công bố điểm (`PUBLISHED`). |
 | `/lecturer/appeals` | **Quản Lý Đơn Phúc Khảo** | `LECTURER`, `ADMIN` | Đã có (`AppealsManagementPage.tsx`) | Tiếp nhận khiếu nại của sinh viên, xem lại bằng chứng transcript gốc, ra quyết định Chấp thuận (điều chỉnh điểm) hoặc Từ chối kèm phản hồi giải thích. |
@@ -38,8 +37,8 @@ flowchart TD
     Dashboard["📊 /lecturer/dashboard<br/>(Bảng Điều Khiển Giảng Viên)"]:::lecturer
 
     Curriculum["📚 /lecturer/curriculum<br/>(Bài học & Chủ đề)"]:::prep
+    Materials["📂 /lecturer/materials<br/>(Học liệu & Slide RAG)"]:::prep
     Questions["❓ /lecturer/questions<br/>(Ngân hàng câu hỏi & RAG)"]:::prep
-    Rubrics["📐 /lecturer/rubrics<br/>(Bộ tiêu chí Rubric)"]:::prep
 
     Sessions["📋 /exam-sessions<br/>(Quản lý Phiên thi CRUD)"]:::exam
     Monitor["👁️ /lecturer/exam-sessions/:id/monitor<br/>(Giám sát phòng thi Realtime)"]:::exam
@@ -50,12 +49,13 @@ flowchart TD
 
     Login --> Dashboard
     Dashboard --> Curriculum
+    Dashboard --> Materials
     Dashboard --> Sessions
     Dashboard --> Reviews
     Dashboard --> Appeals
 
-    Curriculum --> Questions
-    Rubrics --> Questions
+    Curriculum --> Materials
+    Materials --> Questions
     Questions --> Sessions
     Sessions --> Monitor
     Sessions --> Reviews

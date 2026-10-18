@@ -13,12 +13,13 @@ Tài liệu định nghĩa các Business Rules (BR) bắt buộc cho hệ thốn
 ---
 
 ## 2. Danh mục Modules & Mã hóa
-| Code | Module Nghiệp Vụ | File Đặc Tả |
+| Code | Module / Luồng Nghiệp Vụ | File Đặc Tả |
 | :--- | :--- | :--- |
-| **AUTH** | Authentication & RBAC | [br-auth-rbac.md](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/01-business-rule/br-auth-rbac.md) |
-| **BANK** | Question Bank & Rubric Management (Module 1) | [br-question-rubric.md](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/01-business-rule/br-question-rubric.md) |
-| **VIVA** | AI Interview Loop & Adaptive Follow-up (Module 3) | [br-ai-interview.md](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/01-business-rule/br-ai-interview.md) |
-| **GRADE** | AI Scoring & Human-in-the-Loop Review (Module 4) | [br-grading-review.md](file:///c:/Edisk/dow/Tai_lieu/ky7/swd/AI-powered-Viva-Exam-System/document/01-business-rule/br-grading-review.md) |
+| **AUTH** | Authentication & RBAC | [br-auth-rbac.md](br-auth-rbac.md) |
+| **BANK** | Question Bank & Rubric Management (Module 1) | [br-question-rubric.md](br-question-rubric.md) |
+| **VIVA** | AI Interview Loop & Adaptive Follow-up (Module 3) | [br-ai-interview.md](br-ai-interview.md) |
+| **GRADE** | AI Scoring & Human-in-the-Loop Review (Module 4) | [br-grading-review.md](br-grading-review.md) |
+| **FLOW-PREP** | Chu Trình Nạp Học Liệu RAG, Soạn Đề & Tạo Ca Thi | [lecturer-exam-prep-flow.md](lecturer-exam-prep-flow.md) |
 
 ---
 
