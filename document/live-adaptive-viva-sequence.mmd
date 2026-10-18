@@ -1,0 +1,74 @@
+---
+title: AIVES - Live Adaptive Viva Loop Sequence Diagram
+---
+
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'actorBkg': '#EEF2FF',
+    'actorBorder': '#6366F1',
+    'actorTextColor': '#1E1B4B',
+    'signalColor': '#64748B',
+    'signalTextColor': '#1E293B',
+    'noteBkgColor': '#FEF3C7',
+    'noteBorderColor': '#F59E0B',
+    'noteTextColor': '#78350F',
+    'fontFamily': 'Inter, system-ui, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
+
+sequenceDiagram
+    autonumber
+    actor SV as 👨‍🎓 Sinh viên
+    participant FE as 💻 FE (React / Expo)
+    participant BE as ⚙️ BE Core (Spring Boot)
+    participant STT as 🎙️ Google STT
+    participant AI as 🧠 Gemini Flash
+    participant TTS as 🔊 Google TTS
+    participant DB as 🗄️ PostgreSQL
+
+    SV->>FE: Bấm "Bắt đầu làm bài"
+    FE->>BE: POST /api/attempts/{id}/start (JWT Bearer)
+    BE->>DB: Cập nhật attempt -> IN_PROGRESS
+    BE->>TTS: synthesize(Câu hỏi 1)
+    TTS-->>BE: Audio base64 / binary
+    BE-->>FE: 200 OK {exchangeId, questionText, audioData}
+    FE-->>SV: Phát âm thanh đọc câu hỏi + Hiển thị đồng hồ đếm ngược
+
+    rect rgb(254, 249, 195)
+        Note over SV, FE: Sinh viên chuẩn bị & trả lời bằng giọng nói.<br/>FE theo dõi âm lượng, tự ngắt nếu im lặng ≥ 10s (BR-VIVA-003).
+    end
+
+    SV->>FE: Kết thúc câu trả lời (hoặc auto-stop)
+    FE->>BE: POST /api/attempts/{id}/answers (multipart: audio + exchangeId)
+    
+    rect rgb(240, 249, 255)
+        BE->>STT: recognize(audio, lang="vi-VN", keywords=[domain_terms])
+        STT-->>BE: transcript text
+        BE->>DB: Lưu transcript vào interview_exchanges
+        BE->>AI: Phân tích transcript + Rubric + Lịch sử câu hỏi (JSON Schema)
+        AI-->>BE: {decision: "FOLLOW_UP" | "NEXT", reason: "...", followUpQuestion: "..."}
+    end
+
+    alt AI Quyết định hỏi xoáy VÀ số lượt hỏi xoáy chưa vượt trần (BR-VIVA-001/002)
+        BE->>TTS: synthesize(followUpQuestion)
+        TTS-->>BE: audio câu hỏi xoáy
+        BE->>DB: Tạo exchange mới (exchange_type="FOLLOW_UP", parent_exchange_id)
+        BE-->>FE: 200 OK {exchangeId, questionText, audioData, isFollowUp: true}
+        FE-->>SV: Phát câu hỏi xoáy và tiếp tục thu âm bổ sung
+    else AI Đánh giá đạt yêu cầu HOẶC Đã đạt trần MaxFollowUp
+        opt Vẫn còn câu hỏi chính trong đề thi
+            BE->>TTS: synthesize(Câu hỏi chính tiếp theo)
+            TTS-->>BE: audio câu hỏi mới
+            BE->>DB: Tạo exchange mới (exchange_type="MAIN")
+            BE-->>FE: 200 OK {exchangeId, questionText, audioData, isFollowUp: false}
+            FE-->>SV: Chuyển sang câu hỏi tiếp theo
+        end
+        opt Đã hết toàn bộ câu hỏi của đề thi
+            BE->>DB: Cập nhật viva_attempts -> status = COMPLETED
+            BE->>DB: Chèn background_jobs (job_type = EVALUATE_ATTEMPT)
+            BE-->>FE: 200 OK {isFinished: true, message: "Hoàn thành bài thi"}
+            FE-->>SV: Hiển thị màn hình nộp bài thành công
+        end
+    end

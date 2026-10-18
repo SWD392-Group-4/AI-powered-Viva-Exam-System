@@ -1,0 +1,122 @@
+---
+title: AIVES - Master End-to-End Mainflow
+---
+
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EEF2FF',
+    'primaryTextColor': '#1E1B4B',
+    'primaryBorderColor': '#6366F1',
+    'lineColor': '#64748B',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
+
+flowchart TD
+    %% Class Definitions theo Semantic Color System
+    classDef client fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0369A1,rx:8,ry:8;
+    classDef service fill:#F5F3FF,stroke:#8B5CF6,stroke-width:2px,color:#5B21B6,rx:8,ry:8;
+    classDef ai fill:#FFE4E6,stroke:#F43F5E,stroke-width:2px,color:#9F1239,rx:8,ry:8;
+    classDef storage fill:#ECFDF5,stroke:#10B981,stroke-width:1.5px,color:#065F46,rx:4,ry:4;
+    classDef decision fill:#FEF3C7,stroke:#D97706,stroke-width:2px,color:#92400E,rx:6,ry:6;
+    classDef terminal fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#15803D,rx:8,ry:8;
+
+    %% ==========================================
+    %% GIAI ĐOẠN 1: CHUẨN BỊ NGÂN HÀNG & RUBRIC
+    %% ==========================================
+    subgraph P1 [" 📚 Giai đoạn 1: Chuẩn Bị Tri Thức & Soạn Đề Thi "]
+        L1["👨‍🏫 Giảng viên: Tạo Bài học (Lesson) & Chủ đề (Topic)"]:::client
+        L2["Tải tài liệu môn học / Yêu cầu AI gợi ý câu hỏi theo thang Bloom"]:::client
+        L3["🧠 Gemini Flash: Sinh câu hỏi nháp (DRAFT) & Đáp án mẫu"]:::ai
+        L4["👨‍🏫 Giảng viên: Kiểm duyệt, sửa nội dung & Thiết lập Rubric (100%)"]:::client
+        L5[("🗄️ Lưu Questions & Rubrics (Status: APPROVED)")]:::storage
+
+        L1 --> L2 --> L3 --> L4 --> L5
+    end
+
+    %% ==========================================
+    %% GIAI ĐOẠN 2: THIẾT LẬP CA THI (VIVA EXAM)
+    %% ==========================================
+    subgraph P2 [" 📅 Giai đoạn 2: Thiết Lập Ca Thi & Cấp Mã Truy Cập "]
+        E1["👨‍🏫 Giảng viên: Tạo Ca thi (Viva Exam)"]:::client
+        E2["Cấu hình: Thời lượng, Số câu, Max Follow-up, cờ allowMobileExam"]:::client
+        E3["Chọn danh sách Câu hỏi / Chủ đề đưa vào ca thi"]:::client
+        E4["⚙️ Backend: Sinh Mã ca thi (session_code) & Mã truy cập bí mật (access_code)"]:::service
+        E5[("🗄️ Lưu viva_exams, viva_exam_topics, viva_exam_questions")]:::storage
+
+        E1 --> E2 --> E3 --> E4 --> E5
+    end
+    L5 -.-> E3
+
+    %% ==========================================
+    %% GIAI ĐOẠN 3: CHECK-IN & KIỂM TRA THIẾT BỊ
+    %% ==========================================
+    subgraph P3 [" 🚪 Giai đoạn 3: Xác Thực Truy Cập & Kiểm Tra Thiết Bị "]
+        S1["🎓 Sinh viên: Đăng nhập Web Portal hoặc Mobile App"]:::client
+        S2["Nhập session_code & access_code"]:::client
+        S3{"⚙️ BE Kiểm tra: Thiết bị hợp lệ & Ca thi đang mở?"}:::decision
+        S4["❌ Từ chối: Thông báo lỗi (MOBILE_EXAM_NOT_ALLOWED / EXAM_CLOSED)"]:::client
+        S5["Sinh viên: Kiểm tra Micro, Loa, Đo tiếng ồn môi trường (VAD Test)"]:::client
+        S6["Bấm 'Bắt đầu làm bài' -> Khởi tạo viva_attempts (Status: IN_PROGRESS)"]:::service
+
+        S1 --> S2 --> S3
+        S3 -- "Không hợp lệ" --> S4
+        S3 -- "Hợp lệ" --> S5 --> S6
+    end
+    E4 -.-> S2
+
+    %% ==========================================
+    %% GIAI ĐOẠN 4: VÒNG LẶP VẤN ĐÁP ADAPTIVE REAL-TIME
+    %% ==========================================
+    subgraph P4 [" 🎙️ Giai đoạn 4: Vòng Lặp Vấn Đáp Thích Ứng Thời Gian Thực "]
+        V1["⚙️ BE: Lấy câu hỏi chính theo thứ tự"]:::service
+        V2["🔊 Google TTS: Chuyển văn bản câu hỏi thành Audio"]:::ai
+        V3["FE (Web/Mobile): Phát âm thanh câu hỏi + Đếm ngược suy nghĩ"]:::client
+        V4["🎓 Sinh viên: Bật mic trả lời bằng giọng nói (Recording)"]:::client
+        V5{"Phát hiện im lặng ≥ 10s hoặc SV bấm nộp câu?"}:::decision
+        V6["FE: Đóng mic, gửi Audio lên BE (POST /api/attempts/{id}/answers)"]:::client
+        V7["🎙️ Google STT: Chuyển Audio thành Transcript tiếng Việt"]:::ai
+        V8["🧠 Gemini Flash: Đánh giá transcript đối chiếu Rubric & Lịch sử đối thoại"]:::ai
+        V9{"AI Quyết định: Cần hỏi xoáy (FOLLOW_UP) hay Chuyển câu (NEXT)?"}:::decision
+        V10["AI sinh câu hỏi xoáy ngắn gọn (≤ 40 từ) bám sát ý thiếu"]:::ai
+        V11{"Đã hoàn thành hết số câu hỏi của đề thi?"}:::decision
+        V12["⚙️ BE: Kết thúc lượt thi, viva_attempts.status = COMPLETED"]:::service
+
+        V1 --> V2 --> V3 --> V4 --> V5
+        V5 -- "Hết giờ / Nộp" --> V6 --> V7 --> V8 --> V9
+        V9 -- "FOLLOW_UP (Chưa quá Max)" --> V10 --> V2
+        V9 -- "NEXT (Đạt ý / Đủ trần)" --> V11
+        V11 -- "Chưa hết" --> V1 --> V2
+        V11 -- "Đã xong tất cả" --> V12
+    end
+    S6 --> V1
+
+    %% ==========================================
+    %% GIAI ĐOẠN 5: CHẤM ĐIỂM NGẦM & THẨM ĐỊNH HITL
+    %% ==========================================
+    subgraph P5 [" ⚖️ Giai đoạn 5: Chấm Điểm AI, Thẩm Định HITL & Phúc Khảo "]
+        G1[("⚙️ BE: Tạo Background Job EVALUATE_ATTEMPT trong DB")]:::storage
+        G2["⚙️ Worker (@Scheduled + @Async): Lấy Job PENDING, đọc Transcript + Rubric"]:::service
+        G3["🧠 Gemini Flash: Chấm từng tiêu chí Rubric + Trích xuất bằng chứng (Evidence)"]:::ai
+        G4[("🗄️ Lưu question_grades (AI_DRAFT) & criteria_grades -> PENDING_REVIEW")]:::storage
+        G5["👨‍🏫 Giảng viên: Mở màn hình Thẩm định (Review Dashboard)"]:::client
+        G6{"Giảng viên đồng ý với điểm AI?"}:::decision
+        G7["Phê duyệt giữ nguyên điểm AI đề xuất"]:::client
+        G8["Ghi đè điểm (Override) + Bắt buộc nhập lý do (nếu lệch > 2.0đ)"]:::client
+        G9["👨‍🏫 Chốt & Bấm 'Công Bố Điểm' -> Status: PUBLISHED"]:::client
+        G10["🎓 Sinh viên: Xem điểm chính thức, nhận xét chi tiết và transcript"]:::terminal
+        G11{"Sinh viên có khiếu nại điểm?"}:::decision
+        G12["Tạo đơn phúc khảo (grade_appeals)"]:::client
+        G13["👨‍🏫 Giảng viên: Rà soát lại bản ghi & Cập nhật kết quả phúc khảo"]:::client
+        G14["🏁 Hoàn Tất Chu Kỳ Thi Vấn Đáp"]:::terminal
+
+        G1 --> G2 --> G3 --> G4 --> G5 --> G6
+        G6 -- "Đồng thuận" --> G7 --> G9
+        G6 -- "Điều chỉnh" --> G8 --> G9
+        G9 --> G10 --> G11
+        G11 -- "Có khiếu nại" --> G12 --> G13 --> G14
+        G11 -- "Không khiếu nại" --> G14
+    end
+    V12 --> G1

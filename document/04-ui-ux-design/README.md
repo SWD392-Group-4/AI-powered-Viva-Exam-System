@@ -83,6 +83,13 @@ flowchart TD
     Reviews --> Appeals
 ```
 
+### 2.1. Danh mục Đặc tả Page Map chi tiết theo từng Vai trò ("Mỗi role mỗi file")
+Để hỗ trợ việc triển khai và kiểm thử giao diện độc lập, toàn bộ kiến trúc thông tin và wireframe chi tiết được tách thành từng file độc lập trong thư mục `page-maps/`:
+- 🌐 [Cổng Chung, Xác Thực & Trang Công Khai (common-public.md)](page-maps/common-public.md)
+- 👨‍🎓 [Phân Hệ Sinh Viên - Thí Sinh (student.md)](page-maps/student.md)
+- 👨‍🏫 [Phân Hệ Giảng Viên - Giám Khảo (lecturer.md)](page-maps/lecturer.md)
+- 🛡️ [Phân Hệ Quản Trị Viên - Admin (admin.md)](page-maps/admin.md)
+
 ---
 
 ## 3. Design System & Quy chuẩn thị giác

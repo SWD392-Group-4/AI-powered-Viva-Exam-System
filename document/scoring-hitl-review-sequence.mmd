@@ -1,0 +1,59 @@
+---
+title: AIVES - Background Scoring & HITL Review Sequence Diagram
+---
+
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'actorBkg': '#EEF2FF',
+    'actorBorder': '#6366F1',
+    'actorTextColor': '#1E1B4B',
+    'signalColor': '#64748B',
+    'signalTextColor': '#1E293B',
+    'noteBkgColor': '#FEF3C7',
+    'noteBorderColor': '#F59E0B',
+    'noteTextColor': '#78350F',
+    'fontFamily': 'Inter, system-ui, sans-serif',
+    'fontSize': '13px'
+  }
+}}%%
+
+sequenceDiagram
+    autonumber
+    participant JOB as ⚙️ Background Job Runner
+    participant BE as 🚀 Spring Boot Service
+    participant AI as 🧠 Gemini Flash
+    participant DB as 🗄️ PostgreSQL
+    actor GV as 👨‍🏫 Giảng viên
+    actor SV as 🎓 Sinh viên
+
+    loop Quét job định kỳ (@Scheduled)
+        JOB->>DB: SELECT * FROM background_jobs WHERE status = 'PENDING' LIMIT 1 FOR UPDATE
+        DB-->>JOB: Job EVALUATE_ATTEMPT (attempt_id)
+    end
+
+    JOB->>BE: Thực thi tác vụ chấm điểm (@Async)
+    BE->>DB: Lấy toàn bộ transcript exchanges + rubric_criteria của đề thi
+    DB-->>BE: transcript list, criteria list
+
+    BE->>AI: Prompt chấm điểm theo tiêu chí (JSON Schema: criteria_id, score, evidence, rationale)
+    AI-->>BE: Bảng điểm chi tiết kèm trích dẫn bằng chứng
+    BE->>DB: INSERT INTO question_grades (status='AI_DRAFT') & criteria_grades
+    BE->>DB: UPDATE viva_attempts SET result_status = 'PENDING_REVIEW'
+    BE->>DB: UPDATE background_jobs SET status = 'COMPLETED'
+
+    rect rgb(238, 242, 255)
+        Note over GV, DB: Quy trình Thẩm định Giảng viên (Human-in-the-Loop)
+        GV->>BE: GET /api/lecturer/exams/{id}/reviews
+        BE-->>GV: Danh sách bài thi chờ duyệt kèm transcript & điểm AI đề xuất
+        
+        alt Giảng viên đồng ý với điểm gợi ý
+            GV->>BE: POST /api/lecturer/attempts/{id}/publish {action: "APPROVE"}
+        else Giảng viên điều chỉnh điểm
+            GV->>BE: POST /api/lecturer/attempts/{id}/publish {action: "OVERRIDE", newScore: 8.5, note: "Giải trình..."}
+            Note over BE: Kiểm tra nếu lệch > 2.0 điểm, bắt buộc có note (BR-GRADE-002)
+        end
+        BE->>DB: UPDATE question_grades, viva_attempts SET result_status = 'PUBLISHED'
+    end
+
+    DB-->>SV: Sinh viên xem được bảng điểm chính thức, nhận xét và transcript (BR-GRADE-003)
