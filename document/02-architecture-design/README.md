@@ -213,3 +213,25 @@ sequenceDiagram
 | 3 | **REST thay cho WebSocket** | Sơ đồ chỉ dùng REST, trong khi `BR-AUTH-003` đang viết theo WebSocket (1 kết nối active / SV). | Sửa `BR-AUTH-003` theo REST, ví dụ: mỗi lượt thi chỉ có 1 phiên hợp lệ, request từ phiên cũ bị từ chối. |
 | 4 | **Độ trễ ≤ 3 giây** (`BR-VIVA-003`) | Mỗi lượt gọi tuần tự STT → Gemini → TTS nên dễ vượt 3 giây. | Đo thực tế; nếu vượt thì trả text câu hỏi trước, audio TTS tải sau. |
 | 5 | **Tài liệu cũ chưa khớp** | `00-overview` còn nhắc RAG, `BR-AUTH-001` còn nhắc `EXAM_EXAMINER`, `core-workflows` còn nhắc RAG worker / `pgvector`, Next.js, Redis, BullMQ, WebSocket. | Cập nhật các tài liệu này theo ERD và kiến trúc mới. |
+
+---
+
+## 9. Quy định Quản lý Biến Môi trường (.env & .env.example)
+
+Để đảm bảo các thành viên trong nhóm không quên cập nhật cấu hình khi có biến mới và đồng thời đảm bảo việc triển khai (Deploy lên Render/Cloud) diễn ra trơn tru:
+
+### 9.1. Phân biệt 2 môi trường qua `APP_ENV`
+- **Môi trường Local Dev (`APP_ENV=local` hoặc `dev`)**:
+  - Bắt buộc có file `.env` cục bộ được tạo từ `.env.example`.
+  - Cơ chế tự động kiểm tra đồng bộ: Khi khởi chạy, ứng dụng so sánh danh sách các key giữa `.env.example` và `.env`.
+  - Nếu `.env` thiếu bất kỳ key nào có trong `.env.example`: Chặn khởi động (`exit 1`) và hiển thị hướng dẫn chi tiết danh sách biến cần bổ sung.
+  - Nếu `.env` có key mới chưa được ghi vào `.env.example`: Hiển thị cảnh báo nhắc dev cập nhật `.env.example` cho cả team.
+- **Môi trường Deploy / Production (`APP_ENV=deploy` hoặc `production`, hoặc cờ nhận diện tự động như `RENDER=true`)**:
+  - Không đọc và không kiểm tra sự tồn tại của file `.env` trên đĩa (vì trên môi trường Cloud/Docker, file `.env` bị `.dockerignore` loại bỏ để bảo mật).
+  - Đọc trực tiếp cấu hình từ các biến môi trường hệ thống (`System.getenv` / `process.env`).
+  - Kiểm tra tính đầy đủ của các biến môi trường bắt buộc (như `DB_URL`, `JWT_SECRET`,...).
+
+### 9.2. Triển khai đồng bộ trên cả 3 repository
+1. **Backend (`aives-backend`)**: Xử lý trong `AivesApplication.java` tại hàm `validateEnvironment()`.
+2. **Frontend (`aives-frontend`)**: Xử lý trong `vite-env-check.js` (plugin Vite) kiểm tra trước khi dev/build.
+3. **Mobile (`aives-mobile`)**: Xử lý trong `scripts/check-env.js` (hook `prestart` trong `package.json`).
