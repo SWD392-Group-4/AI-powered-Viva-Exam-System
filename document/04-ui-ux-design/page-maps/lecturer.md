@@ -65,35 +65,56 @@ flowchart TD
 
 ---
 
-## 3. Đặc Tả Chi Tiết Các Màn Hình Mới Cần Xây Dựng
+## 3. Đặc Tả Kiến Trúc Giao Diện (Lecturer Portal Layout Architecture)
 
-### 3.1. Bảng Điều Khiển Giảng Viên (`/lecturer/dashboard` - LecturerDashboardPage)
-- **Mục đích**: Bức tranh toàn cảnh về tiến độ học thuật, cảnh báo các bài thi đang chờ duyệt điểm và khiếu nại chưa xử lý.
-- **Wireframe Layout**:
+### 3.1. Cấu Trúc Bố Cục Sidebar Dọc (Lecturer Left Sidebar Layout)
+Để tối ưu không gian hiển thị và loại bỏ việc nhồi nhét tới 8 mục nghiệp vụ trên thanh Top Navbar ngang, phân hệ Giảng viên chuyển sang chuẩn kiến trúc **Layout Cột Dọc Bên Trái (Left Sidebar Layout)** với các tiêu chuẩn thiết kế:
+- **Thanh Cột Dọc Bên Trái (Fixed Left Sidebar - 270px)**:
+  - **Header Sidebar**: Logo AIVES kèm nhãn định danh `Lecturer Portal` / `Khảo Thí & Học Thuật`.
+  - **Nhóm 1: Tổng Quan (Overview)**:
+    - 📊 `Bảng điều khiển` (`/lecturer/dashboard`) - Bức tranh tổng quan ca thi, bài chờ thẩm định, đơn phúc khảo.
+  - **Nhóm 2: Tổ Chức Thi (Exam Operations)**:
+    - ⏱️ `Phiên thi & Giám sát` (`/exam-sessions`) - Quản lý phòng thi viva, passcode, trạng thái trực tiếp.
+  - **Nhóm 3: Học Liệu & Đề Thi (Academic & Content)**:
+    - 📚 `Chương trình học` (`/lecturer/curriculum`) - Quản lý Bài học (`lessons`) & Chủ đề (`topics`).
+    - 📁 `Học liệu & Slide RAG` (`/lecturer/materials`) - Quản lý tài liệu GCS & Vertex AI RAG Corpus.
+    - ❓ `Ngân hàng câu hỏi` (`/lecturer/questions`) - Câu hỏi theo 4 mức Bloom, sinh đề bằng AI.
+    - 📐 `Tiêu chí Rubric` (`/lecturer/rubrics`) - Tiêu chuẩn chấm điểm 100%.
+  - **Nhóm 4: Chấm Điểm & Đánh Giá (Grading & Reviews)**:
+    - ⚖️ `Thẩm định điểm (HITL)` (`/lecturer/reviews`) - Đối soát điểm AI đề xuất, override điểm.
+    - 📬 `Đơn phúc khảo` (`/lecturer/appeals`) - Xử lý khiếu nại điểm thi của sinh viên.
+  - **Footer Sidebar**: Phiên bản hệ thống, trạng thái Voice Engine, nút Thu nhỏ/Mở rộng.
+- **Thanh Tiêu Đề Trên (Clean Top Header - 64px)**:
+  - Breadcrumb định vị ngữ cảnh (`Giảng viên > Bảng điều khiển`).
+  - Trạng thái Học kỳ (`Học kỳ Spring 2026`).
+  - Chuyển đổi ngôn ngữ (`LanguageSwitch`).
+  - Profile rút gọn của Giảng viên & Nút Đăng xuất.
+
+### 3.2. Bảng Điều Khiển Giảng Viên Tinh Gọn (`/lecturer/dashboard` - LecturerDashboardPage)
+- **Mục đích**: Bức tranh toàn cảnh về tiến độ học thuật, cảnh báo các bài thi đang chờ duyệt điểm và khiếu nại chưa xử lý với giao diện Clean, Clear, phân cấp trực quan.
+- **Wireframe Layout (Clean & Balanced)**:
 ```text
-+-------------------------------------------------------------------------+
-| [AIVES Logo]  [Phiên thi] [Bài học] [Câu hỏi] [Rubric] [Duyệt điểm] [👤]|
-+-------------------------------------------------------------------------+
-|                                                                         |
-|  👨‍🏫 Bảng Điều Khiển Giảng Viên - Học kỳ Spring 2026                     |
-|                                                                         |
-|  +--------------------+ +--------------------+ +--------------------+   |
-|  | 🕒 Ca thi đang mở  | | ⏳ Bài chờ duyệt   | | 📬 Phúc khảo chờ   |   |
-|  |     3 ca thi       | |   12 bài thi (HITL)| |     4 đơn mới      |   |
-|  +--------------------+ +--------------------+ +--------------------+   |
-|                                                                         |
-|  +---------------- CÁC VIỆC CẦN XỬ LÝ GẤP ----------------------------+  |
-|  | ⚠️ Ca thi SWD392-SE1701: 5 bài thi vừa hoàn thành cần thẩm định     |
-|  | ⚠️ Sinh viên Trần Văn Cường nộp đơn phúc khảo câu hỏi 2 (CSDL)     |
-|  | [ Duyệt điểm ngay ]   [ Xem đơn phúc khảo ]                        |
-|  +--------------------------------------------------------------------+  |
-|                                                                         |
-|  +---------------- CA THI GẦN ĐÂY & TRẠNG THÁI -----------------------+  |
-|  | • Kiểm tra Vấn đáp Java Advanced - 24/28 SV đã nộp [ Giám sát ]    |
-|  | • Bảo vệ Đồ án Kiến trúc Phần mềm - Chuẩn bị mở [ Xem đề ]         |
-|  +--------------------------------------------------------------------+  |
-|                                                                         |
-+-------------------------------------------------------------------------+
++------------------+-------------------------------------------------------------------+
+| [AIVES Lecturer] | [=] Breadcrumb: Giảng viên > Dashboard   [Spring 2026] [🌐 VI] [👤 GV] [🚪] |
++------------------+-------------------------------------------------------------------+
+| [TỔNG QUAN]      |                                                                   |
+| 📊 Dashboard (●) |  Bảng Điều Khiển Giảng Viên                    [Học kỳ Spring 2026] |
+|                  |  ---------------------------------------------------------------- |
+| [TỔ CHỨC THI]    |  [🕒 Ca thi đang mở] [⏳ Chờ duyệt HITL] [📬 Phúc khảo] [❓ Câu hỏi] |
+| ⏱️ Phiên thi     |       3 Ca thi            12 Bài thi         4 Đơn         48 Câu     |
+|                  |                                                                   |
+| [HỌC LIỆU & ĐỀ]  |  +-----------------------------+ +-----------------------------+  |
+| 📚 Chương trình  |  | ⚠️ VIỆC CẦN XỬ LÝ GẤP       | | 📋 CA THI GẦN ĐÂY           |  |
+| 📁 Slide & RAG   |  | • 5 bài thi SWD392 chờ duyệt| | • Vấn đáp Java Advanced     |  |
+| ❓ Ngân hàng câu |  | • 2 đơn phúc khảo mới       | | • Đồ án Kiến trúc Phần mềm  |  |
+| 📐 Rubric        |  | [ Thẩm định ngay ]          | | [ Quản lý phiên thi ]       |  |
+|                  |  +-----------------------------+ +-----------------------------+  |
+| [CHẤM ĐIỂM]      |                                                                   |
+| ⚖️ Thẩm định HITL|  +-------------------------------------------------------------+  |
+| 📬 Phúc khảo     |  | 📊 TIẾN ĐỘ CHẤM ĐIỂM HỌC KỲ                                 |  |
+|                  |  | 85% Hoàn thành thẩm định điểm | 15% Đang chờ xử lý          |  |
+| ⚙️ v1.0.0-prod   |  +-------------------------------------------------------------+  |
++------------------+-------------------------------------------------------------------+
 ```
 
 ### 3.2. Màn hình Quản Lý Bài Học & Chủ Đề (`/lecturer/curriculum` - CurriculumManagementPage)
