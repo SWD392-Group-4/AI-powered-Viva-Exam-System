@@ -51,3 +51,19 @@
   4. **Giới hạn số lần thử (Brute-force protection)**: Nếu nhập sai mã OTP quá 5 lần, mã hiện tại bị hủy hiệu lực và người dùng phải yêu cầu gửi lại mã mới (`OTP_MAX_ATTEMPTS_EXCEEDED`).
   5. **Hoàn tất đăng ký**: Chỉ khi mã OTP hợp lệ và chưa hết hạn, hệ thống mới lưu tài khoản sinh viên vào cơ sở dữ liệu với trạng thái kích hoạt (`active = true`).
 
+### BR-AUTH-006: Google Authentication (Single Sign-On)
+- **Context**: Người dùng đăng nhập nhanh bằng tài khoản Google trên Web hoặc Mobile (`POST /api/auth/google`).
+- **Rule**:
+  1. **Xác thực Google ID Token**: Phía client (Web hoặc Mobile) gửi Google ID Token (`idToken`) lên backend. Backend xác thực chữ ký và tính hợp lệ của token với `GOOGLE_CLIENT_ID` qua Google IdTokenVerifier. Nếu token không hợp lệ hoặc đã hết hạn, hệ thống từ chối với mã lỗi `INVALID_CREDENTIALS` (hoặc `GOOGLE_AUTH_FAILED`).
+  2. **Tài khoản đã tồn tại**: Nếu email từ Google Token đã tồn tại trong CSDL `users`:
+     - Kiểm tra trạng thái hoạt động `is_active`. Nếu tài khoản bị vô hiệu hoá (`is_active = FALSE`), từ chối với mã lỗi `ACCOUNT_DISABLED`.
+     - Cho phép đăng nhập thành công theo vai trò hiện tại của tài khoản (`STUDENT`, `LECTURER`, hoặc `ADMIN`) và cấp phát AIVES JWT Access Token.
+  3. **Tài khoản chưa tồn tại**: Nếu email từ Google Token chưa tồn tại:
+     - Hệ thống tự động khởi tạo tài khoản mới với vai trò mặc định là `STUDENT`.
+     - Mã người dùng được sinh theo tiền tố sinh viên `STxxxxxx`.
+     - Mật khẩu ngẫu nhiên bảo mật được băm BCrypt để đảm bảo ràng buộc toàn vẹn của CSDL.
+     - `full_name` lấy từ tên tài khoản Google (fallback sang phần tiền tố của email nếu trống).
+     - Trạng thái mặc định: `is_active = TRUE`, `must_change_password = FALSE`.
+     - Cấp phát AIVES JWT Access Token cho người dùng mới và trả về thông tin đăng nhập thành công.
+
+

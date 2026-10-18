@@ -127,3 +127,16 @@ flowchart TD
   - Tiêu đề: "404 - Không tìm thấy trang này".
   - Mô tả: "Đường dẫn bạn yêu cầu không tồn tại hoặc đã được chuyển sang địa chỉ mới."
   - Nút bấm điều hướng: "Về Trang Chủ" (cho khách) hoặc "Về Bảng Điều Khiển" (nếu đã đăng nhập).
+
+### 3.4. Đăng nhập bằng Google (Google Single Sign-On - Web & Mobile)
+- **Vị trí**:
+  - Web: Trang Đăng Nhập (`/login` - `LoginPage.tsx`), đặt ngay dưới form đăng nhập mật khẩu với phân cách "Hoặc đăng nhập với".
+  - Mobile: Màn hình Đăng Nhập (`app/login.tsx`), nút "Tiếp tục với Google" chuẩn thương hiệu kèm Google Logo.
+- **Hành vi UX**:
+  - Người dùng bấm nút "Đăng nhập với Google".
+  - Hệ thống mở popup / web browser xác thực Google OIDC.
+  - Sau khi người dùng cấp quyền, lấy `idToken` và gửi về backend (`POST /api/auth/google`).
+  - Trong quá trình gửi token, hiển thị trạng thái loading spinner trên nút và khoá tương tác tạm thời.
+  - Khi thành công: tự động lưu session và điều hướng người dùng tới Dashboard tương ứng với role.
+  - Khi thất bại: hiển thị thông báo lỗi rõ ràng (ví dụ "Tài khoản của bạn đã bị vô hiệu hoá" hoặc "Xác thực Google không thành công").
+
