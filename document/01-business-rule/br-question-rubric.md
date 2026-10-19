@@ -29,3 +29,9 @@ Mỗi Rubric (`Rubric`) gồm:
 
 ### BR-BANK-003: Rubric Completeness for AI Grading
 - **Rule**: Mọi tiêu chí trong Rubric bắt buộc phải có mô tả rõ ràng về yêu cầu đạt điểm để LLM làm cơ sở đối chiếu với transcript (tránh chấm điểm hallucination).
+
+### BR-BANK-004: Bloom Distribution & Adaptive Rubric Mapping
+- **Rule**:
+  1. Khi sinh câu hỏi AI từ tài liệu (RAG), số lượng câu hỏi phân bổ cho 4 mức Bloom (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`) bắt buộc phải bám sát chính xác 100% theo tỷ lệ cấu hình của Giảng viên.
+  2. Nếu giảng viên cấu hình 100% ở một mức Bloom (ví dụ 100% `REMEMBER`), toàn bộ câu hỏi sinh ra phải thuộc mức Bloom đó.
+  3. Khung tiêu chí chấm điểm (Rubric) sinh ra tự động phải thích ứng tương ứng với trọng tâm nhận thức của bộ câu hỏi (ví dụ với mức `REMEMBER` 100%, tiêu chí Rubric tập trung vào độ chính xác định nghĩa, thuật ngữ và khả năng tái hiện kiến thức chính quy từ tài liệu; tổng trọng số các tiêu chí luôn bằng đúng 100%).

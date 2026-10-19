@@ -75,11 +75,12 @@ Tài liệu này đặc tả quy trình tác nghiệp khép kín của **Giảng
 - **Cơ chế xử lý hệ thống**:
   1. Backend gọi Vertex AI RAG Engine thực hiện tìm kiếm tương đồng vector trên Cloud Spanner để lấy các đoạn tri thức cốt lõi (Top-K chunks) từ slide đã chọn.
   2. Ghép ngữ cảnh tài liệu vào Prompt khuôn mẫu có ràng buộc JSON Schema gửi tới **Gemini 1.5 Flash**.
-  3. Nhận về danh sách câu hỏi: nội dung hỏi (`content`), gợi ý đáp án mẫu (`model_answer`), từ khóa cần có (`expected_keywords`) và mức Bloom tương ứng.
-  4. Lưu toàn bộ câu hỏi vào bảng `questions` với trạng thái `DRAFT` và `source = AI_GENERATED`.
+  3. Nhận về danh sách câu hỏi: nội dung hỏi (`content`), gợi ý đáp án mẫu (`model_answer`), từ khóa cần có (`expected_keywords`) và mức Bloom tương ứng. Số lượng câu hỏi của từng mức Bloom bám sát tỷ lệ phần trăm được cấu hình.
+  4. Tự động sinh khung Rubric thích ứng với thang Bloom (tập trung vào mức độ nhận thức chủ đạo, tổng trọng số các tiêu chí luôn đúng 100%).
+  5. Lưu toàn bộ câu hỏi vào bảng `questions` với trạng thái `DRAFT` và `source = AI_GENERATED`.
 - **Business Rules kiểm tra**:
   - `BR-BANK-002` (Quy trình sinh câu hỏi AI): Mọi câu hỏi do AI sinh ra bắt buộc phải mang trạng thái ban đầu là `DRAFT`. Tuyệt đối không được gán thẳng trạng thái `APPROVED` hoặc đưa trực tiếp vào ca thi.
-  - `BR-BANK-004` (Ràng buộc thang Bloom): Mỗi câu hỏi tạo ra bắt buộc phải thuộc một trong 4 mức Bloom hợp lệ (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`).
+  - `BR-BANK-004` (Ràng buộc thang Bloom & Rubric thích ứng): Mỗi câu hỏi tạo ra bắt buộc phải thuộc một trong 4 mức Bloom hợp lệ (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`). Phân bổ số lượng câu hỏi phải tuân thủ chính xác tỷ lệ giảng viên đã thiết lập (nếu chọn 100% REMEMBER, toàn bộ câu hỏi sinh ra phải là REMEMBER). Rubric sinh ra phải có các tiêu chí đánh giá phù hợp với mức nhận thức đó.
 
 ---
 
