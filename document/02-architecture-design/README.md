@@ -40,10 +40,9 @@ flowchart LR
         SPRING["🚀 <b>Java + Spring Boot</b><br/>Spring Security, JPA & REST"]:::backend
     end
 
-    subgraph EXT [" ☁️ Google Cloud Platform (asia-southeast1) "]
-        GCS["🗂️ <b>Cloud Storage (GCS)</b><br/>Bucket lưu slide bài giảng"]:::ai
-        RAG["📚 <b>Vertex AI RAG Engine</b><br/>Spanner Vector DB (Top-K)"]:::ai
-        GEMINI["🧠 <b>Vertex AI Gemini 1.5 Flash</b><br/>Grounded LLM & JSON Schema"]:::ai
+    subgraph EXT [" ☁️ External Cloud AI Services (Dual-AI Architecture) "]
+        RAG["📚 <b>Knowledge RAG Engine</b><br/>Slide Grounding & Rubric Assessment"]:::ai
+        GEMINI["🧠 <b>Gemini 1.5 Flash API</b><br/>Real-Time Viva Loop & Transcript Briefing"]:::ai
         SPEECH["🎙️ <b>Speech APIs (STT / TTS)</b><br/>Bóc băng & Đọc câu hỏi"]:::ai
     end
 
@@ -54,13 +53,13 @@ flowchart LR
     %% Luồng kết nối với nhãn giao thức rõ ràng
     REACT <--> |"Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY"| SPRING
     MOBILE <--> |"Request: HTTPS REST (JSON, AUDIO) + JWT<br/>Response: HTTP STATUS + JSON BODY"| SPRING
-    SPRING <--> |"Google Cloud SDK / HTTPS (IAM Service Account)<br/>Storage, RAG Retrieval, Grounded LLM, Speech"| EXT
-    GCS -. "Auto Sync & Embed" .-> RAG
-    RAG -. "Top-5 Chunks" .-> GEMINI
+    SPRING <--> |"HTTPS REST / Gateway<br/>GCS Upload, Vector Retrieval, Rubric Scoring"| RAG
+    SPRING <--> |"HTTPS REST / API Key<br/>Sub-second Viva Probing & Transcript Briefing"| GEMINI
+    SPRING <--> |"HTTPS REST (Google Cloud SDK)<br/>STT / TTS Audio Processing"| SPEECH
     SPRING <--> |"Request: JDBC (Spring Data JPA), Port 5432 TCP/IP<br/>Response: ResultSet → Entity"| PG
 ```
 
-Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều về), giống các cặp nét liền / nét đứt trên ảnh.
+Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều về), biểu thị sự cách ly hoàn toàn giữa FE và các dịch vụ AI bên ngoài thông qua Backend Gateway.
 
 ---
 
@@ -68,14 +67,14 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 
 | Khối | Công nghệ | Vai trò |
 | :--- | :--- | :--- |
-| **FE** | **Vite + React**, **TailwindCSS** | Web app cho cả sinh viên và giảng viên: phòng thi (ghi âm, phát câu hỏi, hiển thị transcript), quản lý bài học / câu hỏi / rubric / đề thi, màn hình thẩm định điểm, phúc khảo. |
-| **BE** | **Java + Spring Boot** | Toàn bộ nghiệp vụ: xác thực JWT, phân quyền, điều phối phòng thi, gọi AI, chấm điểm, lưu dữ liệu. Là thành phần **duy nhất** lưu trữ chứng chỉ Google Cloud IAM Service Account và được gọi các dịch vụ đám mây (không dùng API key). |
-| **DB** | **PostgreSQL** | Lưu toàn bộ dữ liệu nghiệp vụ theo [Physical ERD](../ERD/03-physical-erd.md) (18 bảng). |
-| **Google Cloud (asia-southeast1)** | **Cloud Storage (GCS)** | Lưu trữ slide bài giảng môn học (PPTX, PDF) do giảng viên tải lên theo từng môn học. |
-| | **Vertex AI RAG Engine** | Quản lý RAG Corpus trên RagManaged Cloud Spanner Vector DB, phân mảnh tài liệu (Chunk: 1024, Overlap: 256) và tính vector embedding (`text-multilingual-embedding-002`). |
-| | **Vertex AI Gemini 1.5 Flash** | Suy luận có căn cứ (Grounded Inference) dựa trên Top-5 chunks từ slide bài giảng: sinh câu hỏi gợi ý, quyết định hỏi xoáy (`BR-VIVA-001/002`), chấm điểm theo rubric (`BR-GRADE-001`) kèm trích dẫn dẫn chứng (`groundingMetadata`). |
-| | **Google Speech-to-Text** | Chuyển audio câu trả lời của sinh viên thành transcript (`BR-VIVA-004`). |
-| | **Google Text-to-Speech** | Chuyển câu hỏi (text) thành giọng đọc để phát cho sinh viên. |
+| **FE** | **Vite + React**, **TailwindCSS** | Web portal cho sinh viên và giảng viên: phòng thi vấn đáp trực tuyến, quản lý giáo trình / ngân hàng câu hỏi / rubric / ca thi, màn hình thẩm định điểm (HITL), tra cứu và gửi phúc khảo. |
+| **Mobile** | **React Native + Expo** | Ứng dụng di động cho sinh viên tham gia ca thi vấn đáp linh hoạt, tích hợp micro ghi âm và phát âm thanh câu hỏi native. |
+| **BE** | **Java + Spring Boot** | Trung tâm điều phối toàn bộ hệ thống (Centralized API Gateway): xác thực JWT, phân quyền RBAC, quản lý phiên thi, cách ly bảo mật toàn bộ khóa/chứng chỉ AI trên server, điều phối hàng đợi tác vụ nền (Background Jobs). |
+| **DB** | **PostgreSQL** | Lưu toàn bộ dữ liệu nghiệp vụ quan hệ theo [Physical ERD](../ERD/03-physical-erd.md) (18 bảng) với mã hóa UTF-8 hỗ trợ tiếng Việt trọn vẹn. |
+| **Cloud AI Services** | **Knowledge RAG Engine** | Kho ngữ liệu kiến thức bài giảng: phân mảnh slide (PPTX, PDF), đánh chỉ mục vector, sinh câu hỏi nháp chuẩn Bloom và thực hiện **thẩm định rubric có căn cứ (Grounded Assessment)** dựa trên bản tóm lược của sinh viên kèm trích dẫn slide bài giảng (slide citations). |
+| | **Gemini 1.5 Flash API** | Mô hình ngôn ngữ lớn tối ưu độ trễ thấp (< 1.5s): đóng vai trò Giám khảo tương tác thời gian thực trong phòng thi (hỏi xoáy $\le 40$ từ) và **tổng hợp/cô đọng transcript sau thi (Candidate Briefing)** thành bản tóm lược kỹ thuật có cấu trúc chuyển sang cho RAG Engine đánh giá. |
+| | **Speech-to-Text (STT)** | Chuyển đổi audio câu trả lời của thí sinh thành transcript chữ tiếng Việt (`vi-VN`) với tập từ khóa chuyên ngành công nghệ phần mềm. |
+| | **Text-to-Speech (TTS)** | Chuyển đổi câu hỏi thi dạng text thành giọng đọc truyền cảm, phát trực tiếp cho thí sinh trong phòng thi. |
 
 ---
 
@@ -85,9 +84,11 @@ Mỗi mũi tên hai chiều ghi cả request (chiều đi) và response (chiều
 | :---: | :--- | :--- | :--- | :--- |
 | 1 | FE (Web/Mobile) → BE | HTTPS REST + JWT | JSON; audio câu trả lời gửi dạng `multipart/form-data` | JWT gửi trong header `Authorization: Bearer <token>`; Mobile gửi `platform: "MOBILE"` khi join ca thi |
 | 2 | BE → FE (Web/Mobile) | HTTP response | Mã trạng thái HTTP + JSON body | Audio câu hỏi (TTS) trả về dạng base64/URL hoặc phát qua TTS trên client |
-| 3 | BE → Google Cloud | HTTPS REST / Cloud SDK | Upload slide GCS, RAG retrieval query, Grounded prompt (transcript + rubric), audio base64 (STT/TTS) | Xác thực qua Google Cloud IAM Service Account (`roles/aiplatform.user`, `roles/storage.objectAdmin`); **loại bỏ hoàn toàn static API key** |
-| 4 | Google Cloud → BE | HTTPS response | URI tài liệu, Top-5 semantic chunks, kết quả LLM theo JSON Schema kèm trích dẫn (citations), transcript STT, audio TTS | BE kiểm tra tính hợp lệ của JSON Schema và metadata dẫn chứng trước khi xử lý tiếp |
-| 5 | BE → DB | JDBC qua Spring Data JPA | Câu lệnh SQL | Kết nối TCP/IP cổng **5432** (mặc định của PostgreSQL) |
+| 3a | BE → RAG Engine | HTTPS REST / Gateway | Slide bài giảng (PPTX, PDF), truy vấn tương đồng vector, bản brief của sinh viên và rubric tiêu chí chấm | Kết nối server-side; cách ly namespace theo từng môn học; RAG trả về điểm và slide citations |
+| 3b | BE → Gemini Flash API | HTTPS REST / API Key | Transcript câu trả lời, ngữ cảnh hội thoại, câu hỏi mở rộng ($\le 40$ từ), prompt brief transcript sau thi | Độ trễ phản hồi sub-second (< 1.5s); kiểm soát chặt chẽ JSON Schema; API key được bảo vệ bí mật trên server |
+| 3c | BE → Speech Services | HTTPS REST (Cloud SDK) | Stream audio câu trả lời từ thí sinh (STT) và text câu hỏi khảo thí (TTS) | Bổ sung phrase hints tiếng Việt chuyên ngành; trả về transcript và audio neural |
+| 4 | Cloud Services → BE | HTTPS response | Vector chunks, kết quả hỏi xoáy, bản tóm lược brief, điểm số rubric trích dẫn slide, transcript STT, audio TTS | BE kiểm tra tính hợp lệ JSON Schema trước khi ghi nhận vào CSDL |
+| 5 | BE → DB | JDBC qua Spring Data JPA | Câu lệnh SQL | Kết nối TCP/IP cổng **5432** (mặc định của PostgreSQL), quản lý qua HikariCP |
 | 6 | DB → BE | JDBC | `ResultSet` được Hibernate map thành Entity | |
 
 **Mã trạng thái HTTP dùng thống nhất**: `200` / `201` thành công, `400` dữ liệu sai hoặc vi phạm điều kiện thi thiết bị (`MOBILE_EXAM_NOT_ALLOWED`), `401` chưa đăng nhập / token hết hạn, `403` không đủ quyền (`BR-AUTH-002`), `404` không tìm thấy, `409` xung đột trạng thái (ví dụ bắt đầu lượt thi đã `COMPLETED`), `500` lỗi hệ thống, `502` / `504` lỗi hoặc quá thời gian khi gọi dịch vụ AI.
@@ -163,15 +164,18 @@ src/main/java/com/aives/
     └── speech/      # SpeechToTextClient, TextToSpeechClient (Google)
 ```
 
-### 5.4. Việc chạy nền
+### 5.4. Việc chạy nền (Two-Stage Post-Exam Assessment)
 
-Chấm điểm AI cho cả bài thi mất nhiều thời gian, nên không chạy trong request của sinh viên:
+Chấm điểm AI cho cả bài thi mất thời gian và đòi hỏi đối chiếu slide bài giảng kỹ lưỡng, nên được thực hiện bất đồng bộ sau khi sinh viên hoàn thành phòng thi:
 
-1. Khi sinh viên nộp bài, BE cập nhật `viva_attempts.status = COMPLETED` và thêm 1 dòng `background_jobs` (`EVALUATE_ATTEMPT`) **trong cùng 1 transaction**.
-2. Một tác vụ `@Scheduled` trong BE định kỳ lấy job `PENDING`, chạy bằng `@Async`.
-3. Job lỗi được thử lại (`attempts < 3`); hết lượt thì `FAILED` và `result_status = GRADING_FAILED` để giảng viên chấm lại.
+1. Khi sinh viên nộp bài, BE cập nhật `viva_attempts.status = COMPLETED` và thêm 1 bản ghi `background_jobs` (`EVALUATE_ATTEMPT`) **trong cùng 1 transaction**.
+2. Một tác vụ `@Scheduled` trong BE định kỳ lấy job `PENDING`, kích hoạt luồng xử lý bất đồng bộ `@Async` gồm 2 giai đoạn:
+   - **Giai đoạn A (Gemini Candidate Briefing)**: BE gửi toàn bộ transcript hội thoại cho Gemini 1.5 Flash API để tổng hợp, lược bỏ khẩu ngữ, chắt lọc các luận điểm kỹ thuật và lỗ hổng kiến thức thành một bản tóm lược có cấu trúc (`candidate_response_brief`).
+   - **Giai đoạn B (RAG Grounded Assessment & Slide Citations)**: BE chuyển bản brief này cùng bộ Rubric tiêu chí sang Knowledge RAG Engine. RAG Engine truy vấn vector kho slide bài giảng môn học, đối chiếu luận điểm của sinh viên với kiến thức chuẩn trong slide, chấm điểm từng tiêu chí rubric và trả về điểm số kèm trích dẫn slide bài giảng (slide citations).
+3. BE lưu kết quả vào `question_grades` và `criteria_grades` với trạng thái `AI_DRAFT`, cập nhật `viva_attempts.result_status = PENDING_REVIEW` để giảng viên thẩm định (HITL).
+4. Job lỗi được thử lại tối đa 3 lần (`attempts < 3`); nếu hết lượt thì đánh dấu `FAILED` và `result_status = GRADING_FAILED` để giảng viên chấm thủ công.
 
-Cách này không cần thêm message broker (Redis, RabbitMQ...), đúng với sơ đồ chỉ có 4 khối.
+Cách này không cần thêm message broker ngoài (như Redis, RabbitMQ...), đảm bảo hệ thống tinh gọn, ổn định và dễ vận hành.
 
 ---
 
@@ -236,22 +240,24 @@ sequenceDiagram
     FE-->>SV: Cập nhật câu hỏi mới & Tiếp tục lượt thi
 ```
 
-### 6.2. Chấm điểm và công bố
+### 6.2. Chấm điểm và công bố (Two-Stage AI Assessment & HITL)
 
-1. Job `EVALUATE_ATTEMPT` đọc transcript + rubric của từng câu, gọi Gemini chấm từng tiêu chí kèm trích dẫn bằng chứng.
-2. BE lưu `question_grades` (`AI_DRAFT`) và `criteria_grades`, chuyển `result_status = PENDING_REVIEW`.
-3. Giảng viên xem transcript, duyệt hoặc sửa điểm (`graded_by`, ghi chú nếu lệch > 2.0) rồi bấm công bố → `PUBLISHED`.
-4. Sinh viên chỉ xem được kết quả khi `PUBLISHED` (`BR-GRADE-003`), sau đó có thể gửi phúc khảo (`grade_appeals`).
+1. **Sinh viên nộp bài**: Kết thúc phòng thi, BE kích hoạt tác vụ nền `EVALUATE_ATTEMPT`.
+2. **Bước 1 - Gemini Briefing**: Gemini 1.5 Flash API đọc toàn bộ transcript các lượt hỏi đáp, tổng hợp và cô đọng câu trả lời của thí sinh thành bản tóm lược kỹ thuật súc tích (`candidate_response_brief`).
+3. **Bước 2 - RAG Grounded Evaluation**: Knowledge RAG Engine tiếp nhận bản brief, đối chiếu với slide bài giảng (vector chunks) và tiêu chí Rubric để chấm điểm và trích dẫn trang slide làm minh chứng.
+4. **Lưu trữ điểm sơ bộ**: BE lưu `question_grades` (`AI_DRAFT`) và `criteria_grades`, chuyển trạng thái `result_status = PENDING_REVIEW`.
+5. **Giảng viên thẩm định (HITL)**: Giảng viên xem lại bản tóm lược, transcript, slide trích dẫn, phê duyệt hoặc điều chỉnh điểm (bắt buộc nhập lý do nếu điểm lệch > 2.0 so với AI đề xuất).
+6. **Công bố & Phúc khảo**: Giảng viên bấm công bố kết quả → `PUBLISHED`. Sinh viên xem điểm và có quyền gửi đơn phúc khảo (`grade_appeals`) nếu có thắc mắc.
 
 ---
 
 ## 7. Bảo mật
 
-- Toàn bộ giao tiếp FE ↔ BE và BE ↔ Google Cloud Platform qua **HTTPS**.
+- Toàn bộ giao tiếp FE ↔ BE và BE ↔ External AI Services đều thông qua giao thức mã hóa **HTTPS**.
 - **JWT** cấp khi đăng nhập; mọi API (trừ đăng nhập) phải có token. BE kiểm tra quyền theo role và theo quyền sở hữu dữ liệu (`BR-AUTH-001`, `BR-AUTH-002`).
-- **Xác thực IAM Zero Trust**: Loại bỏ hoàn toàn API key tĩnh (`GEMINI_API_KEY`). BE sử dụng Google Cloud IAM Service Account tuân thủ nguyên tắc đặc quyền tối thiểu (Least Privilege) với 2 roles: `roles/aiplatform.user` (gọi RAG Corpus & Gemini LLM) và `roles/storage.objectAdmin` (quản lý slide trên GCS). Credentials lưu qua biến môi trường bí mật trên server, **không bao giờ** gửi xuống FE hay Mobile.
-- Mật khẩu lưu dạng băm (BCrypt) trong `users.password_hash`.
-- PostgreSQL chỉ mở cổng 5432 cho BE, không mở ra Internet.
+- **Mô hình Centralized API Gateway & Cô lập Chứng chỉ Server-side**: Toàn bộ khóa bảo mật (API keys cho Gemini, Access Tokens cho RAG Engine và Cloud Speech) được lưu trữ và quản lý tập trung trên Backend Server qua biến môi trường bảo mật. Client (Web/Mobile) tuyệt đối không có quyền truy cập trực tiếp hay nắm giữ bất kỳ thông tin xác thực nào của các dịch vụ AI đám mây.
+- Mật khẩu người dùng được băm an toàn bằng thuật toán **BCrypt** trước khi lưu vào `users.password_hash`.
+- CSDL PostgreSQL chạy trong mạng nội bộ, chỉ cho phép kết nối từ Backend qua cổng 5432, ngăn chặn truy cập trực tiếp từ Internet.
 
 ---
 

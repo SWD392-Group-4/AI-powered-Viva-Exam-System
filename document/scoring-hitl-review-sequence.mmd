@@ -37,10 +37,19 @@ sequenceDiagram
     BE->>DB: Lấy toàn bộ transcript exchanges + rubric_criteria của đề thi
     DB-->>BE: transcript list, criteria list
 
-    BE->>RAG: Truy xuất chunks bài giảng tương ứng (RAG Corpus)
-    RAG-->>BE: Ngữ cảnh slide bài giảng (Top-K Chunks)
-    BE->>AI: Grounded Prompt: transcript + slide chunks + Rubric (JSON Schema)
-    AI-->>BE: Bảng điểm chi tiết kèm trích dẫn transcript (evidence) & dẫn chứng slide (citations)
+    rect rgb(254, 243, 199)
+        Note over BE, AI: Giai đoạn A: Gemini Briefing Transcript
+        BE->>AI: Prompt Briefing: Toàn bộ transcript các lượt hỏi đáp
+        AI-->>BE: Candidate Response Brief (cô đọng luận điểm & lỗ hổng kiến thức)
+    end
+
+    rect rgb(240, 249, 255)
+        Note over BE, RAG: Giai đoạn B: RAG Grounded Evaluation
+        BE->>RAG: Đánh giá: Candidate Brief + Rubric tiêu chí
+        Note over RAG: Truy xuất vector slide bài giảng (Top-K Chunks)<br/>Đối chiếu luận điểm của sinh viên với nội dung slide
+        RAG-->>BE: Điểm từng tiêu chí kèm slide citations & nhận xét định tính
+    end
+
     BE->>DB: INSERT INTO question_grades (status='AI_DRAFT') & criteria_grades
     BE->>DB: UPDATE viva_attempts SET result_status = 'PENDING_REVIEW'
     BE->>DB: UPDATE background_jobs SET status = 'COMPLETED'

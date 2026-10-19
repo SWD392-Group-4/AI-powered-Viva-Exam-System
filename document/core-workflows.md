@@ -101,10 +101,12 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 - **Thực thể liên quan**: `background_jobs`, `question_grades`, `criteria_grades`, `grade_appeals`.
 - **Cơ chế hoạt động**:
   1. **Async Scoring**: Ngay khi sinh viên hoàn tất bài thi (`viva_attempts.status = COMPLETED`), Backend chèn một bản ghi vào bảng `background_jobs` với `job_type = EVALUATE_ATTEMPT`.
-  2. **Worker Chấm Điểm**: Service nền (`@Scheduled` kết hợp `@Async`) định kỳ quét job `PENDING`. Worker đọc toàn bộ transcript các lượt exchange, Rubric của câu hỏi, đồng thời kết nối **Vertex AI RAG Engine** truy xuất các chunk slide bài giảng tương ứng. Prompt gửi đến **Gemini 1.5 Flash** yêu cầu đối soát transcript với cả Rubric và Slide bài học theo định dạng JSON Schema nghiêm ngặt (`BR-GRADE-001`).
-  3. **Lưu Điểm Dự Thảo**: Kết quả chấm gồm điểm từng tiêu chí (`criteria_grades`), điểm câu hỏi (`question_grades`) kèm nhận xét điểm mạnh (`strengths`), điểm yếu (`weaknesses`), trích dẫn trực tiếp lời nói của sinh viên (`evidence_quote`) và siêu dữ liệu đối chiếu slide (`citations`). Trạng thái lúc này là `AI_DRAFT` và `viva_attempts.result_status = PENDING_REVIEW`. Điểm tuyệt đối **không** hiển thị cho sinh viên ở giai đoạn này.
+  2. **Quy trình Chấm điểm Hai Giai Đoạn (Two-Stage AI Assessment)**:
+     - **Giai đoạn A (Gemini Candidate Briefing)**: Worker nạp toàn bộ transcript của các lượt exchange gửi đến Gemini 1.5 Flash API. Gemini tổng hợp, loại bỏ khẩu ngữ, chắt lọc các luận điểm kỹ thuật và lỗ hổng câu trả lời thành một bản tóm lược có cấu trúc (`candidate_response_brief`).
+     - **Giai đoạn B (RAG Grounded Assessment & Slide Citations)**: Worker chuyển bản brief này cùng Rubric tiêu chí sang Knowledge RAG Engine. RAG Engine truy xuất vector slide bài giảng môn học, đối chiếu luận điểm của sinh viên với kiến thức chuẩn trong slide, chấm điểm từng tiêu chí rubric kèm dẫn chứng trích dẫn slide cụ thể (`slide citations` theo `BR-GRADE-001`).
+  3. **Lưu Điểm Dự Thảo**: Kết quả chấm gồm điểm từng tiêu chí (`criteria_grades`), điểm câu hỏi (`question_grades`) kèm nhận xét điểm mạnh (`strengths`), điểm yếu (`weaknesses`), trích dẫn trực tiếp lời nói của sinh viên (`evidence_quote`) và siêu dữ liệu đối chiếu slide (`slide citations`). Trạng thái lúc này là `AI_DRAFT` và `viva_attempts.result_status = PENDING_REVIEW`. Điểm tuyệt đối **không** hiển thị cho sinh viên ở giai đoạn này.
   4. **Thẩm Định của Giảng Viên (HITL)**:
-     - Giảng viên truy cập màn hình Review, nghe lại audio, xem transcript và đánh giá của AI.
+     - Giảng viên truy cập màn hình Review, nghe lại audio, xem transcript, bản tóm lược brief và đánh giá của AI.
      - Giảng viên có quyền chấp thuận hoặc điều chỉnh điểm số.
      - `BR-GRADE-002`: Nếu giảng viên điều chỉnh điểm chênh lệch $> 2.0$ điểm so với AI đề xuất, hệ thống bắt buộc giảng viên phải nhập lý do giải trình (`lecturer_note`).
   5. **Công Bố Kết Quả (Publish)**: Giảng viên bấm phê duyệt $\rightarrow$ `viva_attempts.result_status = PUBLISHED`. Sinh viên nhận được thông báo và xem chi tiết điểm số (`BR-GRADE-003`).
@@ -121,7 +123,7 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 ### Các bước chính trong Sequence:
 1. **Khởi tạo câu hỏi**: FE gọi `POST /api/attempts/{id}/start` $\rightarrow$ BE lấy câu hỏi 1, gọi Google TTS tổng hợp âm thanh giọng đọc $\rightarrow$ trả về audio phát cho sinh viên kèm đồng hồ đếm ngược.
 2. **Thu âm & Nộp bài**: Sinh viên nói qua micro. Web Audio VAD tự ngắt nếu im lặng $\ge 10$ giây (`BR-VIVA-003`). FE gửi multipart audio lên `POST /api/attempts/{id}/answers`.
-3. **Bóc băng & Truy xuất RAG**: BE gọi Google STT nhận diện tiếng Việt (`vi-VN`) có nạp `domain_keywords` (`BR-VIVA-004`) $\rightarrow$ BE truy xuất Top-5 chunks ngữ cảnh từ RAG Corpus môn học $\rightarrow$ gửi Transcript + ngữ cảnh slide + Rubric sang Gemini 1.5 Flash theo JSON Schema.
+3. **Bóc băng & Hỏi xoáy Real-time**: BE gọi Google STT nhận diện tiếng Việt (`vi-VN`) có nạp `domain_keywords` (`BR-VIVA-004`) $\rightarrow$ Gửi trực tiếp Transcript + Câu hỏi chính + Lịch sử hội thoại sang Gemini 1.5 Flash theo JSON Schema (tối ưu sub-second latency $< 1.5$s, không query RAG giữa vòng lặp).
 4. **Rẽ nhánh Adaptive**:
    - Nếu câu trả lời thiếu ý / mâu thuẫn và chưa vượt trần `max_follow_up_per_question`: Gemini sinh câu hỏi xoáy ngắn $\le 40$ từ (`BR-VIVA-001/002`) $\rightarrow$ TTS đọc câu xoáy $\rightarrow$ ghi nhận exchange con.
    - Nếu đạt yêu cầu hoặc đủ trần: Chuyển câu hỏi chính tiếp theo.
@@ -135,9 +137,11 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 
 ### Các bước chính trong Sequence:
 1. **Background Job Runner**: Task định kỳ `@Scheduled` quét bảng `background_jobs` lấy job `PENDING` và khóa bi quan (`FOR UPDATE`) để chạy `@Async`.
-2. **AI Scoring Grounded theo Rubric**: Worker đọc toàn bộ transcript của các lượt exchange và rubric tiêu chí $\rightarrow$ truy xuất ngữ cảnh bài giảng từ Vertex AI RAG $\rightarrow$ gửi prompt chuẩn hóa đến Gemini 1.5 Flash $\rightarrow$ Gemini trả về điểm từng tiêu chí kèm bằng chứng trích dẫn cụ thể (`evidence_quote` theo `BR-GRADE-001`) và trích dẫn slide (`citations`).
+2. **Quy trình Chấm điểm Hai Giai Đoạn (Two-Stage AI Assessment)**:
+   - **Giai đoạn A (Gemini Candidate Briefing)**: Worker nạp toàn bộ transcript của các lượt exchange gửi đến Gemini 1.5 Flash. Gemini tổng hợp, loại bỏ khẩu ngữ, chắt lọc các luận điểm kỹ thuật và lỗ hổng câu trả lời thành một bản tóm lược có cấu trúc (`candidate_response_brief`).
+   - **Giai đoạn B (RAG Grounded Assessment & Slide Citations)**: Worker chuyển bản brief này cùng Rubric tiêu chí sang Knowledge RAG Engine. RAG Engine truy xuất vector slide bài giảng môn học, đối chiếu luận điểm của sinh viên với kiến thức chuẩn trong slide, chấm điểm từng tiêu chí rubric kèm dẫn chứng trích dẫn slide cụ thể (`slide citations` theo `BR-GRADE-001`).
 3. **Lưu Điểm Dự Thảo**: BE lưu `criteria_grades` và `question_grades` với trạng thái `AI_DRAFT`, chuyển `viva_attempts.result_status = PENDING_REVIEW`.
-4. **Giảng viên Thẩm định (HITL)**: Giảng viên mở Review Dashboard, xem transcript và điểm AI gợi ý:
+4. **Giảng viên Thẩm định (HITL)**: Giảng viên mở Review Dashboard, xem bản tóm lược, transcript, slide trích dẫn và điểm AI gợi ý:
    - Nếu đồng thuận: bấm **Approve** giữ nguyên điểm.
    - Nếu điều chỉnh: bấm **Override** nhập điểm mới. Nếu độ lệch $| \text{Điểm mới} - \text{Điểm AI} | > 2.0$ điểm, hệ thống bắt buộc nhập giải trình `lecturer_note` (`BR-GRADE-002`).
 5. **Công Bố Điểm**: Cập nhật `viva_attempts.result_status = PUBLISHED`. Sinh viên được mở khóa xem toàn bộ bảng điểm, nhận xét và transcript (`BR-GRADE-003`). Nếu có khiếu nại, sinh viên có thể tạo đơn `grade_appeals`.
@@ -148,11 +152,10 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 
 | Thành phần | Công nghệ triển khai | Vai trò trong Mainflow |
 | :--- | :--- | :--- |
-| **Frontend Web** | React 19 + Vite + TailwindCSS v4 | Cổng thông tin cho Giảng viên (nạp slide, soạn đề, thẩm định) & Sinh viên (vào phòng thi, xem điểm). |
+| **Frontend Web** | React 19 + Vite + TailwindCSS | Cổng thông tin cho Giảng viên (nạp slide, soạn đề, thẩm định) & Sinh viên (vào phòng thi, xem điểm). |
 | **Frontend Mobile** | React Native + Expo | Thiết bị thi di động tiện lợi cho Sinh viên (chỉ khả dụng khi có cờ `allow_mobile_exam`). |
-| **Backend Monolith** | Java 17 + Spring Boot 3.5.6 | Điều phối toàn bộ nghiệp vụ, kiểm tra Business Rules, quản lý REST APIs, bảo mật IAM Service Account. |
-| **Persistence** | PostgreSQL 16/17 (Supabase Managed) | Lưu trữ tập trung 18 bảng quan hệ theo Physical ERD, quản lý hàng đợi tác vụ qua bảng `background_jobs`. |
-| **Document Storage** | Google Cloud Storage (GCS) | Lưu trữ slide bài giảng (PPTX, PDF) làm nguồn dữ liệu cho kho ngữ liệu RAG theo từng môn học. |
-| **Vector DB & Retrieval** | Vertex AI RAG Engine + Cloud Spanner | Quản lý RAG Corpus, phân mảnh, sinh vector embedding `text-multilingual-embedding-002` và tìm kiếm tương đồng. |
-| **Speech Processing** | Google Cloud STT & TTS REST | Chuyển đổi giọng nói - văn bản hai chiều tiếng Việt (`vi-VN`) với độ trễ thấp. |
-| **Cognitive Engine** | Vertex AI Gemini 1.5 Flash (Grounded) | Suy luận có căn cứ dựa trên slide, quyết định hỏi xoáy thông minh và chấm điểm minh bạch theo Rubric. |
+| **Backend Monolith** | Java 17 + Spring Boot | Điều phối toàn bộ nghiệp vụ, kiểm tra Business Rules, quản lý REST APIs, bảo mật API Gateway và credentials. |
+| **Persistence** | PostgreSQL | Lưu trữ tập trung 18 bảng quan hệ theo Physical ERD, quản lý hàng đợi tác vụ qua bảng `background_jobs`. |
+| **Curriculum RAG** | Knowledge RAG Engine | Kho ngữ liệu slide bài giảng, sinh câu hỏi nháp chuẩn Bloom và thẩm định Rubric có căn cứ kèm trích dẫn slide. |
+| **Conversational LLM** | Gemini 1.5 Flash API | Suy luận thời gian thực trong phòng thi (< 1.5s latency, hỏi xoáy $\le 40$ từ) và tổng hợp brief transcript sau thi. |
+| **Speech Processing** | Google Cloud STT & TTS | Chuyển đổi giọng nói - văn bản hai chiều tiếng Việt (`vi-VN`) với độ trễ thấp. |

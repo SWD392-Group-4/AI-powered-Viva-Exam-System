@@ -58,8 +58,9 @@ flowchart LR
     end
 
     subgraph Phase3 [" ⚖️ 3. Chấm điểm & Thẩm định (Grading & HITL) "]
-        F --> |"📝 Transcript câu trả lời"| G["🤖 AI đối chiếu Rubric"]:::ai
-        G --> |"📊 Điểm đề xuất & Nhận xét"| C
+        F --> |"📝 Transcript"| G1["🧠 Gemini: Tóm lược Brief"]:::ai
+        G1 --> |"📋 Brief + Slide Chunks"| G2["📚 RAG: Chấm & Dẫn chứng"]:::ai
+        G2 --> |"📊 Điểm đề xuất & Citations"| C
         C --> |"✅ Duyệt / Ghi đè điểm"| H["🏆 Điểm chính thức"]:::result
         H --> |"Công bố kết quả"| E
     end
@@ -94,10 +95,10 @@ flowchart LR
    - Lõi phỏng vấn thích ứng: phân tích câu trả lời và tự động hỏi đào sâu (Follow-up) theo ngữ cảnh khi sinh viên trả lời thiếu ý, mơ hồ hoặc mâu thuẫn.
    - Kiểm soát thời gian trả lời và số lượt hỏi xoáy tối đa mỗi câu.
 
-3. **Module 4: Hỗ trợ chấm điểm bằng AI (AI Scoring & HITL Review)**:
-   - Tự động đối chiếu transcript câu trả lời với các tiêu chí trong Rubric.
-   - Sinh điểm đề xuất kèm nhận xét minh bạch (chỉ ra điểm mạnh, điểm yếu, các ý còn thiếu).
-   - Giao diện thẩm định cho giảng viên: xem toàn bộ transcript, điểm gợi ý của AI, cho phép ghi đè điểm và chốt điểm cuối cùng.
+3. **Module 4: Hỗ trợ chấm điểm bằng AI Hai Giai Đoạn (Two-Stage AI Scoring & HITL Review)**:
+   - **Bước 1 (Briefing)**: Gemini 1.5 Flash API tổng hợp toàn bộ transcript các lượt hỏi đáp, loại bỏ khẩu ngữ để tạo bản tóm lược kỹ thuật súc tích (`candidate_response_brief`).
+   - **Bước 2 (Grounded Scoring)**: Knowledge RAG Engine tiếp nhận bản brief, đối chiếu với slide bài giảng và tiêu chí Rubric để sinh điểm gợi ý và trích dẫn slide làm minh chứng (`slide citations`).
+   - **Bước 3 (Thẩm định HITL)**: Giao diện thẩm định cho giảng viên: xem toàn bộ transcript, bản tóm lược, slide trích dẫn, cho phép ghi đè điểm (kèm lý do nếu lệch > 2.0đ) và chốt điểm cuối cùng.
 
 ---
 

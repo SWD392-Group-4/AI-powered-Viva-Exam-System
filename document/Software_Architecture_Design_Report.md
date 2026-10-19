@@ -134,8 +134,8 @@ AIVES adopts a **Modular Layered Client-Server Architecture** featuring a single
 
 ### Architecture Style Rationale:
 - **Simplicity and Maintainability**: A modular monolith avoids the operational overhead, network latency, distributed transaction complexity, and deployment orchestration of microservices, which is ideal for the project scope and team scale.
-- **Centralized Security and Credential Isolation**: The backend server acts as the **exclusive custodian** of sensitive cloud credentials (Google Cloud IAM Service Account for Vertex AI RAG Engine, Cloud Storage, and STT/TTS) and database credentials. Client applications (Web Portal and Mobile App) never access cloud providers directly.
-- **Clear Separation of Concerns**: Strict boundary separation across the presentation layer, business service layer, data persistence layer, and external integration adapters ensures high cohesion and loose coupling.
+- **Centralized Security and Credential Isolation**: The backend server acts as the **exclusive API Gateway and custodian** of all external cloud credentials (Enterprise OAuth2 tokens and API keys for the RAG Engine, Gemini Flash LLM, and Speech Services). Client applications (Web Portal and Mobile App) never communicate directly with AI cloud providers.
+- **Clear Separation of Cognitive Concerns (Dual-AI Architecture)**: Distinct separation between (1) curriculum knowledge retrieval, slide grounding, and rubric-based evaluation via the **Knowledge RAG Service**, and (2) real-time conversational reasoning, adaptive follow-up questioning, and post-exam transcript briefing via the **Gemini Flash API**.
 
 ## 3.2 System Architecture Diagram
 
@@ -145,27 +145,26 @@ AIVES adopts a **Modular Layered Client-Server Architecture** featuring a single
 
 ```mermaid
 flowchart LR
-    subgraph FE["Frontend Clients"]
+    subgraph FE["Frontend Tier (Client Applications)"]
         REACT["Web Portal<br/>(Vite + React + TailwindCSS)"]
         MOBILE["Mobile Client<br/>(React Native + Expo)"]
     end
 
-    subgraph BE["Backend Server (Spring Boot 3)"]
-        CTRL["REST Controllers & JWT Filter"]
-        SERV["Business Services & Rules Engine"]
-        REPO["Spring Data JPA Repositories"]
-        JOBS["Background Job Scheduler"]
+    subgraph BE["Backend Tier (Spring Boot 3 Modular Monolith)"]
+        CTRL["REST Controllers & Security Filters"]
+        SERV["Core Business & Orchestration Services"]
+        REPO["Data Access Repositories (JPA)"]
+        JOBS["Background Task Scheduler"]
     end
 
-    subgraph EXT["Google Cloud Platform (asia-southeast1)"]
-        GCS["Cloud Storage<br/>(Course Slides Bucket)"]
-        RAG["Vertex AI RAG Engine<br/>(Cloud Spanner Vector DB)"]
-        GEMINI["Vertex AI Gemini 1.5 Flash<br/>(Grounded LLM Inference)"]
-        SPEECH["Speech APIs<br/>(Google STT / TTS)"]
+    subgraph AI_SERVICES["External Cloud AI Infrastructure (Dual-AI Architecture)"]
+        RAG_API["📚 Knowledge RAG Service<br/>(Slide Grounding, Vector Search & Rubric Assessment)"]
+        GEMINI_API["🧠 Conversational Gemini API<br/>(Real-Time Viva Voice Loop & Transcript Briefing)"]
+        SPEECH_API["🎙️ Speech Services<br/>(Google Cloud STT & TTS)"]
     end
 
-    subgraph DB["Relational Database"]
-        PG[("PostgreSQL 14+ Database")]
+    subgraph DB["Persistence Tier"]
+        PG[("PostgreSQL Relational Database")]
     end
 
     REACT <-- "HTTPS REST (JSON / Audio Multipart) + JWT" --> CTRL
@@ -173,9 +172,11 @@ flowchart LR
     CTRL --> SERV
     SERV --> REPO
     SERV --> JOBS
-    SERV <-- "Google Cloud SDK / HTTPS (IAM Service Account)" --> EXT
-    GCS -. "Index / Chunk / Embed" .-> RAG
-    RAG -. "Top-K Chunks Grounding" .-> GEMINI
+    
+    SERV <-- "HTTPS REST / Gateway (Slide Ingestion & Grounded Rubric Evaluation)" --> RAG_API
+    SERV <-- "HTTPS REST / API Key (Sub-second Viva Voice Probing & Transcript Briefing)" --> GEMINI_API
+    SERV <-- "HTTPS REST (Audio Transcription & Voice Synthesis)" --> SPEECH_API
+    
     REPO <-- "JDBC TCP/IP Port 5432 (Hibernate ORM)" --> PG
 ```
 
@@ -185,8 +186,10 @@ flowchart LR
 | :---: | :--- | :--- | :--- | :--- |
 | **CH-1** | Web / Mobile ➔ Backend | HTTPS / REST | JSON for commands; `multipart/form-data` for candidate voice recordings | Bearer JWT header validation; client request validation |
 | **CH-2** | Backend ➔ Web / Mobile | HTTPS Response | Standard HTTP Status Codes (`200`, `400`, `401`, `403`, `404`, `409`, `500`) + JSON body | Base64 synthesized audio payloads or presigned audio URLs |
-| **CH-3** | Backend ➔ Google Cloud | HTTPS / Cloud SDK | Slide upload (GCS), RAG retrieval query, Grounded prompt context, Audio recognition/synthesis | IAM Service Account authorization (`roles/aiplatform.user`, `roles/storage.objectAdmin`); Zero Trust; no static API keys |
-| **CH-4** | Google Cloud ➔ Backend | HTTPS Response | Top-K semantic chunks, Grounded JSON responses (questions/grades) with citations, STT transcripts | Runtime JSON schema validation and Grounding metadata citation verification |
+| **CH-3a** | Backend ➔ RAG Service | HTTPS / REST | Course slides (PDF/PPTX), semantic vector search queries, Bloom question generation prompts, synthesized candidate briefs & rubric evaluation | Server-side gateway authentication; isolated document namespace per course |
+| **CH-3b** | Backend ➔ Gemini Flash API | HTTPS / REST | Spoken answer transcripts, conversational history, adaptive follow-up prompts, post-exam transcript synthesis & briefing prompts | Sub-second latency (< 1.5s); strict JSON schema enforcement; secure server-side API key |
+| **CH-3c** | Backend ➔ Speech Services | HTTPS / REST | Raw candidate audio streaming (STT) and synthesized question text (TTS) | Technical domain phrase hints for Vietnamese; neural speech synthesis |
+| **CH-4** | Cloud Services ➔ Backend | HTTPS Response | Standardized JSON payloads, vector search chunks, evaluated rubric grades with slide citations, candidate brief, audio streams | Server-side response validation, timeout handling, and exponential backoff retries |
 | **CH-5** | Backend ➔ PostgreSQL | JDBC (TCP Port 5432) | SQL queries generated by Hibernate ORM; HikariCP connection pool | Prepared statements, connection pooling, transactional isolation |
 
 ## 3.4 Deployment Diagram
@@ -204,24 +207,22 @@ flowchart TD
     end
 
     subgraph DatabaseHost["Database Tier"]
-        DBNode["PostgreSQL Server (Version 14+)<br/>Managed Database / Container (Port 5432)"]
+        DBNode["PostgreSQL Server (Version 14+)<br/>Managed Relational Database (Port 5432)"]
     end
 
-    subgraph CloudServices["Google Cloud Platform Infrastructure (Region: asia-southeast1)"]
-        GCSNode["Cloud Storage Bucket<br/>Course Slides (PPTX / PDF)"]
-        RAGNode["Vertex AI RAG Engine<br/>RagManaged Cloud Spanner Vector DB"]
-        GeminiNode["Vertex AI Foundation Model<br/>Gemini 1.5 Flash Endpoint"]
-        SpeechNode["Google Cloud Speech APIs<br/>STT / TTS Cloud Services"]
+    subgraph CloudServices["External Cloud AI Infrastructure"]
+        RAGNode["Managed RAG Service<br/>Curriculum Knowledge Base & Retrieval Endpoint"]
+        GeminiNode["Google Cloud AI Gateway<br/>Gemini 1.5 Flash API Endpoint"]
+        SpeechNode["Google Cloud Speech Services<br/>STT / TTS APIs"]
     end
 
     BrowserNode -- "HTTPS / WSS (Port 443)" --> NginxNode
     MobileNode -- "HTTPS (Port 443)" --> NginxNode
     NginxNode -- "Reverse Proxy HTTP (Port 8080)" --> AppNode
     AppNode -- "JDBC / TCP (Port 5432)" --> DBNode
-    AppNode -- "IAM Authorized HTTPS / SDK" --> GCSNode
-    AppNode -- "IAM Authorized HTTPS / SDK" --> RAGNode
-    AppNode -- "IAM Authorized HTTPS / SDK" --> GeminiNode
-    AppNode -- "Encrypted REST HTTPS (TLS 1.3)" --> SpeechNode
+    AppNode -- "HTTPS / Gateway (Knowledge Grounding)" --> RAGNode
+    AppNode -- "HTTPS REST (Sub-second Viva Reasoning)" --> GeminiNode
+    AppNode -- "HTTPS REST (Speech Recognition & Synthesis)" --> SpeechNode
 ```
 
 ---
@@ -249,14 +250,12 @@ flowchart TD
 
 ## 4.3 Artificial Intelligence & Cloud Services
 
-| Service | Provider | Purpose & Implementation Details |
+| Service Component | Architecture Role | Engineering Rationale & Implementation Scope |
 | :--- | :--- | :--- |
-| **Managed AI & RAG Platform** | Google Cloud Vertex AI | Enterprise RAG architecture in `asia-southeast1`. Eliminates static API keys via IAM Service Account RBAC (`roles/aiplatform.user`). |
-| **Unstructured Document Storage** | Google Cloud Storage (GCS) | Dedicated bucket storing course syllabus and lecture slides (PPTX, PDF) organized by Course/Subject. IAM role: `roles/storage.objectAdmin`. |
-| **Vector DB & Retrieval Engine** | Vertex AI RAG Engine | Managed semantic retrieval on Cloud Spanner vector store with `text-multilingual-embedding-002` (Chunk: 1024 tokens, Overlap: 256, Top-K: 5). |
-| **Reasoning & Foundation Model** | Vertex AI Gemini 1.5 Flash | Grounded inference based on retrieved lecture chunks. Sub-second token latency, strict JSON Schema enforcement for question generation and rubric grading. |
-| **Speech-to-Text (STT)**| Google Cloud Speech-to-Text | Accurate speech recognition with Vietnamese language model (`vi-VN`) and domain keyword hint boosting for technical terminologies. |
-| **Text-to-Speech (TTS)**| Google Cloud Text-to-Speech | High-fidelity neural voice synthesis converting written question prompts into natural audio for candidate playback. |
+| **Knowledge RAG Service (RAG API)** | Curriculum Grounding, Question Drafting & Rubric Evaluation | Cloud-managed RAG pipeline for lecture slides (PDF, PPTX). Performs structural text extraction, semantic vector chunking, grounded question synthesis, and post-exam rubric evaluation. Cross-references student brief against slide chunks to provide objective scores and exact slide citations. |
+| **Conversational LLM (Gemini API)** | Live Adaptive Viva Voice Loop & Post-Exam Transcript Briefing | Google Gemini 1.5 Flash. Delivers sub-second token latency (< 1.5s) for real-time oral examination, generating adaptive probing questions ($\le 40$ words) and post-viva conversational synthesis (distilling raw oral transcripts into structured technical briefs for RAG evaluation). |
+| **Speech-to-Text (STT)**| Candidate Voice Transcription | Google Cloud Speech-to-Text. Vietnamese language acoustic model (`vi-VN`) with technical domain phrase hint boosting to capture software engineering terminology accurately. |
+| **Text-to-Speech (TTS)**| Oral Examiner Question Synthesis | Google Cloud Text-to-Speech. High-fidelity neural voice synthesis converting written examination prompts into clear, articulate audio for candidate playback. |
 
 ## 4.4 DevOps, Version Control & Development Tools
 - **Version Control**: Git & GitHub with branch protection rules (`main`, feature branches).
@@ -745,68 +744,87 @@ The AIVES architecture bridges advanced artificial intelligence with rigorous ac
 
 # 13. AI Appendix (Phụ lục sử dụng AI)
 
-## 13.1 Enterprise Vertex AI Managed RAG Architecture
-AIVES adopts an enterprise **Retrieval-Augmented Generation (RAG)** architecture deployed on **Google Cloud Platform (Vertex AI Managed RAG Platform, Region: `asia-southeast1`)** to ensure all LLM reasoning is strictly grounded on official course slides and syllabus materials uploaded by faculty, eliminating hallucinations in high-stakes viva assessments.
-
-### Architecture Evolution: From Static API Key to Managed RAG
+## 13.1 Dual-AI Architectural Paradigm (Kiến Trúc Trí Tuệ Nhân Tạo Hai Tầng)
+AIVES adopts a **Decoupled Dual-AI Integration Architecture** that deliberately separates high-precision curriculum knowledge retrieval (**Knowledge RAG Service**) from ultra-low latency conversational oral examination and scoring (**Conversational Gemini API**).
 
 ```
-[Legacy Architecture - Deprecated]
-Frontend / Client ---> Backend Server ---> Google AI Studio (Gemini API via Static API Key)
-                      │
-                      └── (Lacks Grounding, high hallucination risk, static secret exposure)
-
-[Target Enterprise Architecture]
-Frontend (Admin/SV) ---> Backend Server (Spring Boot 3)
-                        │
-                        ├── 1. Upload & Ingest ─────────> Google Cloud Storage (Bucket)
-                        │                                  │ (Raw PPTX / PDF)
-                        │                                  ▼
-                        ├── 2. Index / Sync ────────────> Vertex AI RAG Engine (Cloud Spanner Vector DB)
-                        │                                  │ (Semantic Search Top-5 Chunks)
-                        │                                  ▼
-                        └── 3. Grounded Inference ──────> Vertex AI Foundation Model (Gemini 1.5 Flash)
-[Google Cloud IAM Service Account Authorization - Zero Trust (roles/aiplatform.user, roles/storage.objectAdmin)]
++---------------------------------------------------------------------------------------------------------+
+|                                     AIVES Dual-AI Architectural Matrix                                  |
++------------------------------------+----------------------------------+---------------------------------+
+| Architectural Dimension            | Knowledge RAG Service (RAG API)  | Conversational LLM (Gemini API) |
++------------------------------------+----------------------------------+---------------------------------+
+| Primary Operational Objective      | Curriculum grounding, Bloom gen  | Real-time adaptive oral viva &  |
+|                                    | & Grounded Rubric Evaluation     | post-exam transcript briefing   |
++------------------------------------+----------------------------------+---------------------------------+
+| Operational Pipeline               | Pipeline 1 (Prep) &              | Pipeline 2 Step A               |
+|                                    | Pipeline 2 Step B (Grounded Eval)| (Live Voice Loop & Synthesis)   |
++------------------------------------+----------------------------------+---------------------------------+
+| Primary Input Artifacts            | Lecture slides (PDF, PPTX),      | Speech transcripts, dialog      |
+|                                    | student brief & rubric criteria  | history, question context       |
++------------------------------------+----------------------------------+---------------------------------+
+| Latency Requirement                | Asynchronous (batch: 2s - 15s)   | Ultra-low latency (< 1.5s TTFT) |
++------------------------------------+----------------------------------+---------------------------------+
+| Cognitive Specialty                | Anti-hallucination semantic      | Conversational agility, concise |
+|                                    | retrieval, slide citations       | probing (<= 40 words), briefing |
++------------------------------------+----------------------------------+---------------------------------+
 ```
 
-### Dual-Pipeline Operational Workflow
+### 13.1.1 Engineering Rationale for the Examination Board
+The architectural decision to decouple the system into two distinct AI services addresses three fundamental engineering requirements:
+1. **Latency Profile Divergence (Tối ưu hóa độ trễ theo đặc thù tác vụ)**: 
+   - Extracting and vectorizing multi-page lecture decks is an inherently compute-heavy, batch-oriented task well-suited for asynchronous offline processing.
+   - Conversely, live oral examination is an interactive voice loop where human conversational psychology demands sub-second turnaround (< 1.5s) between the student's silence and the AI examiner's spoken follow-up. Invoking multi-document vector retrieval during an ongoing voice loop introduces unacceptable latency. Decoupling ensures live viva exams remain fluid, natural, and responsive.
+2. **Specialized Cognitive Alignment & Synergistic Two-Stage Evaluation (Phân định nhận thức và phối hợp hai giai đoạn)**:
+   - **Gemini Flash API**: Functions as the *Dynamic Viva Proctor and Synthesizer*. It excels at real-time intent analysis, detecting logical gaps in candidate speech, formulating sharp follow-up questions under 40 words, and synthesizing raw, noisy oral transcripts into structured, coherent candidate response briefs.
+   - **Knowledge RAG Service**: Functions as the *Institutional Knowledge Custodian and Grounded Evaluator*. It receives the structured brief from Gemini, performs semantic vector retrieval against verified course slide chunks, and cross-references the student's actual arguments against official slide content to produce objective rubric scores with verifiable slide citations.
+3. **Architectural Modularity & Fault Domain Isolation (Cách ly miền lỗi)**:
+   - Any document processing delays, cloud storage throughput limits, or indexing tasks cannot compromise or disrupt ongoing viva examination rooms across concurrent exam sessions.
 
-#### Pipeline 1: Document Ingestion & Indexing Pipeline (Preparation Phase)
-1. **Slide Upload**: Lecturers upload course slides (PPTX, PDF) via Web Portal.
-2. **Object Storage**: Backend streams files directly to Google Cloud Storage (GCS) organized by Course/Subject namespace.
-3. **Managed Ingestion**: Backend triggers Vertex AI RAG Engine ingestion API.
-4. **Parsing & Chunking**: Vertex AI parser segments documents into chunks (Size: 1024 tokens, Overlap: 256 tokens).
-5. **Vector Embedding**: Text chunks are embedded using `text-multilingual-embedding-002` (optimized for Vietnamese and English technical terminology) and persisted in RagManaged Cloud Spanner.
+### 13.1.2 Two-Stage Operational Pipelines
 
-#### Pipeline 2: Grounded Inference & Viva Evaluation Pipeline (Exam & Scoring Phase)
-1. **Audio Transcription**: Student spoken response is converted to text via Google Cloud STT (`vi-VN`).
-2. **Semantic Retrieval**: Backend issues a retrieval query to the Course RAG Corpus (`similarityTopK: 5`).
-3. **Grounded Prompt Assembly**: Top-5 retrieved slide chunks are injected alongside the rubric, candidate transcript, and conversation history into a structured prompt.
-4. **Constrained Inference**: Gemini 1.5 Flash performs grounded reasoning with low temperature (`0.2`), generating adaptive follow-ups or rubric grades backed by verifiable citations (`groundingMetadata`).
+#### Pipeline 1: Offline Knowledge Ingestion & Question Bank Curation (Preparation Phase)
+1. **Document Ingestion**: Faculty members upload course lecture slides (PDF, PPTX) via the Web Portal.
+2. **Semantic Processing**: The backend invokes the Knowledge RAG Service to parse document layouts, segment content into contextual text chunks, and compute vector embeddings.
+3. **Grounded Question Synthesis**: Grounded prompts construct Bloom-aligned candidate questions (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`) alongside reference answers and domain keywords.
+4. **Human Review**: Generated items enter the repository in `DRAFT` status and require mandatory faculty validation and rubric binding before exam activation.
+
+#### Pipeline 2: Real-time Live Adaptive Viva Loop & Two-Stage Automated Scoring (Examination & Assessment Phase)
+1. **Voice Acquisition & Transcription**: The candidate's spoken answer is captured and transcribed into text via Google Cloud Speech-to-Text (`vi-VN`) with technical domain hint boosting.
+2. **Real-time Conversational Assessment**: The backend dispatches the candidate's transcript, prior conversation history, and question context to the **Gemini Flash API**.
+3. **Adaptive Probing**: If the response is incomplete or ambiguous and the probing threshold (`max_follow_up_per_question`) has not been reached, Gemini Flash synthesizes a targeted follow-up question ($\le 40$ words).
+4. **Voice Feedback**: The follow-up text is converted to natural audio via Google Cloud Text-to-Speech and streamed to the student.
+5. **Post-Exam Candidate Transcript Briefing (Gemini API - Step A)**: Upon exam completion, an asynchronous background job sends the full viva dialogue transcript to the Gemini Flash API. Gemini condenses the conversation, extracts the student's key claims, explanations, and arguments, and filters out oral filler words to produce a clean, structured `candidate_response_brief`.
+6. **Grounded Rubric Evaluation & Slide Citations (RAG Service - Step B)**: The backend submits this candidate brief and the pre-approved rubric criteria to the **Knowledge RAG Service**. The RAG Engine performs similarity search across slide vector chunks, verifies the accuracy of the student's claims against official lecture slides, and outputs criteria-level scores accompanied by exact slide citations.
+7. **Human-in-the-Loop Review**: Scores, slide citations, and the briefing summary are stored as `PENDING_REVIEW` in the database, allowing faculty members to inspect, adjust, and approve final grades.
 
 ```
-+----------------------------------------------------------------------------------+
-|                     Vertex AI Grounded Prompt Pipeline                           |
-+----------------------------------------------------------------------------------+
-| 1. System Role Definition: "You are an academic viva proctor. Ground responses    |
-|    exclusively on the provided course lecture context."                          |
-| 2. Grounded Lecture Context: Top-5 semantic chunks retrieved from RAG Corpus      |
-| 3. Candidate Context: Previous question, verbatim answer transcript              |
-| 4. Evaluation Rubric: Criteria definitions, weight percentages, scoring standards|
-| 5. Output Constraint: Strict JSON Schema (Enforced by Vertex AI SDK)             |
-+----------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------+
+|               Two-Stage Post-Exam Assessment Pipeline                              |
++------------------------------------------------------------------------------------+
+|                                                                                    |
+|  [Full Viva Dialogue] ──> [Gemini Flash API] ──> [Structured Candidate Brief]      |
+|                                                           │                        |
+|                                                           ▼                        |
+|  [Approved Rubric] ───────────────────────────> [Knowledge RAG Service]            |
+|  [Slide Vector Chunks] ───────────────────────>           │                        |
+|                                                           ▼                        |
+|                                            [Grounded Criteria Scores +             |
+|                                             Verifiable Slide Citations]            |
+|                                                           │                        |
+|                                                           ▼                        |
+|                                            [Lecturer HITL Review Dashboard]        |
++------------------------------------------------------------------------------------+
 ```
 
-### Security & IAM Identity Model
-- **No Static API Keys**: The system completely eliminates static API keys (`GEMINI_API_KEY`).
-- **Least-Privilege Service Account**: The backend operates under a dedicated Google Cloud IAM Service Account granted only two minimal operational roles:
-  - `roles/aiplatform.user`: Execute RAG corpus queries and foundation model inference.
-  - `roles/storage.objectAdmin`: Upload and read course material slides in the dedicated storage bucket.
-- **Environment Federation**: In production, authentication uses Google Cloud Workload Identity Federation; in development environments, local service account credentials are provided securely via `GOOGLE_APPLICATION_CREDENTIALS`.
+### 13.1.3 Security & Centralized API Gateway Pattern
+To ensure robust credential isolation and defense-in-depth:
+- **Centralized Custodian**: The Spring Boot Backend serves as the single trusted intermediary. Client applications (Web Portal and Mobile App) possess zero direct network routes or credentials to external AI services.
+- **Enterprise Credential Isolation**: All authentication tokens (OAuth2 credentials for cloud services and API keys for LLM reasoning) reside strictly within server-side environment variables and secrets vaults.
+- **Payload Validation**: All inputs and outputs traversing external boundaries undergo schema validation, sanitization, and automated timeout/retry protection.
 
 ## 13.2 Structured JSON Output Schemas
 
-### Adaptive Follow-Up Questioning Schema
+### 1. Adaptive Follow-Up Questioning Schema (Gemini Flash API - Real-time Loop)
 ```json
 {
   "type": "OBJECT",
@@ -828,7 +846,32 @@ Frontend (Admin/SV) ---> Backend Server (Spring Boot 3)
 }
 ```
 
-### Rubric-Based Scoring Suggestion Schema
+### 2. Candidate Transcript Briefing Schema (Gemini Flash API - Post-Viva Synthesis)
+```json
+{
+  "type": "OBJECT",
+  "properties": {
+    "questionId": { "type": "STRING" },
+    "coreArguments": {
+      "type": "ARRAY",
+      "items": { "type": "STRING" },
+      "description": "Key technical claims and explanations presented by candidate"
+    },
+    "identifiedGaps": {
+      "type": "ARRAY",
+      "items": { "type": "STRING" },
+      "description": "Concepts missing, misunderstood, or contradicted during probing"
+    },
+    "executiveSummary": {
+      "type": "STRING",
+      "description": "Concise 150-word synthesis of student technical mastery"
+    }
+  },
+  "required": ["questionId", "coreArguments", "identifiedGaps", "executiveSummary"]
+}
+```
+
+### 3. Grounded Rubric-Based Scoring Schema (Knowledge RAG Service - Assessment)
 ```json
 {
   "type": "OBJECT",
@@ -839,9 +882,13 @@ Frontend (Admin/SV) ---> Backend Server (Spring Boot 3)
         "properties": {
           "criterionId": { "type": "STRING" },
           "awardedScore": { "type": "NUMBER" },
-          "evidenceCitation": { "type": "STRING" }
+          "evidenceCitation": { 
+            "type": "STRING",
+            "description": "Slide source, page number, and matched chunk excerpt" 
+          },
+          "criterionFeedback": { "type": "STRING" }
         },
-        "required": ["criterionId", "awardedScore", "evidenceCitation"]
+        "required": ["criterionId", "awardedScore", "evidenceCitation", "criterionFeedback"]
       }
     },
     "strengths": { "type": "STRING" },

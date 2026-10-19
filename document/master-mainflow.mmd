@@ -1,7 +1,6 @@
 ---
 title: AIVES - Master End-to-End Mainflow
 ---
-
 %%{init: {
   'theme': 'base',
   'themeVariables': {
@@ -79,15 +78,14 @@ flowchart TD
         V5{"Phát hiện im lặng ≥ 10s hoặc SV bấm nộp câu?"}:::decision
         V6["FE: Đóng mic, gửi Audio lên BE (POST /api/attempts/{id}/answers)"]:::client
         V7["🎙️ Google STT: Chuyển Audio thành Transcript tiếng Việt"]:::ai
-        V7B["📚 Vertex AI RAG: Truy xuất Top-5 chunks từ slide bài giảng môn học"]:::ai
-        V8["🧠 Gemini 1.5 Flash: Đánh giá transcript đối chiếu Rubric & Chunks slide"]:::ai
+        V8["🧠 Gemini 2.5 Flash: Đánh giá nhanh transcript & lịch sử hội thoại (Sub-second < 1.5s)"]:::ai
         V9{"AI Quyết định: Cần hỏi xoáy (FOLLOW_UP) hay Chuyển câu (NEXT)?"}:::decision
         V10["AI sinh câu hỏi xoáy ngắn gọn (≤ 40 từ) bám sát ý thiếu"]:::ai
         V11{"Đã hoàn thành hết số câu hỏi của đề thi?"}:::decision
         V12["⚙️ BE: Kết thúc lượt thi, viva_attempts.status = COMPLETED"]:::service
 
         V1 --> V2 --> V3 --> V4 --> V5
-        V5 -- "Hết giờ / Nộp" --> V6 --> V7 --> V7B --> V8 --> V9
+        V5 -- "Hết giờ / Nộp" --> V6 --> V7 --> V8 --> V9
         V9 -- "FOLLOW_UP (Chưa quá Max)" --> V10 --> V2
         V9 -- "NEXT (Đạt ý / Đủ trần)" --> V11
         V11 -- "Chưa hết" --> V1 --> V2
@@ -100,9 +98,9 @@ flowchart TD
     %% ==========================================
     subgraph P5 [" ⚖️ Giai đoạn 5: Chấm Điểm AI, Thẩm Định HITL & Phúc Khảo "]
         G1[("⚙️ BE: Tạo Background Job EVALUATE_ATTEMPT trong DB")]:::storage
-        G2["⚙️ Worker (@Scheduled + @Async): Lấy Job PENDING, đọc Transcript + Rubric"]:::service
-        G2B["📚 Vertex AI RAG: Truy xuất ngữ cảnh slide bài giảng tương ứng"]:::ai
-        G3["🧠 Gemini 1.5 Flash: Chấm từng tiêu chí Rubric + Trích xuất bằng chứng (Evidence & Citations)"]:::ai
+        G2["⚙️ Worker (@Scheduled + @Async): Lấy Job PENDING, nạp Transcript"]:::service
+        G2B["🧠 Gemini 1.5 Flash: Tổng hợp & cô đọng transcript thành Candidate Brief"]:::ai
+        G3["📚 Knowledge RAG Engine: Đánh giá brief đối chiếu slide & Rubric -> Điểm + Slide Citations"]:::ai
         G4[("🗄️ Lưu question_grades (AI_DRAFT) & criteria_grades -> PENDING_REVIEW")]:::storage
         G5["👨‍🏫 Giảng viên: Mở màn hình Thẩm định (Review Dashboard)"]:::client
         G6{"Giảng viên đồng ý với điểm AI?"}:::decision
@@ -115,7 +113,7 @@ flowchart TD
         G13["👨‍🏫 Giảng viên: Rà soát lại bản ghi & Cập nhật kết quả phúc khảo"]:::client
         G14["🏁 Hoàn Tất Chu Kỳ Thi Vấn Đáp"]:::terminal
 
-        G1 --> G2 --> G3 --> G4 --> G5 --> G6
+        G1 --> G2 --> G2B --> G3 --> G4 --> G5 --> G6
         G6 -- "Đồng thuận" --> G7 --> G9
         G6 -- "Điều chỉnh" --> G8 --> G9
         G9 --> G10 --> G11

@@ -34,7 +34,7 @@ Tài liệu này đặc tả quy trình tác nghiệp khép kín của **Giảng
   3. Bấm "Tải tài liệu mới", chọn tệp từ máy tính và bấm "Tải lên".
 - **Cơ chế xử lý hệ thống**:
   1. Tệp được đẩy trực tiếp lên **Google Cloud Storage (GCS)** tại bucket chuyên dụng theo đường dẫn phân tách theo môn học.
-  2. Kích hoạt tiến trình bất đồng bộ của **Vertex AI RAG Engine**: bóc tách cấu trúc nội dung (LLM Parser), phân đoạn thành các chunk (1024 tokens, overlap 256 tokens) và tính vector embedding (`text-multilingual-embedding-002`) lưu vào RagManaged Cloud Spanner.
+  2. Kích hoạt tiến trình bất đồng bộ của **Vertex AI RAG Engine**
   3. Bản ghi tài liệu được tạo với trạng thái `INDEXING`.
 - **Business Rules kiểm tra**:
   - `BR-AUTH-001`: Giảng viên chỉ được nạp tài liệu cho các môn học/lớp học phần được nhà trường phân công phụ trách.
