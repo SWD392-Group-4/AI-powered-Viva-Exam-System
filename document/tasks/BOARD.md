@@ -8,7 +8,7 @@ This board represents the central state of all work orders organized by **Flows 
 
 | Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`FLOW-01-MVP`** | MVP Authentication & Core Slice | 4 | 0 / 4 | Step 1 (Contracts) | IN_PROGRESS |
+| **`FLOW-01-MVP`** | MVP Authentication & Core Slice | 4 | 1 / 4 | Step 2 (Backend Implementation) | IN_PROGRESS |
 | **`FLOW-02-PROFILE`** | User Profile & Session Flow | 0 | 0 / 0 | Scheduled | BACKLOG |
 
 ---
@@ -16,7 +16,6 @@ This board represents the central state of all work orders organized by **Flows 
 ## 2. Active Flow: `FLOW-01-MVP` Board
 
 ### Backlog (Pending Execution)
-- [TASK-001](backlog/FLOW-01-MVP/TASK-001-api-contracts.md): Define OpenAPI Schemas & Domain Parent Interface (`assigned_to: tech-lead`)
 - [TASK-002](backlog/FLOW-01-MVP/TASK-002-backend-endpoints.md): Implement Authentication Service & Endpoints (`assigned_to: backend-dev`)
 - [TASK-003](backlog/FLOW-01-MVP/TASK-003-frontend-view.md): Build Login View, State & API Client Hook (`assigned_to: frontend-dev`)
 - [TASK-004](backlog/FLOW-01-MVP/TASK-004-qa-verification.md): Validate End-to-End Flow against Acceptance Criteria (`assigned_to: qa-engineer`)
@@ -28,7 +27,7 @@ This board represents the central state of all work orders organized by **Flows 
 - None
 
 ### Done (Signed-Off Deliverables)
-- None
+- [TASK-001](done/FLOW-01-MVP/TASK-001-api-contracts.md): Define OpenAPI Schemas & Domain Parent Interface (`assigned_to: tech-lead`)
 
 ---
 
@@ -38,7 +37,7 @@ Items requiring high-level business direction or approval from the **Client** ar
 
 | Decision ID | Target Flow | Topic | PO/BA Recommendation | Client Status |
 | :--- | :--- | :--- | :--- | :--- |
-| - | - | No active blockers pending client | - | CLEAR |
+| [`DECISION-001`](CLIENT_QUESTIONS.md#decision-001-api-routing-hierarchy-and-refresh-token-storage-strategy) | `FLOW-01-MVP` | API Routing Hierarchy & Refresh Token Storage | Dual Route Alias & HttpOnly Cookie | PENDING_CLIENT_RESPONSE |
 
 ---
 

@@ -8,7 +8,16 @@ Whenever business decisions or requirement trade-offs require Client confirmatio
 
 ## 1. Pending Decisions (Awaiting Client Response)
 
-*No active pending decisions at this time.*
+### [DECISION-001] API Routing Hierarchy and Refresh Token Storage Strategy
+- **Date Raised**: 2026-10-24
+- **Target Flow / Task**: FLOW-01-MVP / TASK-001
+- **Context & Impact**:
+  - Hiện tại hệ thống đang sử dụng endpoint gốc `/api/auth/*` (trong mã nguồn Spring Boot và React Orval). Ticket FLOW-01-MVP đặt ra chuẩn RESTful API versioning `/api/v1/auth/*` và bổ sung endpoint làm mới phiên (`/refresh`). Cần chốt phương án định tuyến và phương thức lưu trữ refresh token bảo mật.
+- **BA Proposals & Options**:
+  - [x] **Option A (Recommended)**: Hỗ trợ Dual Route (`/api/v1/auth/*` làm chuẩn chính thức, giữ alias `/api/auth/*` để đảm bảo 100% tương thích ngược). Refresh Token được lưu trữ trong HttpOnly Secure Cookie để chống tấn công XSS; Access Token truyền qua Authorization Header.
+  - [ ] **Option B**: Chuyển đổi cứng sang `/api/v1/*` (yêu cầu cập nhật đồng thời Frontend & Mobile). Refresh Token truyền trực tiếp trong JSON body (client tự quản lý trong Storage).
+- **Client Decision**: [Chờ ý kiến phản hồi hoặc phê duyệt Option A từ Client]
+- **Status**: PENDING_CLIENT_RESPONSE
 
 <!-- Template for new entries:
 ### [DECISION-001] Short Decision Title
