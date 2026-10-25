@@ -9,7 +9,7 @@ This board represents the central state of all work orders organized by **Flows 
 | Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
-| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 5 | 2 / 5 | Step 3 (Backend Services: TASK-012) | READY |
+| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 5 | 3 / 5 | Step 4 (Frontend UI: TASK-013) | READY |
 | **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 1 / 4 | Step 2 (Backend Implementation) | READY |
 | **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 | **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
@@ -19,7 +19,6 @@ This board represents the central state of all work orders organized by **Flows 
 ## 2. Active Flow: `FLOW-02-QUESTION-BANK` Board (CLIENT TOP PRIORITY)
 
 ### Backlog (Pending Execution)
-- [TASK-012: Implement Course Rubric, RAG Question Generation, Shared Bank & Audit Logging Services](backlog/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md) (Assignee: `backend-dev`)
 - [TASK-013: Frontend UI for Course Rubrics, Materials, Question Bank, and RAG Question Generation](backlog/FLOW-02-QUESTION-BANK/TASK-013-frontend-ui.md) (Assignee: `frontend-dev`)
 - [TASK-014: QA Verification for Question Bank Flow](backlog/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`)
 
@@ -32,6 +31,7 @@ This board represents the central state of all work orders organized by **Flows 
 ### Done (Signed-Off Deliverables)
 - [TASK-010: Define OpenAPI Schemas and Domain Contracts for Course Rubric & Question Bank](done/FLOW-02-QUESTION-BANK/TASK-010-contracts-specs.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
 - [TASK-011: Database Migrations for Course Hierarchy, Shared Questions, and MongoDB Audit Log Setup](done/FLOW-02-QUESTION-BANK/TASK-011-db-migration.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
+- [TASK-012: Implement Course Rubric, RAG Question Generation, Shared Bank & Audit Logging Services](done/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
 
 ---
 

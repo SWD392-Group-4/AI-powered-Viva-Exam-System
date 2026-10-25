@@ -7,7 +7,7 @@ assigned_to: backend-dev
 reviewer: tech-lead
 status: DONE
 created_at: 2026-10-24
-updated_at: 2026-10-24
+updated_at: 2026-10-25
 inputs:
   - document/01-business-rule/br-question-rubric.md
   - document/01-business-rule/lecturer-exam-prep-flow.md
