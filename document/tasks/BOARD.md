@@ -10,16 +10,18 @@ This board represents the central state of all work orders organized by **Flows 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
 | **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 9 | 9 / 9 | Complete (All Steps Signed Off) | DONE |
-| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 3 / 4 | Step 4 (QA Verification) | READY |
-| **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
+| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 4 / 4 | Complete (All Steps Signed Off) | DONE |
+| **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | READY |
 | **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 
 ---
 
-## 2. Active Flow: `FLOW-01-MVP` Board (Authentication & Session Continuity)
+## 2. Active Flow: `FLOW-02-AUDIT` Board (System Audit Logging Vertical Slice)
 
 ### Backlog (Pending Execution)
-- [TASK-004: Validate End-to-End Authentication & Token Rotation against OpenAPI Spec](backlog/FLOW-01-MVP/TASK-004-qa-auth-verification.md) (Assignee: `qa-engineer`)
+- [TASK-005: Instrument Audit Event Triggers across Sensitive Mutation Operations](backlog/FLOW-02-AUDIT/TASK-005-backend-audit-event-triggers.md) (Assignee: `backend-dev`) - READY
+- [TASK-006: Enhance Audit Log Viewer with Old/New Value Diff Inspection](backlog/FLOW-02-AUDIT/TASK-006-frontend-audit-diff-viewer.md) (Assignee: `frontend-dev`) - DEPENDS ON TASK-005
+- [TASK-007: Validate Audit Log Persistence and Querying APIs](backlog/FLOW-02-AUDIT/TASK-007-qa-audit-verification.md) (Assignee: `qa-engineer`) - DEPENDS ON TASK-005, TASK-006
 
 ### In Progress (Active Subagents)
 - None
@@ -28,13 +30,17 @@ This board represents the central state of all work orders organized by **Flows 
 - None
 
 ### Done (Signed-Off Deliverables)
-- [TASK-001: Define OpenAPI Schemas and Domain Contracts for Auth & MVP](done/FLOW-01-MVP/TASK-001-api-contracts.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
-- [TASK-002: Implement Dual Route Auth Endpoints and Refresh Token Lifecycle](done/FLOW-01-MVP/TASK-002-backend-auth-refresh.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
-- [TASK-003: Integrate Refresh Token Rotation & Interceptor in apiClient.ts](done/FLOW-01-MVP/TASK-003-frontend-token-refresh.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-25)
+- None
 
 ---
 
 ## 3. Completed Flows Archive
+
+### `FLOW-01-MVP` (Signed-Off: 2026-10-25)
+- [TASK-001: Define OpenAPI Schemas and Domain Contracts for Auth & MVP](done/FLOW-01-MVP/TASK-001-api-contracts.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
+- [TASK-002: Implement Dual Route Auth Endpoints and Refresh Token Lifecycle](done/FLOW-01-MVP/TASK-002-backend-auth-refresh.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
+- [TASK-003: Integrate Refresh Token Rotation & Interceptor in apiClient.ts](done/FLOW-01-MVP/TASK-003-frontend-token-refresh.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-25)
+- [TASK-004: Validate End-to-End Authentication and Token Refresh](done/FLOW-01-MVP/TASK-004-qa-auth-verification.md) (Assignee: `qa-engineer`, Sign-off: 2026-10-25)
 
 ### `FLOW-02-QUESTION-BANK` (Signed-Off: 2026-10-25)
 - [TASK-010: Define OpenAPI Schemas and Domain Contracts for Course Rubric & Question Bank](done/FLOW-02-QUESTION-BANK/TASK-010-contracts-specs.md) (Assignee: `tech-lead`)
@@ -49,7 +55,7 @@ This board represents the central state of all work orders organized by **Flows 
 
 ---
 
-## 3. Pending Client Decisions
+## 4. Pending Client Decisions
 
 Items requiring high-level business direction or approval from the **Client** are consolidated by the PO/BA into [CLIENT_QUESTIONS.md](CLIENT_QUESTIONS.md).
 
@@ -59,7 +65,7 @@ Items requiring high-level business direction or approval from the **Client** ar
 
 ---
 
-## 4. Autonomous Squad Responsibility Directory
+## 5. Autonomous Squad Responsibility Directory
 
 - **Client (User)**: Primary stakeholder. Communicates feedback directly to BA; reviews high-level proposals when desired.
 - **Business Analyst (`business-analyst`)**: Directly interfaces with Client, logs meeting minutes in [CLIENT_BA_ALIGNMENT.md](CLIENT_BA_ALIGNMENT.md), updates use cases, and briefs PM on task adjustments.

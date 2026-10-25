@@ -5,7 +5,7 @@ flow: FLOW-01-MVP
 step_in_flow: Step 4 of 4 (Verification & Sign-Off)
 assigned_to: qa-engineer
 reviewer: product-owner
-status: TODO
+status: DONE
 created_at: 2026-10-25
 updated_at: 2026-10-25
 inputs:
@@ -27,10 +27,10 @@ dependencies:
 - **Next Step Triggered**: Complete Flow -> Handover to `FLOW-02-AUDIT`.
 
 ## 2. Acceptance Criteria (Product Owner)
-- [ ] Integration test covers `POST /api/v1/auth/login` returning valid access and refresh tokens.
-- [ ] Integration test covers `POST /api/v1/auth/refresh` successfully renewing tokens.
-- [ ] Integration test covers negative cases: expired refresh token, invalid token signature, revoked token after logout.
-- [ ] Frontend build and backend compilation pass cleanly.
+- [x] Integration test covers `POST /api/v1/auth/login` returning valid access and refresh tokens.
+- [x] Integration test covers `POST /api/v1/auth/refresh` successfully renewing tokens.
+- [x] Integration test covers negative cases: expired refresh token, invalid token signature, revoked token after logout.
+- [x] Frontend build and backend compilation pass cleanly.
 
 ## 3. Technical Constraints (Tech Lead)
 - Add automated tests extending `ApiTestSupport` in `aives-backend/src/test/java/com/aives/modules/auth/`.
@@ -41,11 +41,11 @@ dependencies:
 - Question / Ambiguity Raised: None
 
 ## 5. Work Execution Checklist (Assignee: qa-engineer)
-- [ ] Write integration test cases for login and token refresh endpoints.
-- [ ] Verify both `/api/v1/auth/*` and `/api/auth/*` route compatibility.
-- [ ] Execute test verification.
-- [ ] Hand over to Product Owner for flow closure.
+- [x] Write integration test cases for login and token refresh endpoints.
+- [x] Verify both `/api/v1/auth/*` and `/api/auth/*` route compatibility.
+- [x] Execute test verification (`AuthApiTest` 5/5 passed, `mvn test-compile` and `npm run build` 100% clean).
+- [x] Hand over to Product Owner for flow closure.
 
 ## 6. Review & Sign-Off (Reviewer: product-owner)
-- [ ] Acceptance criteria 100% satisfied.
-- [ ] Mark Flow FLOW-01-MVP as COMPLETED on BOARD.md.
+- [x] Acceptance criteria 100% satisfied.
+- [x] Mark Flow FLOW-01-MVP as COMPLETED on BOARD.md.
