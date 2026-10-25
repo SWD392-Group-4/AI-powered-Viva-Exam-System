@@ -8,14 +8,19 @@ This board represents the central state of all work orders organized by **Flows 
 
 | Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 0 / 1 | Step 1 (Audit) | READY |
+| **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
+| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 1 / 4 | Step 2 (Backend Implementation) | READY |
+| **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
+| **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 
 ---
 
-## 2. Active Flow: `FLOW-AUDIT` Board
+## 2. Active Flow: `FLOW-01-MVP` Board
 
 ### Backlog (Pending Execution)
-- Awaiting initial Codebase Audit across backend and frontend to identify missing features vs requirements.
+- [TASK-002: Implement Dual Route Auth Endpoints and Refresh Token Lifecycle](backlog/FLOW-01-MVP/TASK-002-backend-auth-refresh.md) (Assignee: `backend-dev`)
+- [TASK-003: Integrate Refresh Token Rotation and Silent Refresh Interceptor](backlog/FLOW-01-MVP/TASK-003-frontend-token-refresh.md) (Assignee: `frontend-dev`)
+- [TASK-004: Validate End-to-End Authentication and Token Refresh](backlog/FLOW-01-MVP/TASK-004-qa-auth-verification.md) (Assignee: `qa-engineer`)
 
 ### In Progress (Active Subagents)
 - None
@@ -24,7 +29,7 @@ This board represents the central state of all work orders organized by **Flows 
 - None
 
 ### Done (Signed-Off Deliverables)
-- None
+- [TASK-001: Define OpenAPI Schemas and Domain Parent Interface](done/FLOW-01-MVP/TASK-001-api-contracts.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
 
 ---
 
