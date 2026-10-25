@@ -8,7 +8,7 @@ This board represents the central state of all work orders organized by **Flows 
 
 | Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Priority | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Chapter RAG & Shared Question Bank | 5 | 2 / 5 | Step 3 (Backend Services) | **CRITICAL / URGENT** | IN_PROGRESS |
+| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Chapter RAG & Shared Question Bank | 5 | 3 / 5 | Step 3 (Backend Services) | **CRITICAL / URGENT** | IN_PROGRESS |
 | **`FLOW-01-MVP`** | Authentication & RBAC Core | 4 | 1 / 4 | Step 2 (Backend) | HIGH | QUEUED |
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 0 / 1 | Step 1 (Audit) | MEDIUM | QUEUED |
 
@@ -17,17 +17,13 @@ This board represents the central state of all work orders organized by **Flows 
 ## 2. Active Flow: `FLOW-02-QUESTION-BANK` Board (Priority 1)
 
 ### Backlog (Pending Dependency)
-- [TASK-014: QA Verification & UAT Testing](backlog/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`, Pending: `TASK-012`, `TASK-013`)
+- [TASK-014: QA Verification & UAT Testing](backlog/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`, Pending: `TASK-012`)
 
-### Ready / In Progress (Active Subagents)
-- **[TASK-012: Implement Course Rubric, RAG & Shared Bank Services](backlog/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md)**
+### In Progress (Active Subagents)
+- **[TASK-012: Implement Course Rubric, RAG & Shared Bank Services](in-progress/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md)**
   - Assignee: `backend-dev`
   - Reviewer: `tech-lead`
-  - Status: **READY TO EXECUTE (Step 3 - Backend Services & APIs)**
-- **[TASK-013: Frontend UI for Course Rubric & Question Bank](backlog/FLOW-02-QUESTION-BANK/TASK-013-frontend-ui.md)**
-  - Assignee: `frontend-dev`
-  - Reviewer: `tech-lead`
-  - Status: **READY TO EXECUTE (Step 4 - UI scaffold & Orval sync)**
+  - Status: **IN PROGRESS (Step 3 - Backend Services & APIs)**
 
 ### In Review (Awaiting Review & Sign-Off)
 - None
@@ -35,6 +31,7 @@ This board represents the central state of all work orders organized by **Flows 
 ### Done (Signed-Off Deliverables)
 - **[TASK-010: Define OpenAPI Schemas and Domain Contracts](done/FLOW-02-QUESTION-BANK/TASK-010-contracts-specs.md)** (Assignee: `tech-lead`, Sign-off: `software-architect`)
 - **[TASK-011: Database Migrations for Course Hierarchy & MongoDB Setup](done/FLOW-02-QUESTION-BANK/TASK-011-db-migration.md)** (Assignee: `backend-dev`, Sign-off: `tech-lead`)
+- **[TASK-013: Frontend UI for Course Rubric & Question Bank](done/FLOW-02-QUESTION-BANK/TASK-013-frontend-ui.md)** (Assignee: `frontend-dev`, Sign-off: `tech-lead`)
 
 ---
 
@@ -42,7 +39,7 @@ This board represents the central state of all work orders organized by **Flows 
 
 | Decision ID | Target Flow | Topic | PO/BA Recommendation | Client Status |
 | :--- | :--- | :--- | :--- | :--- |
-| `ALIGN-002` | `FLOW-02-QUESTION-BANK` | Course single rubric, easy/med/hard, shared bank, no AI rubric gen | Implemented in Docs, Schemas & DB Migration | **ALIGNED / CLOSED** |
+| `ALIGN-002` | `FLOW-02-QUESTION-BANK` | Course single rubric, easy/med/hard, shared bank, no AI rubric gen | Implemented in Docs, DB Migration & UI | **ALIGNED / CLOSED** |
 
 ---
 
