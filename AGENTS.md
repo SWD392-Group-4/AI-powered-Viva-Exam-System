@@ -18,7 +18,7 @@ Tat ca cac AI Agent va Developer khi lam viec trong repository nay bat buoc phai
 - Khi can build hoac package du an, bat buoc phai bo qua buoc test (vi du voi Maven: `-DskipTests`).
 
 ## 4. Bat Buoc Commit Va Push Len Main Sau Moi Thay Doi (Mandatory Git Delivery)
-- **Tat ca cac role (BA, PM, PO, Tech Lead, Backend, Frontend, QA, UI-UX, Architect) khi hoan thanh bat ky thay doi nao (chinh sua docs, cap nhat ticket, viet code, sua bug) deu BAT BUOC phai commit va push ngay len `origin main`**.
+- **Tat ca cac role (BA, PM, PO, Tech Lead, Backend, Frontend, QA, UI-UX, Architect, DevOps) khi hoan thanh bat ky thay doi nao (chinh sua docs, cap nhat ticket, viet code, sua bug, cap nhat ha tang/deployment) deu BAT BUOC phai commit va push ngay len `origin main`**.
 - Do du an bao gom nhieu git repository con (`AI-powered-Viva-Exam-System`, `aives-backend`, `aives-frontend`, `aives-mobile`), agent phai xac dinh dung git root cua thu muc vua sua doi.
 - Khong bao gio duoc de lai thay doi chua commit (uncommitted changes) hoac chua push (unpushed commits).
 - Quy trinh thuc hien:
