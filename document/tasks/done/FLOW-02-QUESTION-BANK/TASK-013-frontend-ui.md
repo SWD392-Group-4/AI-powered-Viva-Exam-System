@@ -7,7 +7,7 @@ assigned_to: frontend-dev
 reviewer: tech-lead
 status: DONE
 created_at: 2026-10-24
-updated_at: 2026-10-24
+updated_at: 2026-10-25
 inputs:
   - document/04-ui-ux-design/page-maps/lecturer.md
   - document/05-api-specs/openapi-spec.yaml
