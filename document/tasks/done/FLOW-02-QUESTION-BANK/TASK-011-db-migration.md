@@ -7,7 +7,7 @@ assigned_to: backend-dev
 reviewer: tech-lead
 status: DONE
 created_at: 2026-10-24
-updated_at: 2026-10-24
+updated_at: 2026-10-25
 inputs:
   - document/ERD/03-physical-erd.md
   - document/05-api-specs/openapi-spec.yaml
