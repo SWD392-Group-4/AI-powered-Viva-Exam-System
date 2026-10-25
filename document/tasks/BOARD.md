@@ -6,35 +6,43 @@ This board represents the central state of all work orders organized by **Flows 
 
 ## 1. Flow Pipeline Overview
 
-| Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 0 / 1 | Step 1 (Audit) | READY |
+| Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Priority | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Chapter RAG & Shared Question Bank | 5 | 1 / 5 | Step 2 (Database & Backend) | **CRITICAL / URGENT** | IN_PROGRESS |
+| **`FLOW-01-MVP`** | Authentication & RBAC Core | 4 | 1 / 4 | Step 2 (Backend) | HIGH | QUEUED |
+| **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 0 / 1 | Step 1 (Audit) | MEDIUM | QUEUED |
 
 ---
 
-## 2. Active Flow: `FLOW-AUDIT` Board
+## 2. Active Flow: `FLOW-02-QUESTION-BANK` Board (Priority 1)
 
-### Backlog (Pending Execution)
-- Awaiting initial Codebase Audit across backend and frontend to identify missing features vs requirements.
+### Backlog (Pending Dependency)
+- [TASK-012: Implement Course Rubric, RAG & Shared Bank Services](backlog/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md) (Assignee: `backend-dev`, Pending: `TASK-011`)
+- [TASK-014: QA Verification & UAT Testing](backlog/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`, Pending: `TASK-012`, `TASK-013`)
 
-### In Progress (Active Subagents)
-- None
+### Ready / In Progress (Active Subagents)
+- **[TASK-011: Database Migrations for Course Hierarchy & MongoDB Setup](backlog/FLOW-02-QUESTION-BANK/TASK-011-db-migration.md)**
+  - Assignee: `backend-dev`
+  - Reviewer: `tech-lead`
+  - Status: **READY TO EXECUTE (Step 2)**
+- **[TASK-013: Frontend UI for Course Rubric & Question Bank](backlog/FLOW-02-QUESTION-BANK/TASK-013-frontend-ui.md)**
+  - Assignee: `frontend-dev`
+  - Reviewer: `tech-lead`
+  - Status: **READY TO EXECUTE (Step 4 - UI scaffold & Orval sync)**
 
 ### In Review (Awaiting Review & Sign-Off)
 - None
 
 ### Done (Signed-Off Deliverables)
-- None
+- **[TASK-010: Define OpenAPI Schemas and Domain Contracts](done/FLOW-02-QUESTION-BANK/TASK-010-contracts-specs.md)** (Assignee: `tech-lead`, Sign-off: `software-architect`)
 
 ---
 
 ## 3. Pending Client Decisions
 
-Items requiring high-level business direction or approval from the **Client** are consolidated by the PO/BA into [CLIENT_QUESTIONS.md](CLIENT_QUESTIONS.md).
-
 | Decision ID | Target Flow | Topic | PO/BA Recommendation | Client Status |
 | :--- | :--- | :--- | :--- | :--- |
-| - | - | No active blockers pending client | - | CLEAR |
+| `ALIGN-002` | `FLOW-02-QUESTION-BANK` | Course single rubric, easy/med/hard, shared bank, no AI rubric gen | Implemented in Docs & OpenAPI Specs | **ALIGNED / CLOSED** |
 
 ---
 
@@ -44,7 +52,7 @@ Items requiring high-level business direction or approval from the **Client** ar
 - **Business Analyst (`business-analyst`)**: Directly interfaces with Client, logs meeting minutes in [CLIENT_BA_ALIGNMENT.md](CLIENT_BA_ALIGNMENT.md), updates use cases, and briefs PM on task adjustments.
 - **Product Owner (`product-owner`)**: Holds full decision-making authority in the squad to prevent delays; enforces invariants and business rules.
 - **Project Manager (`project-manager`)**: Flow orchestration, task assignment, status updates across ticket folders and this board.
-- **Tech Lead (`tech-lead`)**: Directs implementation in code files (`src/`), audits codebase to prevent duplicates, reviews code quality. No code definition in markdown.
+- **Tech Lead (`tech-lead`)**: Directs implementation in code files (`src/`), audits codebase to prevent duplicates, reviews code quality.
 - **Backend Developer (`backend-dev`)**: Production implementation directly in backend source files.
 - **Frontend Developer (`frontend-dev`)**: Production implementation directly in frontend source files.
 - **QA Engineer (`qa-engineer`)**: Verifies working code against acceptance criteria.

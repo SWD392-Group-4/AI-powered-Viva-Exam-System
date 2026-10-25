@@ -12,16 +12,20 @@ title: AIVES - Physical ERD (PostgreSQL)
   }
 }}%%
 erDiagram
-    %% ===== RELATIONSHIPS (khoá ngoại thực tế) =====
+    %% ===== RELATIONSHIPS =====
     roles                ||--o{ users                : "fk_users_role"
-    users                ||--o{ lessons              : "fk_lessons_lecturer"
-    lessons              ||--o{ topics               : "fk_topics_lesson"
-    topics               ||--o{ questions            : "fk_questions_topic"
-    rubrics              |o--o{ questions            : "fk_questions_rubric"
+    users                ||--o{ course_lecturers     : "fk_course_lecturers_user"
+    courses              ||--o{ course_lecturers     : "fk_course_lecturers_course"
+    courses              ||--|| rubrics              : "fk_rubrics_course"
     users                ||--o{ rubrics              : "fk_rubrics_creator"
     rubrics              ||--o{ rubric_criteria      : "fk_rubric_criteria_rubric"
+    courses              ||--o{ chapters             : "fk_chapters_course"
+    chapters             ||--o{ materials            : "fk_materials_chapter"
+    users                ||--o{ materials            : "fk_materials_uploader"
+    chapters             ||--o{ questions            : "fk_questions_chapter"
+    users                ||--o{ questions            : "fk_questions_creator"
+    courses              ||--o{ viva_exams           : "fk_viva_exams_course"
     users                ||--o{ viva_exams           : "fk_viva_exams_lecturer"
-    viva_exams           ||--o{ viva_exam_topics     : "fk_viva_exam_topics_exam"
     viva_exams           ||--o{ viva_exam_questions  : "fk_viva_exam_questions_exam"
     questions            ||--o{ viva_exam_questions  : "fk_viva_exam_questions_question"
     viva_exams           ||--o{ viva_attempts        : "fk_viva_attempts_exam"
@@ -36,8 +40,6 @@ erDiagram
     rubric_criteria      ||--o{ criteria_grades      : "fk_criteria_grades_criteria"
     question_grades      ||--o{ grade_appeals        : "fk_grade_appeals_question_grade"
     users                |o--o{ grade_appeals        : "fk_grade_appeals_resolver"
-    users                ||--o{ audit_logs           : "fk_audit_logs_actor"
-    users                |o--o{ system_settings      : "fk_system_settings_user"
 
     %% ===== BẢNG NGHIỆP VỤ =====
     roles {
@@ -58,28 +60,49 @@ erDiagram
         TIMESTAMP       created_at
         TIMESTAMP       updated_at
     }
-    lessons {
-        VARCHAR(20)     lessons_id      PK
-        VARCHAR(20)     lecturer_id     FK
-        VARCHAR(200)    title
+    courses {
+        VARCHAR(20)     courses_id      PK
+        VARCHAR(50)     course_code     UK
+        VARCHAR(200)    name
         TEXT            description
         TIMESTAMP       created_at
         TIMESTAMP       updated_at
     }
-    topics {
-        VARCHAR(20)     topics_id       PK
-        VARCHAR(20)     lessons_id      FK
+    course_lecturers {
+        VARCHAR(20)     course_lecturers_id PK
+        VARCHAR(20)     courses_id          FK
+        VARCHAR(20)     users_id            FK
+        TIMESTAMP       created_at
+    }
+    chapters {
+        VARCHAR(20)     chapters_id     PK
+        VARCHAR(20)     courses_id      FK
         VARCHAR(200)    name
+        INTEGER         order_no
         TEXT            description
+        TIMESTAMP       created_at
+        TIMESTAMP       updated_at
+    }
+    materials {
+        VARCHAR(20)     materials_id    PK
+        VARCHAR(20)     chapters_id     FK
+        VARCHAR(20)     uploaded_by     FK
+        VARCHAR(200)    title
+        VARCHAR(500)    file_url
+        VARCHAR(20)     file_type
+        INTEGER         file_size
+        VARCHAR(20)     rag_status
         TIMESTAMP       created_at
         TIMESTAMP       updated_at
     }
     rubrics {
         VARCHAR(20)     rubrics_id      PK
+        VARCHAR(20)     courses_id      FK, UK
         VARCHAR(20)     created_by      FK
         VARCHAR(200)    name
         TEXT            description
         NUMERIC         max_score
+        BOOLEAN         is_locked
         TIMESTAMP       created_at
         TIMESTAMP       updated_at
     }
@@ -95,10 +118,10 @@ erDiagram
     }
     questions {
         VARCHAR(20)     questions_id        PK
-        VARCHAR(20)     topics_id           FK
-        VARCHAR(20)     rubrics_id          FK
+        VARCHAR(20)     chapters_id         FK
+        VARCHAR(20)     created_by          FK
         TEXT            content
-        VARCHAR(20)     bloom_level
+        VARCHAR(20)     difficulty
         TEXT            model_answer
         TEXT            expected_keywords
         VARCHAR(20)     source
@@ -109,6 +132,7 @@ erDiagram
     }
     viva_exams {
         VARCHAR(30)     viva_exams_id               PK
+        VARCHAR(20)     courses_id                  FK
         VARCHAR(20)     lecturer_id                 FK
         VARCHAR(200)    title
         VARCHAR(2000)   description
@@ -125,10 +149,6 @@ erDiagram
         TIMESTAMP       cancelled_at
         TIMESTAMP       created_at
         TIMESTAMP       updated_at
-    }
-    viva_exam_topics {
-        VARCHAR(30)     viva_exams_id   PK, FK
-        VARCHAR(20)     topics_id       PK
     }
     viva_exam_questions {
         VARCHAR(20)     viva_exam_questions_id  PK
@@ -213,35 +233,5 @@ erDiagram
         VARCHAR(20)     resolved_by         FK
         TIMESTAMP       resolved_at
         TIMESTAMP       created_at
-        TIMESTAMP       updated_at
-    }
-
-    %% ===== BẢNG HỆ THỐNG (không có trong Conceptual ERD) =====
-    background_jobs {
-        VARCHAR(20)     background_jobs_id  PK
-        VARCHAR(50)     job_type
-        TEXT            payload
-        VARCHAR(20)     status
-        INTEGER         attempts
-        TIMESTAMP       next_run_at
-        TEXT            last_error
-        TIMESTAMP       created_at
-        TIMESTAMP       updated_at
-    }
-    audit_logs {
-        VARCHAR(20)     audit_logs_id   PK
-        VARCHAR(20)     actor_id        FK
-        VARCHAR(50)     action
-        VARCHAR(50)     entity_type
-        VARCHAR(50)     entity_id
-        TEXT            old_value
-        TEXT            new_value
-        TIMESTAMP       created_at
-        TIMESTAMP       updated_at
-    }
-    system_settings {
-        VARCHAR(100)    setting_key     PK
-        TEXT            setting_value
-        VARCHAR(20)     updated_by      FK
         TIMESTAMP       updated_at
     }
