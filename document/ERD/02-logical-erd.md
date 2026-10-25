@@ -1,226 +1,229 @@
 # Logical ERD - AIVES
 
-> **Mức**: Logical - thêm thuộc tính, khoá chính (PK), khoá ngoại (FK), khoá duy nhất (UK). Chưa phụ thuộc DBMS.  
-> **Mã nguồn**: [logical-erd.mmd](logical-erd.mmd) (file `.mmd` ghi thêm kiểu dữ liệu logic vì Mermaid bắt buộc có kiểu)  
-> **Đi từ**: [01-conceptual-erd.md](01-conceptual-erd.md) · **Đi tiếp**: [03-physical-erd.md](03-physical-erd.md)
+> **Mức**: Logical (luận lý) - đã có thuộc tính, kiểu dữ liệu chuẩn hoá, khoá chính (PK), khoá ngoại (FK), ràng buộc duy nhất (UK). Chưa gắn với hệ quản trị cơ sở dữ liệu cụ thể.  
+> **Mã nguồn**: [logical-erd.mmd](logical-erd.mmd)  
+> **Căn cứ**: [Conceptual ERD](01-conceptual-erd.md), [01-business-rule](../01-business-rule/README.md)
 
 ---
 
-## 1. Sơ đồ
+## 1. Sơ Đồ
 
 ![Logical ERD](images/logical-erd.png)
 
 ---
 
-## 2. Quy ước
+## 2. Thay Đổi So Với Bản Thiết Kế Cũ
 
-- **Khoá**: `PK` khoá chính, `FK` khoá ngoại, `UK` giá trị duy nhất.
-- **Tên khoá chính**: `<tên thực thể>_id` (ví dụ `lesson_id`, `attempt_id`).
-- **Kiểu dữ liệu logic** (cột "Kiểu" trong bảng dưới): `string` chuỗi ngắn, `text` chuỗi dài, `int` số nguyên, `decimal` số thực, `datetime` ngày giờ, `boolean` đúng/sai, `enum` chỉ nhận một tập giá trị cố định. Sang Physical mới đổi thành kiểu của PostgreSQL.
-- Quan hệ và bản số giữ nguyên như Conceptual ERD (20 quan hệ).
+1. **Chuẩn hóa cây phân cấp học thuật**: Thay thế phân cấp rời rạc `LESSON` / `TOPIC` bằng `COURSE` (Môn học) → `CHAPTER` (Chương) → `MATERIAL` (Học liệu RAG) & `QUESTION` (Ngân hàng câu hỏi dùng chung).
+2. **Rubric duy nhất ở cấp Môn học**: Thực thể `RUBRIC` liên kết trực tiếp $1:1$ với `COURSE` (`course_id` UNIQUE). Bảng `QUESTION` không cần lưu riêng `rubric_id` mà kế thừa bộ Rubric chuẩn của Môn học (`BR-BANK-001`, `BR-BANK-006`).
+3. **Phân loại độ khó trực quan**: Thay thế thang nhận thức Bloom (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`) bằng 3 mức độ thực tế: `EASY` (Dễ), `MEDIUM` (Trung bình), `HARD` (Khó).
+4. **Bổ sung quản lý học liệu RAG**: Thêm thực thể `MATERIAL` gắn theo từng Chương (`chapter_id`) để quản lý trạng thái lập chỉ mục RAG (`INDEXING`, `READY`, `FAILED`).
+5. **Theo dõi cộng tác & lưu vết kiểm toán**: Bổ sung `created_by` trong `QUESTION` và tích hợp MongoDB `academic_audit_logs` để theo dõi lịch sử chỉnh sửa, phê duyệt (`BR-BANK-005`, `BR-BANK-007`).
 
 ---
 
-## 3. Thuộc tính từng thực thể
+## 3. Danh Sách Thực Thể & Thuộc Tính
 
 ### 3.1. `LECTURER`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `lecturer_id` | PK | int | Mã giảng viên |
-| `email` | UK | string | Email đăng nhập |
-| `password_hash` | | string | Mật khẩu đã băm |
-| `full_name` | | string | Họ tên |
-| `is_active` | | boolean | Tài khoản còn hoạt động |
+| `lecturer_id` | PK | int | Mã định danh giảng viên |
+| `email` | UK | string | Email tài khoản giảng viên |
+| `password_hash` | | string | Mật khẩu băm (BCrypt) |
+| `full_name` | | string | Họ và tên |
+| `is_active` | | boolean | Trạng thái kích hoạt tài khoản |
 
 ### 3.2. `STUDENT`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `student_id` | PK | int | Mã định danh sinh viên trong hệ thống |
-| `email` | UK | string | Email đăng nhập |
-| `password_hash` | | string | Mật khẩu đã băm |
-| `full_name` | | string | Họ tên |
-| `is_active` | | boolean | Tài khoản còn hoạt động |
+| `student_id` | PK | int | Mã sinh viên |
+| `email` | UK | string | Email sinh viên |
+| `password_hash` | | string | Mật khẩu băm |
+| `full_name` | | string | Họ và tên |
+| `is_active` | | boolean | Trạng thái hoạt động |
 
-### 3.3. `LESSON`
-
-| Thuộc tính | Khoá | Kiểu | Mô tả |
-| :--- | :---: | :--- | :--- |
-| `lesson_id` | PK | int | Mã bài học |
-| `lecturer_id` | FK → `LECTURER` | int | Giảng viên quản lý (**Manages**) |
-| `title` | | string | Tên bài học |
-| `description` | | text | Mô tả |
-
-### 3.4. `TOPIC`
+### 3.3. `COURSE`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `topic_id` | PK | int | Mã chủ đề |
-| `lesson_id` | FK → `LESSON` | int | Bài học chứa chủ đề (**Contains**) |
-| `name` | | string | Tên chủ đề |
-| `description` | | text | Mô tả |
+| `course_id` | PK | int | Mã môn học |
+| `course_code` | UK | string | Mã học phần (ví dụ: `SWD392`, `PRN211`) |
+| `name` | | string | Tên môn học |
+| `description` | | text | Mô tả mục tiêu học phần |
 
-### 3.5. `QUESTION`
+### 3.4. `CHAPTER`
+
+| Thuộc tính | Khoá | Kiểu | Mô tả |
+| :--- | :---: | :--- | :--- |
+| `chapter_id` | PK | int | Mã chương kiến thức |
+| `course_id` | FK → `COURSE` | int | Môn học chứa chương (**Contains**) |
+| `name` | | string | Tên chương (ví dụ: `Chương 1 - Design Patterns`) |
+| `order_no` | | int | Thứ tự chương trong môn học |
+| `description` | | text | Mô tả tóm tắt nội dung chương |
+
+### 3.5. `MATERIAL`
+
+| Thuộc tính | Khoá | Kiểu | Mô tả |
+| :--- | :---: | :--- | :--- |
+| `material_id` | PK | int | Mã tài liệu học liệu |
+| `chapter_id` | FK → `CHAPTER` | int | Chương chứa tài liệu (**Provides**) |
+| `uploaded_by` | FK → `LECTURER` | int | Giảng viên tải lên |
+| `title` | | string | Tên file hiển thị |
+| `file_url` | | string | Đường dẫn tệp trên GCS |
+| `file_type` | | string | Định dạng: `pdf`, `pptx`, `ppt` |
+| `file_size` | | int | Kích thước file tính theo bytes |
+| `rag_status` | | enum | `INDEXING`, `READY`, `FAILED` |
+
+### 3.6. `QUESTION`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `question_id` | PK | int | Mã câu hỏi |
-| `topic_id` | FK → `TOPIC` | int | Chủ đề (**Groups**) |
-| `rubric_id` | FK → `RUBRIC` | int | Rubric chấm câu này (**Evaluates**) |
+| `chapter_id` | FK → `CHAPTER` | int | Chương chứa câu hỏi (**Contains**) |
+| `created_by` | FK → `LECTURER` | int | Giảng viên khởi tạo / kích hoạt sinh AI |
 | `content` | | text | Nội dung câu hỏi |
-| `bloom_level` | | enum | `REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE` |
-| `model_answer` | | text | Đáp án mẫu |
-| `expected_keywords` | | text | Các ý / từ khoá cần có |
+| `difficulty` | | enum | Mức độ khó: `EASY`, `MEDIUM`, `HARD` |
+| `model_answer` | | text | Đáp án mẫu chuẩn |
+| `expected_keywords` | | text | Từ khoá chuyên môn kỳ vọng (mảng JSON) |
 | `source` | | enum | `MANUAL`, `AI_GENERATED` (`BR-BANK-002`) |
 | `status` | | enum | `DRAFT`, `APPROVED`, `REJECTED`, `ARCHIVED` |
 
-### 3.6. `RUBRIC`
+### 3.7. `RUBRIC`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `rubric_id` | PK | int | Mã rubric |
-| `name` | | string | Tên rubric |
-| `description` | | text | Mô tả |
+| `course_id` | FK → `COURSE`, UK | int | Môn học chứa Rubric chuẩn (**Defines**) |
+| `name` | | string | Tên rubric (chuẩn hóa môn học) |
+| `description` | | text | Mô tả tổng quan khung tiêu chí |
 | `max_score` | | decimal | Điểm tối đa (thang 10) |
+| `is_locked` | | boolean | Khóa chỉnh sửa khi có ca thi đang mở/kết thúc (`BR-BANK-006`) |
 
-### 3.7. `RUBRIC_CRITERIA`
+### 3.8. `RUBRIC_CRITERIA`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `criteria_id` | PK | int | Mã tiêu chí |
+| `criteria_id` | PK | int | Mã tiêu chí con |
 | `rubric_id` | FK → `RUBRIC` | int | Rubric chứa tiêu chí (**Consists of**) |
-| `name` | | string | Tên tiêu chí |
-| `description` | | text | Yêu cầu để đạt điểm, bắt buộc có (`BR-BANK-003`) |
-| `weight_percent` | | decimal | Trọng số %, tổng trong 1 rubric = 100 |
-| `order_no` | | int | Thứ tự hiển thị |
+| `name` | | string | Tên tiêu chí đánh giá |
+| `description` | | text | Tiêu chuẩn chi tiết để đạt điểm (`BR-BANK-003`) |
+| `weight_percent` | | decimal | Trọng số %, tổng tiêu chí trong 1 rubric = 100% |
+| `order_no` | | int | Thứ tự hiển thị tiêu chí |
 
-### 3.8. `VIVA_EXAM`
-
-| Thuộc tính | Khoá | Kiểu | Mô tả |
-| :--- | :---: | :--- | :--- |
-| `viva_exam_id` | PK | string | Mã phiên thi, cũng là mã vào thi sinh viên nhập (`AIVES_EXAM_yyyy_xxxxxx`) |
-| `lecturer_id` | FK → `LECTURER` | int | Giảng viên tạo đề (**Creates**) |
-| `title` | | string | Tên đề thi |
-| `description` | | text | Mô tả |
-| `passcode` | | string | Mã truy cập 6 chữ số, sinh viên nhập cùng mã phiên để vào thi |
-| `duration_minutes` | | int | Thời lượng bài thi (phút), đếm ngược từ lúc sinh viên vào |
-| `max_follow_up_per_question` | | int | Số câu hỏi xoáy tối đa mỗi câu (`BR-VIVA-001`) |
-| `prepare_seconds` | | int | Thời gian suy nghĩ mỗi câu |
-| `answer_seconds` | | int | Thời gian trả lời mỗi câu |
-| `domain_keywords` | | text | Thuật ngữ chuyên ngành gửi cho STT (`BR-VIVA-004`) |
-| `start_at` | | datetime | Thời điểm mở phiên |
-| `end_at` | | datetime | Thời điểm đóng phiên |
-| `cancelled_at` | | datetime | Thời điểm huỷ phiên (trống nếu không huỷ) |
-
-Trạng thái phiên (`UPCOMING`, `ONGOING`, `ENDED`, `CANCELLED`) không lưu thành thuộc tính mà tính từ `start_at`, `end_at`, `cancelled_at`.
-
-### 3.9. `VIVA_EXAM_QUESTION`
+### 3.9. `VIVA_EXAM`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `viva_exam_question_id` | PK | int | Mã câu hỏi trong đề |
+| `viva_exam_id` | PK | string | Mã đợt thi (ví dụ: `AIVES_EXAM_2026_SWD001`) |
+| `course_id` | FK → `COURSE` | int | Môn học tổ chức thi (**Organizes**) |
+| `lecturer_id` | FK → `LECTURER` | int | Giảng viên tạo ca thi (**Creates**) |
+| `title` | | string | Tiêu đề ca thi |
+| `description` | | text | Mô tả quy chế thi |
+| `passcode` | | string | Mã truy cập bí mật |
+| `duration_minutes` | | int | Thời lượng tối đa cho 1 lượt thi |
+| `max_follow_up_per_question` | | int | Giới hạn số lượt hỏi xoáy tối đa |
+| `prepare_seconds` | | int | Thời gian chuẩn bị trước mỗi câu hỏi |
+| `answer_seconds` | | int | Thời gian trả lời tối đa cho mỗi câu |
+| `domain_keywords` | | text | Từ khóa chuyên ngành bổ trợ Google STT |
+| `start_at` | | datetime | Thời điểm mở phòng thi |
+| `end_at` | | datetime | Thời điểm đóng phòng thi |
+| `cancelled_at` | | datetime | Thời điểm hủy ca thi (nếu có) |
+
+### 3.10. `VIVA_EXAM_QUESTION`
+
+| Thuộc tính | Khoá | Kiểu | Mô tả |
+| :--- | :---: | :--- | :--- |
+| `viva_exam_question_id` | PK | int | Mã liên kết câu hỏi trong đề thi |
 | `viva_exam_id` | FK → `VIVA_EXAM` | string | Đề thi (**Includes**) |
-| `question_id` | FK → `QUESTION` | int | Câu hỏi gốc (**Selected in**) |
-| `order_no` | | int | Thứ tự câu trong đề |
-| `weight` | | decimal | Trọng số khi tính tổng điểm (`BR-GRADE-003`) |
+| `question_id` | FK → `QUESTION` | int | Câu hỏi được chọn (**Selected in**) |
+| `order_no` | | int | Thứ tự hỏi câu này trong đề |
+| `weight` | | decimal | Trọng số câu hỏi trong đề |
 
-### 3.10. `VIVA_ATTEMPT`
+### 3.11. `VIVA_ATTEMPT`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `attempt_id` | PK | int | Mã lượt thi |
-| `viva_exam_id` | FK → `VIVA_EXAM` | string | Phiên thi (**Taken in**) |
-| `student_id` | FK → `STUDENT` | int | Sinh viên (**Takes**) |
-| `status` | | enum | `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`, `ABANDONED`. Sinh viên tự vào phiên bằng mã nên lượt thi được tạo thẳng ở `IN_PROGRESS` |
+| `attempt_id` | PK | int | Mã lượt thi của sinh viên |
+| `viva_exam_id` | FK → `VIVA_EXAM` | string | Đề thi (**Taken in**) |
+| `student_id` | FK → `STUDENT` | int | Sinh viên tham gia (**Takes**) |
+| `status` | | enum | `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`, `ABANDONED` |
 | `result_status` | | enum | `NONE`, `GRADING`, `PENDING_REVIEW`, `GRADING_FAILED`, `PUBLISHED` |
-| `total_ai_score` | | decimal | Tổng điểm AI đề xuất |
-| `total_final_score` | | decimal | Tổng điểm chính thức sau khi giảng viên chốt |
-| `full_audio_key` | | string | Đường dẫn file ghi âm toàn bài |
-| `started_at` | | datetime | Bắt đầu thi (lúc sinh viên vào phiên) |
-| `deadline_at` | | datetime | Hạn làm bài = bắt đầu + thời lượng, nhưng không vượt quá giờ đóng phiên |
-| `completed_at` | | datetime | Kết thúc thi |
+| `total_ai_score` | | decimal | Tổng điểm AI chấm |
+| `total_final_score` | | decimal | Tổng điểm giảng viên chốt cuối cùng |
+| `full_audio_key` | | string | Đường dẫn bản ghi âm toàn bộ lượt thi |
+| `started_at` | | datetime | Thời điểm bắt đầu thi |
+| `deadline_at` | | datetime | Thời hạn chót kết thúc lượt thi |
+| `completed_at` | | datetime | Thời điểm nộp bài |
 | `published_at` | | datetime | Thời điểm công bố điểm |
 
-### 3.11. `INTERVIEW_EXCHANGE`
+### 3.12. `INTERVIEW_EXCHANGE`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `exchange_id` | PK | int | Mã lượt hỏi - đáp |
+| `exchange_id` | PK | int | Mã lượt hỏi đáp |
 | `attempt_id` | FK → `VIVA_ATTEMPT` | int | Lượt thi (**Records**) |
-| `viva_exam_question_id` | FK → `VIVA_EXAM_QUESTION` | int | Câu hỏi của đề (**Asked in**) |
-| `parent_exchange_id` | FK → `INTERVIEW_EXCHANGE` | int | Lượt trước đó nếu đây là câu xoáy; rỗng nếu là câu gốc (**Follows up**) |
-| `depth` | | int | 0 = câu gốc, 1..n = lần hỏi xoáy thứ n |
-| `question_text` | | text | Câu hỏi AI đã đọc |
-| `transcript` | | text | Câu trả lời của sinh viên sau STT |
-| `follow_up_reason` | | enum | `INCOMPLETE`, `AMBIGUOUS`, `CONTRADICTORY` (`BR-VIVA-001`) |
+| `viva_exam_question_id` | FK → `VIVA_EXAM_QUESTION` | int | Câu hỏi trong đề (**Asked in**) |
+| `parent_exchange_id` | FK → `INTERVIEW_EXCHANGE` | int | Lượt hỏi trước; `NULL` nếu là câu hỏi gốc (**Follows up**) |
+| `depth` | | int | Độ sâu hỏi xoáy (0 = câu gốc, 1..n = câu xoáy) |
+| `question_text` | | text | Nội dung câu hỏi AI phát âm |
+| `transcript` | | text | Nội dung câu trả lời của sinh viên |
+| `follow_up_reason` | | enum | `INCOMPLETE`, `AMBIGUOUS`, `CONTRADICTORY` |
 | `ai_decision` | | enum | `FOLLOW_UP`, `NEXT`, `SKIPPED` |
-| `latency_ms` | | int | Độ trễ từ lúc SV nói xong đến câu hỏi tiếp (`BR-VIVA-003`) |
+| `latency_ms` | | int | Độ trễ xử lý AI |
 
-### 3.12. `QUESTION_GRADE`
+### 3.13. `QUESTION_GRADE`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `question_grade_id` | PK | int | Mã điểm câu hỏi |
+| `question_grade_id` | PK | int | Mã bảng điểm câu hỏi |
 | `attempt_id` | FK → `VIVA_ATTEMPT` | int | Lượt thi (**Receives**) |
-| `viva_exam_question_id` | FK → `VIVA_EXAM_QUESTION` | int | Câu hỏi được chấm (**Graded for**) |
-| `graded_by` | FK → `LECTURER` | int | Giảng viên chốt điểm, rỗng khi chưa chốt (**Finalizes**) |
-| `ai_score` | | decimal | Điểm AI đề xuất |
-| `final_score` | | decimal | Điểm chính thức |
-| `ai_feedback` | | text | Nhận xét của AI |
-| `lecturer_note` | | text | Ghi chú giảng viên, bắt buộc khi lệch > 2.0 điểm so với AI (`BR-GRADE-002`) |
+| `viva_exam_question_id` | FK → `VIVA_EXAM_QUESTION` | int | Câu hỏi trong đề (**Graded for**) |
+| `graded_by` | FK → `LECTURER` | int | Giảng viên chốt điểm HITL (**Finalizes**); NULL khi mới có điểm AI |
+| `ai_score` | | decimal | Điểm AI chấm cho câu |
+| `final_score` | | decimal | Điểm chốt sau cùng |
+| `ai_feedback` | | text | Nhận xét chi tiết từ AI |
+| `lecturer_note` | | text | Ghi chú của giảng viên |
 | `status` | | enum | `AI_DRAFT`, `APPROVED`, `FAILED` |
 | `graded_at` | | datetime | Thời điểm chốt điểm |
 
-### 3.13. `CRITERIA_GRADE`
+### 3.14. `CRITERIA_GRADE`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `criteria_grade_id` | PK | int | Mã điểm tiêu chí |
-| `question_grade_id` | FK → `QUESTION_GRADE` | int | Điểm câu hỏi (**Broken into**) |
-| `criteria_id` | FK → `RUBRIC_CRITERIA` | int | Tiêu chí được chấm (**Applied in**) |
-| `ai_score` | | decimal | Điểm AI cho tiêu chí |
-| `final_score` | | decimal | Điểm chính thức cho tiêu chí |
-| `evidence_quote` | | text | Trích dẫn từ transcript làm bằng chứng (`BR-GRADE-001`) |
-| `rationale` | | text | Lý giải của AI |
+| `criteria_grade_id` | PK | int | Mã điểm thành phần tiêu chí |
+| `question_grade_id` | FK → `QUESTION_GRADE` | int | Bảng điểm câu hỏi (**Broken into**) |
+| `criteria_id` | FK → `RUBRIC_CRITERIA` | int | Tiêu chí Rubric môn học được áp dụng (**Applied in**) |
+| `ai_score` | | decimal | Điểm AI chấm theo tiêu chí |
+| `final_score` | | decimal | Điểm giảng viên chốt cho tiêu chí |
+| `evidence_quote` | | text | Đoạn trích dẫn transcript làm bằng chứng |
+| `rationale` | | text | Lập luận giải thích điểm |
 
-### 3.14. `GRADE_APPEAL`
+### 3.15. `GRADE_APPEAL`
 
 | Thuộc tính | Khoá | Kiểu | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `appeal_id` | PK | int | Mã đơn phúc khảo |
-| `question_grade_id` | FK → `QUESTION_GRADE` | int | Điểm câu hỏi bị phúc khảo (**Appealed by**) |
-| `resolved_by` | FK → `LECTURER` | int | Giảng viên xử lý, rỗng khi đơn đang chờ (**Resolves**) |
-| `reason` | | text | Lý do phúc khảo |
+| `question_grade_id` | FK → `QUESTION_GRADE` | int | Điểm câu hỏi bị khiếu nại (**Appealed by**) |
+| `resolved_by` | FK → `LECTURER` | int | Giảng viên giải quyết (**Resolves**); NULL khi chưa xử lý |
+| `reason` | | text | Lý do sinh viên xin phúc khảo |
 | `status` | | enum | `PENDING`, `ACCEPTED`, `REJECTED` |
-| `score_before` | | decimal | Điểm trước phúc khảo |
-| `score_after` | | decimal | Điểm sau phúc khảo (nếu chấp nhận) |
+| `score_before` | | decimal | Điểm trước khi phúc khảo |
+| `score_after` | | decimal | Điểm sau khi điều chỉnh |
 | `response` | | text | Phản hồi của giảng viên |
-| `created_at` | | datetime | Thời điểm gửi đơn |
-| `resolved_at` | | datetime | Thời điểm xử lý |
+| `created_at` | | datetime | Thời điểm nộp đơn |
+| `resolved_at` | | datetime | Thời điểm xử lý xong |
 
 ---
 
-## 4. Ràng buộc nghiệp vụ ở mức Logical
+## 4. Tóm Tắt Quy Tắc Ràng Buộc Nghiệp Vụ Trên Schema
 
-| Ràng buộc | Thực thể | Business Rule |
+| Ràng buộc | Thực thể | Căn cứ Business Rule |
 | :--- | :--- | :--- |
-| Câu hỏi `APPROVED` phải có `rubric_id` | `QUESTION` | `BR-BANK-001` |
-| Tổng `weight_percent` của 1 rubric = 100 | `RUBRIC_CRITERIA` | `BR-BANK-001` |
-| Mỗi tiêu chí phải có `description` | `RUBRIC_CRITERIA` | `BR-BANK-003` |
-| Mỗi sinh viên chỉ có 1 lượt thi cho 1 đề | `VIVA_ATTEMPT` (`viva_exam_id`, `student_id`) | `BR-AUTH-002` |
-| Mỗi câu hỏi chỉ xuất hiện 1 lần trong 1 đề | `VIVA_EXAM_QUESTION` (`viva_exam_id`, `question_id`) | – |
-| Mỗi lượt có tối đa 1 câu xoáy nối tiếp; `depth` ≤ `max_follow_up_per_question` | `INTERVIEW_EXCHANGE` | `BR-VIVA-001` |
-| Mỗi câu trong 1 lượt thi chỉ có 1 bản ghi điểm | `QUESTION_GRADE` (`attempt_id`, `viva_exam_question_id`) | – |
-| Lệch điểm > 2.0 phải có `lecturer_note` | `QUESTION_GRADE` | `BR-GRADE-002` |
-| Sinh viên chỉ xem điểm khi `result_status = PUBLISHED` | `VIVA_ATTEMPT` | `BR-GRADE-003` |
-| Mã OTP hết hạn sau 5 phút; nhập sai tối đa 5 lần; tần suất gửi lại ≥ 60s | `OTP_VERIFICATION` | `BR-AUTH-005` |
-
----
-
-## 5. Điểm cần sửa trên hình `logical-erd.png`
-
-File `logical-erd.mmd` đã đúng; các lỗi dưới đây chỉ nằm trên ảnh, nên sửa khi xuất lại:
-
-- `VIVA_EXAM`: `lecturer_iidFK)` → `lecturer_id(FK)` (gõ thừa chữ `i`, thiếu ngoặc).
-- `GRADE_APPEAL`: `question_grade_id` và `resolved_by` thiếu nhãn `(FK)`.
+| Mỗi môn học chỉ có duy nhất 1 Rubric | `RUBRIC.course_id` (UNIQUE) | `BR-BANK-001`, `BR-BANK-006` |
+| Tổng `weight_percent` của 1 rubric phải bằng 100% | `RUBRIC_CRITERIA` | `BR-BANK-001` |
+| Mỗi tiêu chí bắt buộc có `description` chi tiết | `RUBRIC_CRITERIA` | `BR-BANK-003` |
+| Rubric bị khóa (is_locked = TRUE) khi có ca thi OPEN/CLOSED | `RUBRIC` | `BR-BANK-006` |
+| Câu hỏi APPROVED bắt buộc môn học phải có Rubric 100% | `QUESTION` | `BR-BANK-001` |
+| Phân loại độ khó bắt buộc thuộc `EASY`, `MEDIUM`, `HARD` | `QUESTION` | `BR-BANK-004` |

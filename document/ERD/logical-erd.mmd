@@ -12,12 +12,14 @@ title: AIVES - Logical ERD
   }
 }}%%
 erDiagram
-    %% ===== RELATIONSHIPS (theo Conceptual ERD) =====
-    LECTURER            ||--|{ LESSON              : "Manages"
-    LESSON              ||--|{ TOPIC               : "Contains"
-    TOPIC               ||--|{ QUESTION            : "Groups"
-    RUBRIC              ||--|{ QUESTION            : "Evaluates"
+    %% ===== RELATIONSHIPS =====
+    LECTURER            }|--|{ COURSE              : "Teaches"
+    COURSE              ||--|| RUBRIC              : "Defines"
     RUBRIC              ||--|{ RUBRIC_CRITERIA     : "Consists of"
+    COURSE              ||--|{ CHAPTER             : "Contains"
+    CHAPTER             ||--|{ MATERIAL            : "Provides"
+    CHAPTER             ||--|{ QUESTION            : "Contains"
+    COURSE              ||--|{ VIVA_EXAM           : "Organizes"
     LECTURER            ||--|{ VIVA_EXAM           : "Creates"
     VIVA_EXAM           ||--|{ VIVA_EXAM_QUESTION  : "Includes"
     QUESTION            ||--|{ VIVA_EXAM_QUESTION  : "Selected in"
@@ -49,24 +51,35 @@ erDiagram
         string   full_name
         boolean  is_active
     }
-    LESSON {
-        int      lesson_id     PK
-        int      lecturer_id   FK
-        string   title
-        text     description
-    }
-    TOPIC {
-        int      topic_id      PK
-        int      lesson_id     FK
+    COURSE {
+        int      course_id     PK
+        string   course_code   UK
         string   name
         text     description
     }
+    CHAPTER {
+        int      chapter_id    PK
+        int      course_id     FK
+        string   name
+        int      order_no
+        text     description
+    }
+    MATERIAL {
+        int      material_id   PK
+        int      chapter_id    FK
+        int      uploaded_by   FK
+        string   title
+        string   file_url
+        string   file_type
+        int      file_size
+        enum     rag_status    "INDEXING, READY, FAILED"
+    }
     QUESTION {
         int      question_id       PK
-        int      topic_id          FK
-        int      rubric_id         FK
+        int      chapter_id        FK
+        int      created_by        FK
         text     content
-        enum     bloom_level       "REMEMBER, UNDERSTAND, APPLY, ANALYZE"
+        enum     difficulty        "EASY, MEDIUM, HARD"
         text     model_answer
         text     expected_keywords
         enum     source            "MANUAL, AI_GENERATED"
@@ -74,20 +87,23 @@ erDiagram
     }
     RUBRIC {
         int      rubric_id     PK
+        int      course_id     FK "UK: 1 môn học có 1 rubric duy nhất"
         string   name
         text     description
         decimal  max_score
+        boolean  is_locked     "True khi môn học có ca thi OPEN/CLOSED"
     }
     RUBRIC_CRITERIA {
         int      criteria_id    PK
         int      rubric_id      FK
         string   name
         text     description
-        decimal  weight_percent
+        decimal  weight_percent "Tổng = 100%"
         int      order_no
     }
     VIVA_EXAM {
         string   viva_exam_id               PK
+        int      course_id                  FK
         int      lecturer_id                FK
         string   title
         text     description

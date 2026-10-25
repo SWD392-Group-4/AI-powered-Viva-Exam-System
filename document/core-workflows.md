@@ -14,7 +14,7 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 
 | Giai đoạn | Tên Giai Đoạn | Tác nhân chính (Actors) | Hành động cốt lõi |
 | :---: | :--- | :--- | :--- |
-| **P1** | **Chuẩn Bị Tri Thức & Đề Thi** | Giảng viên, Vertex AI RAG Engine, Gemini Flash, PostgreSQL | Tải slide lên GCS, RAG lập chỉ mục Spanner, AI gợi ý câu hỏi Bloom đối soát slide, duyệt Rubric 100% |
+| **P1** | **Chuẩn Bị Tri Thức & Đề Thi** | Giảng viên, Vertex AI RAG Engine, Gemini Flash, PostgreSQL, MongoDB | Thiết lập Rubric duy nhất của môn học 100%, nạp slide từng chương lên GCS, RAG lập chỉ mục Spanner, AI sinh câu hỏi Dễ/TB/Khó (không kèm Rubric), duyệt câu hỏi vào ngân hàng chung |
 | **P2** | **Thiết Lập Ca Thi (Viva Exam)** | Giảng viên, Spring Boot Core | Cấu hình ca thi, sinh `session_code` & `access_code` |
 | **P3** | **Check-in & Kiểm Tra Thiết Bị** | Sinh viên, Web/Mobile Client | Nhập mã, kiểm tra cờ thiết bị, thử mic/loa VAD, tạo `viva_attempts` |
 | **P4** | **Vấn Đáp Thích Ứng Real-Time** | Sinh viên, Google STT/TTS, Vertex AI RAG, Gemini Flash | Vòng lặp Voice AI: hỏi, trả lời, bóc băng, RAG truy xuất Top-5 chunks slide, hỏi xoáy thích ứng $\le 40$ từ |
@@ -41,17 +41,19 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 ## 3. Đặc Tả Chi Tiết 5 Giai Đoạn Nghiệp Vụ Cốt Lõi
 
 ### 3.1. Giai đoạn 1: Chuẩn Bị Tri Thức & Soạn Đề Thi (Question & Rubric Preparation)
-- **Mục tiêu**: Nạp giáo trình/slide bài giảng môn học vào kho tri thức RAG, tạo ra bộ câu hỏi chuẩn hóa có căn cứ kèm Rubric đánh giá đa mức độ tư duy (Bloom taxonomy).
-- **Thực thể liên quan**: `lessons`, `topics`, `questions`, `rubrics`, `rubric_criteria`.
+- **Mục tiêu**: Chuẩn hóa Rubric duy nhất của môn học (tổng 100%), nạp slide từng chương vào RAG, sinh câu hỏi nháp theo 3 mức độ Dễ/Trung bình/Khó (RAG không sinh Rubric), thẩm định và quản lý ngân hàng câu hỏi dùng chung giữa các giảng viên cùng bộ môn, lưu vết kiểm toán qua MongoDB.
+- **Thực thể liên quan**: `courses`, `chapters`, `materials`, `questions`, `rubrics`, `rubric_criteria`, MongoDB `academic_audit_logs`.
 - **Quy trình nạp tài liệu & sinh câu hỏi**:
-  1. Giảng viên tải slide môn học (PPTX, PDF) lên Web Portal.
-  2. Backend đẩy file lên **Google Cloud Storage (GCS)** trong bucket chuyên dụng phân tách theo môn học/học phần.
-  3. Kích hoạt **Vertex AI RAG Engine** lập chỉ mục: bóc tách nội dung bằng LLM parser, phân mảnh (chunk 1024 tokens, overlap 256 tokens) và tạo vector embedding qua `text-multilingual-embedding-002` lưu trữ trên RagManaged Cloud Spanner.
-  4. Backend kích hoạt Gemini 1.5 Flash thực hiện suy luận có căn cứ (Grounded Inference) đối soát nội dung slide bài giảng để gợi ý câu hỏi nháp theo thang Bloom và đáp án mẫu.
+  1. Giảng viên thiết lập Rubric chuẩn duy nhất của Môn học (đạt tổng trọng số 100%).
+  2. Giảng viên chọn Chương kiến thức và tải slide/giáo trình môn học (PPTX, PDF) lên Web Portal.
+  3. Backend đẩy file lên **Google Cloud Storage (GCS)** trong bucket chuyên dụng phân tách theo môn học/chương.
+  4. Kích hoạt **Vertex AI RAG Engine** lập chỉ mục: bóc tách nội dung bằng LLM parser, phân mảnh (chunk 1024 tokens, overlap 256 tokens) và tạo vector embedding qua `text-multilingual-embedding-002` lưu trữ trên RagManaged Cloud Spanner.
+  5. Giảng viên cấu hình số lượng và tỷ lệ độ khó (`EASY`, `MEDIUM`, `HARD`), kích hoạt Gemini 1.5 Flash thực hiện suy luận có căn cứ (Grounded Inference) đối soát nội dung slide của chương để sinh danh sách câu hỏi nháp (`DRAFT`, gồm `content`, `difficulty`, `model_answer`, `expected_keywords`; không kèm Rubric).
 - **Quy tắc nghiệp vụ**:
   - `BR-AUTH-001`: Giảng viên chỉ được tạo/sửa câu hỏi và rubric thuộc môn học mình phụ trách.
-  - `BR-BANK-001`: Tổng trọng số ($\sum \text{weight}$) của các tiêu chí trong một Rubric bắt buộc bằng đúng $100\%$.
-  - `BR-BANK-002`: Câu hỏi do AI sinh ra mang trạng thái `DRAFT` và `Source = AI_GENERATED`. Giảng viên phải kiểm tra nội dung đối soát slide, gán Rubric và đổi trạng thái sang `APPROVED` thì mới được sử dụng trong ca thi.
+  - `BR-BANK-001`: Môn học bắt buộc có Rubric duy nhất hoàn chỉnh ($\sum \text{weight} = 100\%$) mới được duyệt câu hỏi sang `APPROVED` hoặc mở ca thi.
+  - `BR-BANK-002`: Câu hỏi do AI sinh ra mang trạng thái `DRAFT` và `Source = AI_GENERATED`, không có Rubric đi kèm. Giảng viên thẩm định (HITL), chỉnh sửa nội dung/độ khó và duyệt sang `APPROVED`.
+  - `BR-BANK-005` & `BR-BANK-007`: Ngân hàng câu hỏi theo chương dùng chung giữa các giảng viên cùng bộ môn; mọi thao tác được ghi log vào MongoDB.
 
 ---
 
@@ -156,6 +158,6 @@ Biểu đồ dưới đây mô tả toàn bộ vòng đời của một đợt t
 | **Frontend Mobile** | React Native + Expo | Thiết bị thi di động tiện lợi cho Sinh viên (chỉ khả dụng khi có cờ `allow_mobile_exam`). |
 | **Backend Monolith** | Java 17 + Spring Boot | Điều phối toàn bộ nghiệp vụ, kiểm tra Business Rules, quản lý REST APIs, bảo mật API Gateway và credentials. |
 | **Persistence** | PostgreSQL | Lưu trữ tập trung 18 bảng quan hệ theo Physical ERD, quản lý hàng đợi tác vụ qua bảng `background_jobs`. |
-| **Curriculum RAG** | Knowledge RAG Engine | Kho ngữ liệu slide bài giảng, sinh câu hỏi nháp chuẩn Bloom và thẩm định Rubric có căn cứ kèm trích dẫn slide. |
+| **Curriculum RAG** | Knowledge RAG Engine | Kho ngữ liệu slide bài giảng từng chương, sinh câu hỏi nháp theo độ khó Dễ/Trung bình/Khó và thẩm định transcript đối soát slide kèm trích dẫn. |
 | **Conversational LLM** | Gemini 1.5 Flash API | Suy luận thời gian thực trong phòng thi (< 1.5s latency, hỏi xoáy $\le 40$ từ) và tổng hợp brief transcript sau thi. |
 | **Speech Processing** | Google Cloud STT & TTS | Chuyển đổi giọng nói - văn bản hai chiều tiếng Việt (`vi-VN`) với độ trễ thấp. |

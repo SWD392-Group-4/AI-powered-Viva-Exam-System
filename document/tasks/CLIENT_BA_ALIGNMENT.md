@@ -24,6 +24,27 @@ Whenever the Client confirms requirements or requests UI/logic adjustments, the 
   - Maintain synchronization between ad-hoc UI prompts and design specs.
 - **Status**: CLOSED
 
+### [ALIGN-002] Tái Cấu Trúc Luồng Tạo Câu Hỏi, Rubric Cấp Môn Học & Ngân Hàng Đề Dùng Chung
+- **Date**: 2026-10-24
+- **Participants**: Client (User), Business Analyst (BA)
+- **Discussion Summary**: 
+  - **Rubric do Giảng viên tạo 100%**: RAG tuyệt đối không sinh Rubric; RAG chỉ thuần túy sinh câu hỏi, độ khó, đáp án mẫu, từ khóa chuyên môn từ tài liệu của Chương.
+  - **Mỗi môn học chỉ có duy nhất 1 Rubric**: Để đảm bảo tính công bằng khảo thí. Bất kỳ giảng viên nào dạy môn đều có quyền tạo/sửa Rubric này, nhưng Rubric bị khóa cứng (Read-only) khi môn học có ca thi đang mở hoặc đã kết thúc.
+  - **Phân cấp dữ liệu Môn học - Chương**: Môn học (`Course`) là lớn nhất -> có nhiều Chương (`Chapter`) -> Tài liệu học liệu (`Material`) nạp trực tiếp theo từng Chương -> Ngân hàng câu hỏi (`Question Bank`) dùng chung giữa các giảng viên cùng dạy môn được phân bổ theo từng Chương.
+  - **Phân loại độ khó trực quan**: Bỏ thang nhận thức Bloom (`REMEMBER`, `UNDERSTAND`, `APPLY`, `ANALYZE`), thay thế bằng 3 mức độ thực tế: Dễ (`EASY`), Trung bình (`MEDIUM`), Khó (`HARD`).
+  - **Khởi tạo đề thi linh hoạt**: Hỗ trợ chọn danh sách câu hỏi cố định hoặc cấu hình ma trận đề bốc ngẫu nhiên theo Chương và độ khó.
+  - **Audit Logging qua MongoDB**: Tích hợp MongoDB collection `academic_audit_logs` để tracking toàn bộ hoạt động thêm, sửa, xóa, duyệt câu hỏi và cập nhật Rubric.
+- **Specification Updates**:
+  - `document/01-business-rule/br-question-rubric.md`
+  - `document/01-business-rule/lecturer-exam-prep-flow.md`
+  - `document/ERD/conceptual-erd.mmd` & `01-conceptual-erd.md`
+  - `document/ERD/logical-erd.mmd` & `02-logical-erd.md`
+  - `document/ERD/physical-erd.mmd` & `03-physical-erd.md`
+- **Action Items for PM**:
+  - [ ] Cập nhật lại các task liên quan đến API spec của Question Bank và Rubric trên `BOARD.md`.
+  - [ ] Thông báo cho Tech Lead và Backend Dev về việc bỏ trường `rubrics_id` trong `questions` và cấu trúc Rubric cấp Môn học.
+- **Status**: CLOSED
+
 <!-- Template for future alignment entries:
 ### [ALIGN-xxx] Title of Discussion or Change Request
 - **Date**: YYYY-MM-DD

@@ -12,14 +12,16 @@ title: AIVES - Conceptual ERD
   }
 }}%%
 erDiagram
-    %% ===== CONTENT: bài học, câu hỏi, rubric =====
-    LECTURER            ||--|{ LESSON              : "Manages"
-    LESSON              ||--|{ TOPIC               : "Contains"
-    TOPIC               ||--|{ QUESTION            : "Groups"
-    RUBRIC              ||--|{ QUESTION            : "Evaluates"
+    %% ===== CONTENT: môn học, chương, học liệu, câu hỏi, rubric =====
+    LECTURER            }|--|{ COURSE              : "Teaches"
+    COURSE              ||--|| RUBRIC              : "Defines"
     RUBRIC              ||--|{ RUBRIC_CRITERIA     : "Consists of"
+    COURSE              ||--|{ CHAPTER             : "Contains"
+    CHAPTER             ||--|{ MATERIAL            : "Provides"
+    CHAPTER             ||--|{ QUESTION            : "Contains"
 
     %% ===== EXAM: đề thi & lượt thi =====
+    COURSE              ||--|{ VIVA_EXAM           : "Organizes"
     LECTURER            ||--|{ VIVA_EXAM           : "Creates"
     VIVA_EXAM           ||--|{ VIVA_EXAM_QUESTION  : "Includes"
     QUESTION            ||--|{ VIVA_EXAM_QUESTION  : "Selected in"
