@@ -10,7 +10,7 @@ This board represents the central state of all work orders organized by **Flows 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
 | **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 9 | 9 / 9 | Complete (All Steps Signed Off) | DONE |
-| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 2 / 4 | Step 3 (Frontend Implementation) | READY |
+| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 3 / 4 | Step 4 (QA Verification) | READY |
 | **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 | **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 
@@ -19,7 +19,6 @@ This board represents the central state of all work orders organized by **Flows 
 ## 2. Active Flow: `FLOW-01-MVP` Board (Authentication & Session Continuity)
 
 ### Backlog (Pending Execution)
-- [TASK-003: Integrate Refresh Token Rotation & Interceptor in apiClient.ts](backlog/FLOW-01-MVP/TASK-003-frontend-token-refresh.md) (Assignee: `frontend-dev`)
 - [TASK-004: Validate End-to-End Authentication & Token Rotation against OpenAPI Spec](backlog/FLOW-01-MVP/TASK-004-qa-auth-verification.md) (Assignee: `qa-engineer`)
 
 ### In Progress (Active Subagents)
@@ -31,6 +30,7 @@ This board represents the central state of all work orders organized by **Flows 
 ### Done (Signed-Off Deliverables)
 - [TASK-001: Define OpenAPI Schemas and Domain Contracts for Auth & MVP](done/FLOW-01-MVP/TASK-001-api-contracts.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
 - [TASK-002: Implement Dual Route Auth Endpoints and Refresh Token Lifecycle](done/FLOW-01-MVP/TASK-002-backend-auth-refresh.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
+- [TASK-003: Integrate Refresh Token Rotation & Interceptor in apiClient.ts](done/FLOW-01-MVP/TASK-003-frontend-token-refresh.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-25)
 
 ---
 
