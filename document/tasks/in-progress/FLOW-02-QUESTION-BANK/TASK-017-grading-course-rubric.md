@@ -5,7 +5,7 @@ flow: FLOW-02-QUESTION-BANK
 step_in_flow: Step 8 of 9 (Grading & HITL Review Integration)
 assigned_to: backend-dev
 reviewer: tech-lead
-status: BACKLOG
+status: IN_PROGRESS
 created_at: 2026-10-25
 updated_at: 2026-10-25
 inputs:

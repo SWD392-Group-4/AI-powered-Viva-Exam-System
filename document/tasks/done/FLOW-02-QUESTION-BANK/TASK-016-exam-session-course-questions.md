@@ -5,7 +5,7 @@ flow: FLOW-02-QUESTION-BANK
 step_in_flow: Step 7 of 9 (Backend & Frontend Exam Integration)
 assigned_to: backend-dev
 reviewer: tech-lead
-status: BACKLOG
+status: DONE
 created_at: 2026-10-25
 updated_at: 2026-10-25
 inputs:
@@ -28,11 +28,11 @@ dependencies:
 - **Next Step Triggered**: [TASK-017](TASK-017-grading-course-rubric.md).
 
 ## 2. Acceptance Criteria (Product Owner)
-- [ ] Cho phép ca thi (`VivaExam`) liên kết với Môn học (`courses_id`).
-- [ ] Cho phép ca thi chọn câu hỏi từ danh sách câu hỏi đã APPROVED của Môn học/Chương (theo cấu hình cố định hoặc bốc ngẫu nhiên).
-- [ ] Khi sinh viên bắt đầu làm bài (`VivaInterviewServiceImpl.start`): Nếu ca thi chưa có câu hỏi gán sẵn, tự động bốc câu hỏi đã APPROVED từ Course/Chapters của ca thi đó.
-- [ ] Trong quá trình phỏng vấn AI (`VivaInterviewServiceImpl.buildContext`), nếu câu hỏi không lưu rubric riêng thì tự động kế thừa tiêu chí đánh giá từ Rubric môn học (`CourseRubric`).
+- [x] Cho phép ca thi (`VivaExam`) liên kết với Môn học (`courses_id`).
+- [x] Cho phép ca thi chọn câu hỏi từ danh sách câu hỏi đã APPROVED của Môn học/Chương (theo cấu hình cố định hoặc bốc ngẫu nhiên).
+- [x] Khi sinh viên bắt đầu làm bài (`VivaInterviewServiceImpl.start`): Nếu ca thi chưa có câu hỏi gán sẵn, tự động bốc câu hỏi đã APPROVED từ Course/Chapters của ca thi đó.
+- [x] Trong quá trình phỏng vấn AI (`VivaInterviewServiceImpl.buildContext`), nếu câu hỏi không lưu rubric riêng thì tự động kế thừa tiêu chí đánh giá từ Rubric môn học (`CourseRubric`).
 
 ## 3. Technical Constraints (Tech Lead)
-- Tương thích ngược với các ca thi cũ.
-- Không phá vỡ ràng buộc ACID của PostgreSQL.
+- [x] Tương thích ngược với các ca thi cũ.
+- [x] Không phá vỡ ràng buộc ACID của PostgreSQL.
