@@ -8,16 +8,7 @@ Whenever business decisions or requirement trade-offs require Client confirmatio
 
 ## 1. Pending Decisions (Awaiting Client Response)
 
-### [DECISION-001] API Routing Hierarchy and Refresh Token Storage Strategy
-- **Date Raised**: 2026-10-24
-- **Target Flow / Task**: FLOW-01-MVP / TASK-001
-- **Context & Impact**:
-  - Hiện tại hệ thống đang sử dụng endpoint gốc `/api/auth/*` (trong mã nguồn Spring Boot và React Orval). Ticket FLOW-01-MVP đặt ra chuẩn RESTful API versioning `/api/v1/auth/*` và bổ sung endpoint làm mới phiên (`/refresh`). Cần chốt phương án định tuyến và phương thức lưu trữ refresh token bảo mật.
-- **BA Proposals & Options**:
-  - [x] **Option A (Recommended)**: Hỗ trợ Dual Route (`/api/v1/auth/*` làm chuẩn chính thức, giữ alias `/api/auth/*` để đảm bảo 100% tương thích ngược). Refresh Token được lưu trữ trong HttpOnly Secure Cookie để chống tấn công XSS; Access Token truyền qua Authorization Header.
-  - [ ] **Option B**: Chuyển đổi cứng sang `/api/v1/*` (yêu cầu cập nhật đồng thời Frontend & Mobile). Refresh Token truyền trực tiếp trong JSON body (client tự quản lý trong Storage).
-- **Client Decision**: [Chờ ý kiến phản hồi hoặc phê duyệt Option A từ Client]
-- **Status**: PENDING_CLIENT_RESPONSE
+*No active pending decisions at this time.*
 
 <!-- Template for new entries:
 ### [DECISION-001] Short Decision Title
@@ -39,3 +30,4 @@ Whenever business decisions or requirement trade-offs require Client confirmatio
 | Decision ID | Topic | Selected Decision | Sign-off Date | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | `DECISION-000` | Squad Operating Model | Autonomous Squad with User as Client/Stakeholder | 2026-10-24 | RESOLVED |
+| `DECISION-001` | Core Milestone Priority Directive | **Top Priority**: Fix luồng đăng câu hỏi theo doc, hoàn thiện trọn vẹn luồng từ việc giảng viên đăng câu hỏi đến việc đi thi và học sinh ra điểm. Khi hoàn thành xong luồng này mới triển khai các task còn lại bám theo main flow. | 2026-10-25 | RESOLVED |
