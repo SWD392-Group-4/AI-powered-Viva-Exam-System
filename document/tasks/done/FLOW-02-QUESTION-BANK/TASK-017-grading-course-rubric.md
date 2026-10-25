@@ -5,7 +5,7 @@ flow: FLOW-02-QUESTION-BANK
 step_in_flow: Step 8 of 9 (Grading & HITL Review Integration)
 assigned_to: backend-dev
 reviewer: tech-lead
-status: IN_PROGRESS
+status: DONE
 created_at: 2026-10-25
 updated_at: 2026-10-25
 inputs:
@@ -28,8 +28,8 @@ dependencies:
 - **Next Step Triggered**: [TASK-018](TASK-018-e2e-qa-verification.md).
 
 ## 2. Acceptance Criteria (Product Owner)
-- [ ] Trong `AttemptGradingService`: Khi chấm điểm câu trả lời, nếu câu hỏi không có Rubric riêng thì tự động truy xuất các tiêu chí của Rubric Môn học (`CourseRubric`).
-- [ ] AI sinh `criteria_grades` đúng theo danh sách tiêu chí của Rubric môn học kèm trích dẫn bằng chứng (Strengths, Weaknesses).
-- [ ] Tính tổng điểm lượt thi chuẩn hóa theo thang điểm 10 (`TotalScore = sum(QuestionFinalScore * Weight)`).
-- [ ] Giảng viên trong `LecturerReviewPage` xem được điểm từng tiêu chí của Rubric môn học và có quyền ghi đè điểm.
-- [ ] Khi điểm công bố (`PUBLISHED`), học sinh xem được bảng điểm chi tiết (`ExamResultPage`).
+- [x] Trong `AttemptGradingService`: Khi chấm điểm câu trả lời, nếu câu hỏi không có Rubric riêng thì tự động truy xuất các tiêu chí của Rubric Môn học (`CourseRubric`).
+- [x] AI sinh `criteria_grades` đúng theo danh sách tiêu chí của Rubric môn học kèm trích dẫn bằng chứng (Strengths, Weaknesses).
+- [x] Tính tổng điểm lượt thi chuẩn hóa theo thang điểm 10 (`TotalScore = sum(QuestionFinalScore * Weight)`).
+- [x] Giảng viên trong `LecturerReviewPage` xem được điểm từng tiêu chí của Rubric môn học và có quyền ghi đè điểm.
+- [x] Khi điểm công bố (`PUBLISHED`), học sinh xem được bảng điểm chi tiết (`ExamResultPage`).

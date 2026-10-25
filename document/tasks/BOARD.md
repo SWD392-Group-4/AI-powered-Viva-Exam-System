@@ -9,7 +9,7 @@ This board represents the central state of all work orders organized by **Flows 
 | Flow Identifier | Flow Name | Total Tasks | Completed | Active Step | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
-| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 9 | 7 / 9 | Step 8 (TASK-017) | IN_PROGRESS |
+| **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 9 | 8 / 9 | Step 9 (TASK-018) | READY |
 | **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 1 / 4 | Step 2 (Backend Implementation) | READY |
 | **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 | **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
@@ -22,7 +22,7 @@ This board represents the central state of all work orders organized by **Flows 
 - [TASK-018: End-to-End QA Verification for Question Publishing, Exam Session, and Score Delivery Flow](backlog/FLOW-02-QUESTION-BANK/TASK-018-e2e-qa-verification.md) (Assignee: `qa-engineer`)
 
 ### In Progress (Active Subagents)
-- [TASK-017: Connect Student Viva Attempt Answers to Course Rubric AI Grading & Score Calculation](in-progress/FLOW-02-QUESTION-BANK/TASK-017-grading-course-rubric.md) (Assignee: `backend-dev`)
+- None
 
 ### In Review (Awaiting Review & Sign-Off)
 - None
@@ -35,6 +35,7 @@ This board represents the central state of all work orders organized by **Flows 
 - [TASK-014: Verification & UAT Testing for Course Rubric, Question Bank & Audit Logging](done/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`, Sign-off: 2026-10-25)
 - [TASK-015: Fix Question Publishing Flow and Lecturer Question Bank UI according to Documentation](done/FLOW-02-QUESTION-BANK/TASK-015-fix-question-posting-flow.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-25)
 - [TASK-016: Integrate Course & Chapter Question Bank into Exam Scheduling & Student Viva Session](done/FLOW-02-QUESTION-BANK/TASK-016-exam-session-course-questions.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
+- [TASK-017: Connect Student Viva Attempt Answers to Course Rubric AI Grading & Score Calculation](done/FLOW-02-QUESTION-BANK/TASK-017-grading-course-rubric.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
 
 ---
 
