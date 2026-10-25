@@ -10,16 +10,17 @@ This board represents the central state of all work orders organized by **Flows 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
 | **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 9 | 9 / 9 | Complete (All Steps Signed Off) | DONE |
-| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 1 / 4 | Step 2 (Backend Implementation) | READY |
+| **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 2 / 4 | Step 3 (Frontend Implementation) | READY |
 | **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 | **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 
 ---
 
-## 2. Active Flow: `FLOW-02-QUESTION-BANK` Board (CLIENT TOP PRIORITY)
+## 2. Active Flow: `FLOW-01-MVP` Board (Authentication & Session Continuity)
 
 ### Backlog (Pending Execution)
-- None
+- [TASK-003: Integrate Refresh Token Rotation & Interceptor in apiClient.ts](backlog/FLOW-01-MVP/TASK-003-frontend-token-refresh.md) (Assignee: `frontend-dev`)
+- [TASK-004: Validate End-to-End Authentication & Token Rotation against OpenAPI Spec](backlog/FLOW-01-MVP/TASK-004-qa-auth-verification.md) (Assignee: `qa-engineer`)
 
 ### In Progress (Active Subagents)
 - None
@@ -28,15 +29,23 @@ This board represents the central state of all work orders organized by **Flows 
 - None
 
 ### Done (Signed-Off Deliverables)
-- [TASK-010: Define OpenAPI Schemas and Domain Contracts for Course Rubric & Question Bank](done/FLOW-02-QUESTION-BANK/TASK-010-contracts-specs.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
-- [TASK-011: Database Migrations for Course Hierarchy, Shared Questions, and MongoDB Audit Log Setup](done/FLOW-02-QUESTION-BANK/TASK-011-db-migration.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
-- [TASK-012: Implement Course Rubric, RAG Question Generation, Shared Bank & Audit Logging Services](done/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
-- [TASK-013: Frontend UI for Course Rubrics, Materials, Question Bank, and RAG Question Generation](done/FLOW-02-QUESTION-BANK/TASK-013-frontend-ui.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-25)
-- [TASK-014: Verification & UAT Testing for Course Rubric, Question Bank & Audit Logging](done/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`, Sign-off: 2026-10-25)
-- [TASK-015: Fix Question Publishing Flow and Lecturer Question Bank UI according to Documentation](done/FLOW-02-QUESTION-BANK/TASK-015-fix-question-posting-flow.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-25)
-- [TASK-016: Integrate Course & Chapter Question Bank into Exam Scheduling & Student Viva Session](done/FLOW-02-QUESTION-BANK/TASK-016-exam-session-course-questions.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
-- [TASK-017: Connect Student Viva Attempt Answers to Course Rubric AI Grading & Score Calculation](done/FLOW-02-QUESTION-BANK/TASK-017-grading-course-rubric.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
-- [TASK-018: End-to-End QA Verification for Question Publishing, Exam Session, and Score Delivery Flow](done/FLOW-02-QUESTION-BANK/TASK-018-e2e-qa-verification.md) (Assignee: `qa-engineer`, Sign-off: 2026-10-25)
+- [TASK-001: Define OpenAPI Schemas and Domain Contracts for Auth & MVP](done/FLOW-01-MVP/TASK-001-api-contracts.md) (Assignee: `tech-lead`, Sign-off: 2026-10-24)
+- [TASK-002: Implement Dual Route Auth Endpoints and Refresh Token Lifecycle](done/FLOW-01-MVP/TASK-002-backend-auth-refresh.md) (Assignee: `backend-dev`, Sign-off: 2026-10-25)
+
+---
+
+## 3. Completed Flows Archive
+
+### `FLOW-02-QUESTION-BANK` (Signed-Off: 2026-10-25)
+- [TASK-010: Define OpenAPI Schemas and Domain Contracts for Course Rubric & Question Bank](done/FLOW-02-QUESTION-BANK/TASK-010-contracts-specs.md) (Assignee: `tech-lead`)
+- [TASK-011: Database Migrations for Course Hierarchy, Shared Questions, and MongoDB Audit Log Setup](done/FLOW-02-QUESTION-BANK/TASK-011-db-migration.md) (Assignee: `backend-dev`)
+- [TASK-012: Implement Course Rubric, RAG Question Generation, Shared Bank & Audit Logging Services](done/FLOW-02-QUESTION-BANK/TASK-012-backend-services.md) (Assignee: `backend-dev`)
+- [TASK-013: Frontend UI for Course Rubrics, Materials, Question Bank, and RAG Question Generation](done/FLOW-02-QUESTION-BANK/TASK-013-frontend-ui.md) (Assignee: `frontend-dev`)
+- [TASK-014: Verification & UAT Testing for Course Rubric, Question Bank & Audit Logging](done/FLOW-02-QUESTION-BANK/TASK-014-qa-verification.md) (Assignee: `qa-engineer`)
+- [TASK-015: Fix Question Publishing Flow and Lecturer Question Bank UI according to Documentation](done/FLOW-02-QUESTION-BANK/TASK-015-fix-question-posting-flow.md) (Assignee: `frontend-dev`)
+- [TASK-016: Integrate Course & Chapter Question Bank into Exam Scheduling & Student Viva Session](done/FLOW-02-QUESTION-BANK/TASK-016-exam-session-course-questions.md) (Assignee: `backend-dev`)
+- [TASK-017: Connect Student Viva Attempt Answers to Course Rubric AI Grading & Score Calculation](done/FLOW-02-QUESTION-BANK/TASK-017-grading-course-rubric.md) (Assignee: `backend-dev`)
+- [TASK-018: End-to-End QA Verification for Question Publishing, Exam Session, and Score Delivery Flow](done/FLOW-02-QUESTION-BANK/TASK-018-e2e-qa-verification.md) (Assignee: `qa-engineer`)
 
 ---
 
