@@ -5,7 +5,7 @@ flow: FLOW-02-QUESTION-BANK
 step_in_flow: Step 9 of 9 (End-to-End QA & UAT)
 assigned_to: qa-engineer
 reviewer: product-owner
-status: BACKLOG
+status: DONE
 created_at: 2026-10-25
 updated_at: 2026-10-25
 inputs:
@@ -27,8 +27,8 @@ dependencies:
 - **Next Step Triggered**: Complete Flow and Client Sign-off.
 
 ## 2. Acceptance Criteria (Product Owner)
-- [ ] Test Case 1: Giảng viên mở ngân hàng câu hỏi, chọn Môn học & Chương, tạo câu hỏi thủ công & sinh bằng AI -> Trạng thái DRAFT.
-- [ ] Test Case 2: Giảng viên phê duyệt câu hỏi -> Hệ thống kiểm tra Rubric môn học đạt 100% -> Chuyển thành APPROVED.
-- [ ] Test Case 3: Giảng viên tạo ca thi liên kết Môn học -> Câu hỏi APPROVED được chọn vào ca thi.
-- [ ] Test Case 4: Sinh viên vào thi vấn đáp AI qua Web Portal -> Hoàn thành bài thi -> Trạng thái COMPLETED.
-- [ ] Test Case 5: Background AI Worker chấm điểm theo tiêu chí Rubric môn học -> Giảng viên công bố điểm -> Sinh viên xem điểm thành công.
+- [x] Test Case 1: Giảng viên mở ngân hàng câu hỏi, chọn Môn học & Chương, tạo câu hỏi thủ công & sinh bằng AI -> Trạng thái DRAFT.
+- [x] Test Case 2: Giảng viên phê duyệt câu hỏi -> Hệ thống kiểm tra Rubric môn học đạt 100% -> Chuyển thành APPROVED.
+- [x] Test Case 3: Giảng viên tạo ca thi liên kết Môn học -> Câu hỏi APPROVED được chọn vào ca thi.
+- [x] Test Case 4: Sinh viên vào thi vấn đáp AI qua Web Portal -> Hoàn thành bài thi -> Trạng thái COMPLETED.
+- [x] Test Case 5: Background AI Worker chấm điểm theo tiêu chí Rubric môn học -> Giảng viên công bố điểm -> Sinh viên xem điểm thành công.
