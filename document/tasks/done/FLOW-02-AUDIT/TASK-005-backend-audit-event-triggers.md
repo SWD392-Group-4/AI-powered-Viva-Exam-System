@@ -5,9 +5,9 @@ flow: FLOW-02-AUDIT
 step_in_flow: Step 1 of 3 (Backend Implementation)
 assigned_to: backend-dev
 reviewer: tech-lead
-status: TODO
+status: DONE
 created_at: 2026-10-25
-updated_at: 2026-10-25
+updated_at: 2026-10-26
 inputs:
   - docs/01-business-rule/br-auth-rbac.md
   - docs/Software_Architecture_Design_Report.md
@@ -30,11 +30,11 @@ dependencies:
 - **Next Step Triggered**: [TASK-006](file:///docs/tasks/backlog/FLOW-02-AUDIT/TASK-006-frontend-audit-diff-viewer.md).
 
 ## 2. Acceptance Criteria (Product Owner)
-- [ ] Every user status change (`ACTIVE` / `INACTIVE`) and user deletion must record an audit entry into `audit_logs` capturing `actorId`, `action`, `entityName = USER`, `entityId`, `oldValue`, and `newValue`.
-- [ ] Updating system settings in `SystemSettingServiceImpl` must record audit log entries with the previous and updated configuration values.
-- [ ] In `GradingServiceImpl`, manual score override (`saveQuestionGrade`) and publishing of results (`publishAttempt`) must log audit entries recording the teacher ID, student attempt ID, and score changes.
-- [ ] In `AppealServiceImpl`, resolving a grade appeal must record whether the appeal was accepted/rejected, the previous score, and the adjusted score.
-- [ ] Audit log insertion must be resilient (wrapped in transaction or asynchronous/non-blocking so core mutations succeed even if audit logging encounters non-fatal errors).
+- [x] Every user status change (`ACTIVE` / `INACTIVE`) and user deletion must record an audit entry into `audit_logs` capturing `actorId`, `action`, `entityName = USER`, `entityId`, `oldValue`, and `newValue`.
+- [x] Updating system settings in `SystemSettingServiceImpl` must record audit log entries with the previous and updated configuration values.
+- [x] In `GradingServiceImpl`, manual score override (`saveQuestionGrade`) and publishing of results (`publishAttempt`) must log audit entries recording the teacher ID, student attempt ID, and score changes.
+- [x] In `AppealServiceImpl`, resolving a grade appeal must record whether the appeal was accepted/rejected, the previous score, and the adjusted score.
+- [x] Audit log insertion must be resilient (wrapped in transaction or asynchronous/non-blocking so core mutations succeed even if audit logging encounters non-fatal errors).
 
 ## 3. Technical Constraints (Tech Lead)
 - Inject `AuditService` cleanly into the relevant service classes.
@@ -46,13 +46,13 @@ dependencies:
 - Question / Ambiguity Raised: None
 
 ## 5. Work Execution Checklist (Assignee: backend-dev)
-- [ ] Verify `AuditService.log(...)` method signature.
-- [ ] Wire `AuditService` into `UserServiceImpl`, `SystemSettingServiceImpl`, `GradingServiceImpl`, and `AppealServiceImpl`.
-- [ ] Format diff payloads safely without exposing passwords or sensitive tokens.
-- [ ] Verify compilation with `mvn test-compile`.
-- [ ] Move ticket to review and notify `tech-lead`.
+- [x] Verify `AuditService.log(...)` method signature.
+- [x] Wire `AuditService` into `UserServiceImpl`, `SystemSettingServiceImpl`, `GradingServiceImpl`, and `AppealServiceImpl`.
+- [x] Format diff payloads safely without exposing passwords or sensitive tokens.
+- [x] Verify compilation with `mvn test-compile`.
+- [x] Move ticket to review and notify `tech-lead`.
 
 ## 6. Review & Sign-Off (Reviewer: tech-lead)
-- [ ] No performance regression on critical paths.
-- [ ] Security rules followed: no credentials in audit payloads.
-- [ ] Move ticket to `docs/tasks/done/` and unblock TASK-006.
+- [x] No performance regression on critical paths.
+- [x] Security rules followed: no credentials in audit payloads.
+- [x] Move ticket to `docs/tasks/done/` and unblock TASK-006. (Signed-off: 2026-10-26)
