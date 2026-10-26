@@ -11,7 +11,7 @@ This board represents the central state of all work orders organized by **Flows 
 | **`FLOW-AUDIT`** | Codebase Gap Analysis & Backlog Mapping | 1 | 1 / 1 | Step 1 (Audit) | DONE |
 | **`FLOW-02-QUESTION-BANK`** | Course Rubric, Question Bank & Exam Lifecycle (Client Top Priority) | 9 | 9 / 9 | Complete (All Steps Signed Off) | DONE |
 | **`FLOW-01-MVP`** | Authentication & Session Continuity | 4 | 4 / 4 | Complete (All Steps Signed Off) | DONE |
-| **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 1 / 3 | Step 2 (Frontend Integration) | IN PROGRESS |
+| **`FLOW-02-AUDIT`** | System Audit Logging Vertical Slice | 3 | 2 / 3 | Step 3 (QA Verification) | IN PROGRESS |
 | **`FLOW-03-ADMIN`** | User Directory Search, Filtering & Pagination | 3 | 0 / 3 | Step 1 (Backend Implementation) | BACKLOG |
 
 ---
@@ -19,8 +19,7 @@ This board represents the central state of all work orders organized by **Flows 
 ## 2. Active Flow: `FLOW-02-AUDIT` Board (System Audit Logging Vertical Slice)
 
 ### Backlog (Pending Execution)
-- [TASK-006: Enhance Audit Log Viewer with Old/New Value Diff Inspection](backlog/FLOW-02-AUDIT/TASK-006-frontend-audit-diff-viewer.md) (Assignee: `frontend-dev`) - READY
-- [TASK-007: Validate Audit Log Persistence and Querying APIs](backlog/FLOW-02-AUDIT/TASK-007-qa-audit-verification.md) (Assignee: `qa-engineer`) - DEPENDS ON TASK-006
+- [TASK-007: Validate Audit Log Persistence and Querying APIs](backlog/FLOW-02-AUDIT/TASK-007-qa-audit-verification.md) (Assignee: `qa-engineer`) - READY
 
 ### In Progress (Active Subagents)
 - None
@@ -30,6 +29,7 @@ This board represents the central state of all work orders organized by **Flows 
 
 ### Done (Signed-Off Deliverables)
 - [TASK-005: Instrument Audit Event Triggers across Sensitive Mutation Operations](done/FLOW-02-AUDIT/TASK-005-backend-audit-event-triggers.md) (Assignee: `backend-dev`, Sign-off: 2026-10-26)
+- [TASK-006: Enhance Admin Audit Log Viewer with Structured Diff Inspection](done/FLOW-02-AUDIT/TASK-006-frontend-audit-diff-viewer.md) (Assignee: `frontend-dev`, Sign-off: 2026-10-26)
 
 ---
 
