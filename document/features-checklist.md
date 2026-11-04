@@ -1,4 +1,4 @@
-# Danh Mục Tính Năng Hệ Thống AIVES (Feature Checklist)
+﻿# Danh Mục Tính Năng Hệ Thống AIVES (Feature Checklist)
 
 > **Hệ thống**: AI-powered Viva Exam System (AIVES)  
 > **Nguồn tài liệu đối chiếu**: `document/00-overview`, `document/01-business-rule`, `document/core-workflows.md`, `document/04-ui-ux-design`, `document/05-crud-demo`, `document/Software_Architecture_Design_Report.md`.  
@@ -121,8 +121,8 @@
 - [x] Thu âm giọng nói của sinh viên qua micro thời gian thực (`POST .../interview/answer-audio`)
 - [ ] Hiển thị hiệu ứng sóng âm thanh (Voice Wave Visualizer) theo mức năng lượng giọng nói *(Client-side)*
 - [x] Nhận diện giọng nói và bóc băng tiếng Việt thời gian thực (Google Cloud STT `vi-VN`)
-- [ ] Phát hiện khoảng lặng liên tục $\ge 5$ giây để hiển thị cảnh báo gợi ý hoàn thành câu trả lời *(Client-side)*
-- [ ] Tự động ngắt micro và nộp câu trả lời khi phát hiện im lặng liên tục $\ge 10$ giây (`AUTO_SUBMIT`) *(Client-side)*
+- [x] Phát hiện khoảng lặng liên tục $\ge 5$ giây để hiển thị cảnh báo gợi ý hoàn thành câu trả lời *(Client-side)*
+- [x] Tự động ngắt micro và nộp câu trả lời khi phát hiện im lặng liên tục $\ge 10$ giây (`AUTO_SUBMIT`) *(Client-side)*
 - [x] Nút chủ động kết thúc câu trả lời và nộp bài trước thời hạn (`POST .../interview/answer`, `.../answer-audio`, `.../finish`)
 - [x] Đồng hồ đếm ngược tổng thời gian làm bài của toàn bộ ca thi
 - [x] Tự động thu bài và đóng lượt thi khi hết tổng thời gian ca thi (`GradingScheduler.closeOverdueAttempts()`)
